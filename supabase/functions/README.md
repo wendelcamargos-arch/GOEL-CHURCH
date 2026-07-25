@@ -64,15 +64,20 @@ arquitetura): `OTP_DIGITS`, `OTP_TTL_SECONDS`, `OTP_MAX_ATTEMPTS`,
 ```bash
 supabase db push                       # migrações: 0001 auth, 0002 perfil, 0003 devocionais
 
-# Funções públicas / com auth própria → OBRIGATÓRIO --no-verify-jwt:
-# o cliente envia a chave publishable (não-JWT) no Authorization; com o
-# verify_jwt padrão o gateway rejeitaria antes de chegar na função.
-supabase functions deploy request-otp     --no-verify-jwt
-supabase functions deploy verify-otp      --no-verify-jwt
-supabase functions deploy select-identity --no-verify-jwt
-supabase functions deploy verse-of-the-day --no-verify-jwt   # (só se usar NVI; MVP usa domínio público offline)
-supabase functions deploy save-profile    --no-verify-jwt   # faz a própria verificação de sessão (verifySession)
-supabase functions deploy birthday-greetings --no-verify-jwt # protegida por SCHEDULER_SECRET
+# PÚBLICAS → verify_jwt=false (o cliente manda a chave publishable, que NÃO é
+# JWT; com verify_jwt padrão o gateway rejeitaria antes de chegar na função):
+supabase functions deploy request-otp      --no-verify-jwt
+supabase functions deploy verify-otp       --no-verify-jwt
+supabase functions deploy select-identity  --no-verify-jwt
+supabase functions deploy verse-of-the-day --no-verify-jwt   # só se usar NVI; MVP usa domínio público offline
+
+# PRIVADAS → verify_jwt=true (padrão): o gateway valida o JWT antes da função.
+supabase functions deploy save-profile                       # a sessão OTP (HS256 assinado com o JWT secret) passa no gateway
+supabase functions deploy birthday-greetings                 # ver nota
+
+# NOTA birthday-greetings: com verify_jwt=true, o AGENDADOR precisa enviar um JWT
+# válido no Authorization (ex.: service_role legado). Se o seu agendamento enviar
+# apenas o header x-scheduler-secret, faça o deploy com --no-verify-jwt.
 ```
 
 ### Agendar a automação de aniversário (diária, ~08:00 BRT)

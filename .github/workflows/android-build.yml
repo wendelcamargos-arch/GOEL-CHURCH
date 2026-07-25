@@ -1,0 +1,60 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build release APK with automatic versioning
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          RELEASE_NAME="1.0.${BUILD_NUMBER}"
+          flutter build apk --release \
+            --build-name="${RELEASE_NAME}" \
+            --build-number="${BUILD_NUMBER}"
+          mkdir -p ci-artifacts
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          cp "${APK_PATH}" ci-artifacts/app-release.apk
+          {
+            echo "release_name=${RELEASE_NAME}"
+            echo "build_number=${BUILD_NUMBER}"
+            echo "commit_sha=${GITHUB_SHA}"
+            echo "branch=${GITHUB_REF_NAME}"
+          } > ci-artifacts/release-metadata.txt
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-apk
+          path: ci-artifacts/
+          if-no-files-found: error
+          retention-days: 7

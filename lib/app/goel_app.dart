@@ -9,7 +9,10 @@ import 'theme/app_theme.dart';
 /// apresenta e coleta; ela NÃO contém regra de negócio. As regras vivem no
 /// pacote `goel_domain` (Dart puro).
 class GoelApp extends StatelessWidget {
-  const GoelApp({super.key});
+  /// Indica se a plataforma Supabase foi inicializada (Slice 02).
+  final bool supabaseConfigured;
+
+  const GoelApp({super.key, this.supabaseConfigured = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +21,8 @@ class GoelApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      // Slice 01: tela de bootstrap neutra. A Home é do Slice 05.
-      home: const BootstrapScreen(),
+      // Slice 01/02: tela de bootstrap neutra. A Home é do Slice 05.
+      home: BootstrapScreen(supabaseConfigured: supabaseConfigured),
     );
   }
 }

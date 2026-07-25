@@ -33,7 +33,7 @@ oficial já aprovada (Pacotes 1 e 2A).
 | Slice | Escopo | Status |
 |---|---|---|
 | 01 | Bootstrap | ✅ |
-| 02 | Integração Flutter + Supabase | ⏳ |
+| 02 | Integração Flutter + Supabase | ✅ |
 | 03 | Login via WhatsApp OTP | ⏳ |
 | 04 | Cadastro do membro | ⏳ |
 | 05 | Home | ⏳ |
@@ -52,8 +52,18 @@ oficial já aprovada (Pacotes 1 e 2A).
 flutter pub get
 flutter test                     # testes de widget do app
 dart test packages/goel_domain   # testes do domínio (Dart puro)
-flutter run                      # requer device/emulador Android
+
+# Rodar com o Supabase conectado (credenciais injetadas no build — nunca no código):
+flutter run \
+  --dart-define=SUPABASE_URL=https://<seu-projeto>.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=<sua-anon-key>
+
+# Sem --dart-define, o app roda em modo "Supabase não configurado" (degradação graciosa).
 ```
+
+> A `anon key` é pública por natureza (uso no cliente). Credenciais privilegiadas
+> e segredos (ex.: token da Meta Cloud API) ficam **server-side** em Edge
+> Functions — nunca no app.
 
 Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para o mapeamento entre o código
 e a arquitetura oficial.

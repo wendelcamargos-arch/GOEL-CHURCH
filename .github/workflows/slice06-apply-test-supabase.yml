@@ -9,6 +9,7 @@ jobs:
     env:
       PROJECT_REF: rzxeqvczjfwcggkgcsxw
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_EXPORT_PASSPHRASE: ${{ secrets.SUPABASE_EXPORT_PASSPHRASE }}
 
     steps:
       - name: Checkout
@@ -82,8 +83,39 @@ jobs:
           echo "supabase_url=${SUPABASE_URL}" >> "$GITHUB_OUTPUT"
           echo "anon_key=${ANON_KEY}" >> "$GITHUB_OUTPUT"
 
+      - name: Build encrypted export artifact
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_EXPORT_PASSPHRASE:-}" ]; then
+            echo "ERRO: SUPABASE_EXPORT_PASSPHRASE ausente"
+            exit 1
+          fi
+
+          mkdir -p out
+          cat > out/supabase-keys.txt <<EOF
+          SUPABASE_URL=${SUPABASE_URL}
+          ANON_KEY=${ANON_KEY}
+          EOF
+
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in out/supabase-keys.txt \
+            -out out/supabase-keys.txt.enc \
+            -pass env:SUPABASE_EXPORT_PASSPHRASE
+
+          rm -f out/supabase-keys.txt
+
+      - name: Upload encrypted artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-keys-encrypted
+          path: out/supabase-keys.txt.enc
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Final summary
         run: |
           set -euo pipefail
           echo "SUPABASE_URL=${SUPABASE_URL}"
           echo "ANON_KEY=***masked***"
+          echo "Artifact: supabase-keys-encrypted"

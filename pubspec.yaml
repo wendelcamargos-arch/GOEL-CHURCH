@@ -24,5 +24,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/content/versiculos_dominio_publico.json
     - assets/content/verses_fallback.json
     - assets/content/devotionals_fallback.json

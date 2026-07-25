@@ -50,6 +50,17 @@ coletado no cadastro (Slice 04). É o módulo *Comunicação e Relacionamento /
 Automações* do Pacote 1. A validação jurídica final do consentimento é do
 Pacote 3.
 
+## Versículo do Dia — domínio público (Opção A, decisão do owner)
+
+Fonte **primária**: tradução de **domínio público** (Almeida antiga / Tradução
+Brasileira), empacotada em `assets/content/versiculos_dominio_publico.json` e
+servida por `LocalVerseRepository` — **offline-first, sem licença, sem custo,
+sem rede**. Seleção determinística por dia.
+
+A **NVI é licenciada** (Biblica) e fica como **upgrade futuro** (Opção B): o
+`OnlineVerseRepository` + a Edge Function `verse-of-the-day` permanecem no código
+para quando houver licença/chave, mas **não são usados por padrão**.
+
 ## O que está deliberadamente FORA deste código (por ora)
 
 - **Domínio Pastoral Sensível** (Assistente por IA, histórico emocional) e

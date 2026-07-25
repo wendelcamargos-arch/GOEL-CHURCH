@@ -5,7 +5,15 @@ import 'package:goel_domain/goel_domain.dart';
 /// centrado, alto contraste (do tema).
 class VersiculoScreen extends StatelessWidget {
   final VerseRepository repository;
-  const VersiculoScreen({super.key, required this.repository});
+
+  /// Rótulo opcional de fonte/atribuição (ex.: "Almeida — domínio público").
+  final String? sourceLabel;
+
+  const VersiculoScreen({
+    super.key,
+    required this.repository,
+    this.sourceLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +47,10 @@ class VersiculoScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(verse.reference, style: textTheme.titleMedium),
+                    if (sourceLabel != null) ...[
+                      const SizedBox(height: 8),
+                      Text(sourceLabel!, style: textTheme.labelSmall),
+                    ],
                   ],
                 ),
               ),

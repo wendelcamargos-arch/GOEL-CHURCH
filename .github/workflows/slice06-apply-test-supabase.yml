@@ -36,6 +36,8 @@ jobs:
           set -euo pipefail
           git checkout main
           git pull --ff-only || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if ! git am < GOEL-CHURCH-slice-06-versiculo.patch; then
             git am --abort || true
             git am --3way < GOEL-CHURCH-slice-06-versiculo.patch

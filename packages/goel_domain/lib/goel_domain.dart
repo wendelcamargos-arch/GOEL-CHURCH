@@ -8,3 +8,10 @@
 library goel_domain;
 
 export 'src/shared/result.dart';
+
+// Autenticação (Slice 03)
+export 'src/auth/auth_gateway.dart';
+export 'src/auth/auth_models.dart';
+export 'src/auth/identity_selection.dart';
+export 'src/auth/identity_state.dart';
+export 'src/auth/identity_summary.dart';

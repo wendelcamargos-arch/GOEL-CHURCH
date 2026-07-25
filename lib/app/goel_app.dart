@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../bootstrap/bootstrap_screen.dart';
+import '../features/auth/application/login_flow.dart';
+import '../features/auth/presentation/login_gate.dart';
 import 'theme/app_theme.dart';
 
 /// Raiz da camada de entrega (Delivery Layer).
@@ -12,7 +14,11 @@ class GoelApp extends StatelessWidget {
   /// Indica se a plataforma Supabase foi inicializada (Slice 02).
   final bool supabaseConfigured;
 
-  const GoelApp({super.key, this.supabaseConfigured = false});
+  /// Fluxo de login (Slice 03), injetado quando o Supabase está configurado.
+  /// Nulo → cai na tela de bootstrap (útil em testes e sem credenciais).
+  final LoginFlow? loginFlow;
+
+  const GoelApp({super.key, this.supabaseConfigured = false, this.loginFlow});
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +27,9 @@ class GoelApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      // Slice 01/02: tela de bootstrap neutra. A Home é do Slice 05.
-      home: BootstrapScreen(supabaseConfigured: supabaseConfigured),
+      home: loginFlow != null
+          ? LoginGate(flow: loginFlow!)
+          : BootstrapScreen(supabaseConfigured: supabaseConfigured),
     );
   }
 }

@@ -63,11 +63,16 @@ arquitetura): `OTP_DIGITS`, `OTP_TTL_SECONDS`, `OTP_MAX_ATTEMPTS`,
 
 ```bash
 supabase db push                       # migrações: 0001 auth, 0002 perfil, 0003 devocionais
-supabase functions deploy request-otp
-supabase functions deploy verify-otp
-supabase functions deploy select-identity
-supabase functions deploy save-profile
-supabase functions deploy birthday-greetings
+
+# Funções públicas / com auth própria → OBRIGATÓRIO --no-verify-jwt:
+# o cliente envia a chave publishable (não-JWT) no Authorization; com o
+# verify_jwt padrão o gateway rejeitaria antes de chegar na função.
+supabase functions deploy request-otp     --no-verify-jwt
+supabase functions deploy verify-otp      --no-verify-jwt
+supabase functions deploy select-identity --no-verify-jwt
+supabase functions deploy verse-of-the-day --no-verify-jwt   # (só se usar NVI; MVP usa domínio público offline)
+supabase functions deploy save-profile    --no-verify-jwt   # faz a própria verificação de sessão (verifySession)
+supabase functions deploy birthday-greetings --no-verify-jwt # protegida por SCHEDULER_SECRET
 ```
 
 ### Agendar a automação de aniversário (diária, ~08:00 BRT)

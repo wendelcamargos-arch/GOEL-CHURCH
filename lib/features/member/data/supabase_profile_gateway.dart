@@ -26,7 +26,7 @@ class SupabaseProfileGateway implements MemberProfileGateway {
           'whatsappOptIn': profile.whatsappOptIn,
         },
       );
-      final data = Map<String, dynamic>.from(res.data as Map);
+      final data = res.data as Map<String, dynamic>;
       if (data['status'] == 'saved') return Ok(profile);
       return Err(_mapReason(data['reason'] as String?));
     } catch (_) {

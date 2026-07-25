@@ -24,7 +24,7 @@ class OnlineVerseRepository implements VerseRepository {
   Future<DailyVerse> verseForToday(DateTime today) async {
     try {
       final res = await _client.functions.invoke('verse-of-the-day');
-      final data = Map<String, dynamic>.from(res.data as Map);
+      final data = res.data as Map<String, dynamic>;
       if (data['status'] == 'ok') {
         final verse = DailyVerse(
           reference: data['reference'] as String,
@@ -47,7 +47,7 @@ class OnlineVerseRepository implements VerseRepository {
   Future<List<DailyVerse>> _loadFallback() async {
     final raw =
         await rootBundle.loadString('assets/content/verses_fallback.json');
-    final list = (jsonDecode(raw) as List)
+    final list = (jsonDecode(raw) as List<dynamic>)
         .map((e) => DailyVerse(
               reference: e['reference'] as String,
               text: e['text'] as String,

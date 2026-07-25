@@ -23,9 +23,9 @@ class SupabaseDevotionalRepository implements DevotionalRepository {
           .eq('published', true)
           .order('published_at', ascending: false)
           .limit(50);
-      final list =
-          (data as List).map((e) => _fromRow(Map<String, dynamic>.from(e)))
-              .toList();
+      final list = (data as List<dynamic>)
+          .map((e) => _fromRow(e as Map<String, dynamic>))
+          .toList();
       if (list.isNotEmpty) {
         _cache = list;
         return list;
@@ -52,7 +52,7 @@ class SupabaseDevotionalRepository implements DevotionalRepository {
   Future<List<Devotional>> _readFallbackAsset() async {
     final raw =
         await rootBundle.loadString('assets/content/devotionals_fallback.json');
-    return (jsonDecode(raw) as List)
+    return (jsonDecode(raw) as List<dynamic>)
         .map((e) => Devotional(
               id: e['id'] as String,
               title: e['title'] as String,

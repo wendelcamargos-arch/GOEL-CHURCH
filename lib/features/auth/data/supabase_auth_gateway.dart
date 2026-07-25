@@ -37,19 +37,19 @@ class SupabaseAuthGateway implements AuthGateway {
         'verify-otp',
         body: {'phone': phoneE164, 'code': code},
       );
-      final data = Map<String, dynamic>.from(res.data as Map);
+      final data = res.data as Map<String, dynamic>;
 
       switch (data['status']) {
         case 'failed':
           return Err(_mapReason(data['reason'] as String?));
         case 'session':
-          final identity = _identityFrom(data['identity'] as Map);
+          final identity = _identityFrom(data['identity'] as Map<String, dynamic>);
           _session.set(identity, data['accessToken'] as String);
           return Ok(SessionEstablished(identity));
         case 'select_identity':
           _pendingSelectionToken = data['selectionToken'] as String?;
-          final ids = (data['identities'] as List)
-              .map((e) => _identityFrom(e as Map))
+          final ids = (data['identities'] as List<dynamic>)
+              .map((e) => _identityFrom(e as Map<String, dynamic>))
               .toList();
           return Ok(NeedsIdentitySelection(ids));
         default:
@@ -71,9 +71,9 @@ class SupabaseAuthGateway implements AuthGateway {
         'select-identity',
         body: {'selectionToken': token, 'canonicalId': canonicalId},
       );
-      final data = Map<String, dynamic>.from(res.data as Map);
+      final data = res.data as Map<String, dynamic>;
       if (data['status'] == 'session') {
-        final identity = _identityFrom(data['identity'] as Map);
+        final identity = _identityFrom(data['identity'] as Map<String, dynamic>);
         _session.set(identity, data['accessToken'] as String);
         _pendingSelectionToken = null;
         return Ok(SessionEstablished(identity));
@@ -84,7 +84,7 @@ class SupabaseAuthGateway implements AuthGateway {
     }
   }
 
-  IdentitySummary _identityFrom(Map data) => IdentitySummary(
+  IdentitySummary _identityFrom(Map<String, dynamic> data) => IdentitySummary(
         canonicalId: data['canonicalId'] as String,
         displayName: (data['displayName'] as String?) ?? 'Minha conta',
         // Identidades retornadas já são selecionáveis (filtradas server-side).

@@ -62,7 +62,7 @@ arquitetura): `OTP_DIGITS`, `OTP_TTL_SECONDS`, `OTP_MAX_ATTEMPTS`,
 ## Deploy
 
 ```bash
-supabase db push                       # aplica as migrações (0001 auth, 0002 perfil)
+supabase db push                       # migrações: 0001 auth, 0002 perfil, 0003 devocionais
 supabase functions deploy request-otp
 supabase functions deploy verify-otp
 supabase functions deploy select-identity

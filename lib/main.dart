@@ -11,7 +11,9 @@ import 'features/member/data/supabase_profile_gateway.dart';
 import 'features/member/presentation/cadastro_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/content/data/online_verse_repository.dart';
+import 'features/content/data/supabase_devotional_repository.dart';
 import 'features/content/presentation/versiculo_screen.dart';
+import 'features/content/presentation/devocionais_screen.dart';
 
 /// Ponto de entrada da camada de entrega (Delivery Layer).
 ///
@@ -35,6 +37,7 @@ Future<void> main() async {
 
     final cadastroFlow = CadastroFlow(SupabaseProfileGateway(client, session));
     final verseRepository = OnlineVerseRepository(client);
+    final devotionalRepository = SupabaseDevotionalRepository(client);
 
     postLoginBuilder = (_) => CadastroScreen(
           flow: cadastroFlow,
@@ -42,6 +45,8 @@ Future<void> main() async {
             memberName: cadastroFlow.savedName,
             versiculoBuilder: (_) =>
                 VersiculoScreen(repository: verseRepository),
+            devocionalBuilder: (_) =>
+                DevocionaisScreen(repository: devotionalRepository),
           ),
         );
   }

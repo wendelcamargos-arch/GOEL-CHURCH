@@ -38,7 +38,7 @@ oficial já aprovada (Pacotes 1 e 2A).
 | 04 | Cadastro do membro (+ automação de aniversário) | ✅ |
 | 05 | Home | ✅ |
 | 06 | Versículo do dia (NVI online + fallback offline) | ✅ |
-| 07 | Devocional | ⏳ |
+| 07 | Devocional | ✅ |
 | 08 | Pedido de oração | ⛔ adiado (LGPD — Parte B / Pacote 3) |
 | 09 | Assistente Pastoral por IA | ⛔ adiado (LGPD — Parte B / Pacote 3) |
 

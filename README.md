@@ -1,15 +1,59 @@
-# GOEL-CHURCH
+# Goel Church
 
-## Contexto do ambiente (branch `main`)
+> Uma igreja para você frequentar e uma família para você pertencer.
 
-Este ambiente de desenvolvimento **não possui Flutter/Dart instalados**.
+Aplicativo oficial da Goel Church. Este repositório contém a **camada de entrega
+mobile (Flutter)** e o **domínio (Dart puro)**, construídos sobre a arquitetura
+oficial já aprovada (Pacotes 1 e 2A).
 
-Por isso, nesta fase, o foco do repositório é:
+## Stack (ratificada)
 
-- Escrever e organizar o código-fonte de forma consistente com a arquitetura definida.
-- Manter separação clara de camadas, responsabilidades e contratos.
-- Preparar a base do projeto para futura execução/compilação quando o toolchain Flutter/Dart estiver disponível.
+| Camada | Tecnologia |
+|---|---|
+| Frontend | Flutter (Android-first, iOS-ready) |
+| Domínio | Dart puro (Framework Independence) |
+| Backend / Auth / Storage | Supabase (região Brasil) |
+| Execução server-side | Supabase Edge Functions |
+| Banco | PostgreSQL (projeto separado para o domínio pastoral sensível) |
+| Push | Firebase Cloud Messaging |
+| Observabilidade | Sentry |
+| Vídeos / Lives | YouTube |
+| Autenticação | WhatsApp OTP (Meta Cloud API, token server-side) |
 
-## Diretriz principal
+## Princípios que o código respeita
 
-Implementar o código de forma fiel à arquitetura proposta, priorizando legibilidade, modularidade e evolução segura.
+- **Framework Independence:** o domínio vive em `packages/goel_domain` e não
+  importa Flutter.
+- **Stable Module Boundaries:** módulos colaboram por superfície pública.
+- **Acessibilidade (público idoso):** requisito arquitetural, não estético.
+- **Offline-first** para conteúdo consultivo (Bíblia, devocionais, pregações).
+
+## Roadmap do MVP (Vertical Slices)
+
+| Slice | Escopo | Status |
+|---|---|---|
+| 01 | Bootstrap | ✅ |
+| 02 | Integração Flutter + Supabase | ⏳ |
+| 03 | Login via WhatsApp OTP | ⏳ |
+| 04 | Cadastro do membro | ⏳ |
+| 05 | Home | ⏳ |
+| 06 | Versículo do dia | ⏳ |
+| 07 | Devocional | ⏳ |
+| 08 | Pedido de oração | ⛔ adiado (LGPD — Parte B / Pacote 3) |
+| 09 | Assistente Pastoral por IA | ⛔ adiado (LGPD — Parte B / Pacote 3) |
+
+> Os Slices 08 e 09 tratam de dados sensíveis (religião + emoção) e permanecem
+> **adiados** até a base legal, o consentimento e a estratégia de vinculação
+> serem definidos na Parte B e no Pacote 3.
+
+## Como rodar (ambiente com Flutter instalado)
+
+```bash
+flutter pub get
+flutter test                     # testes de widget do app
+dart test packages/goel_domain   # testes do domínio (Dart puro)
+flutter run                      # requer device/emulador Android
+```
+
+Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para o mapeamento entre o código
+e a arquitetura oficial.

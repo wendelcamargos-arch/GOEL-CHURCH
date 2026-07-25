@@ -1,0 +1,23 @@
+name: goel_church
+description: "Aplicativo oficial da Goel Church — MVP. Camada de entrega (Flutter)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Framework Independence: a regra de negócio vive no pacote de domínio (Dart puro).
+  goel_domain:
+    path: packages/goel_domain
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

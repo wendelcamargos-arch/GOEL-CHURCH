@@ -1,0 +1,16 @@
+name: goel_domain
+description: "Camada de domínio (Dart puro) do Goel Church. NÃO importa Flutter."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+# Framework Independence (ADR GOEL-ARCH-P2A-01 / P2A-02B-A1):
+# este pacote é Dart puro. A ausência de dependência de `flutter` aqui é o
+# mecanismo que IMPEDE, estruturalmente, o domínio de acoplar-se à UI.
+dependencies:
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0

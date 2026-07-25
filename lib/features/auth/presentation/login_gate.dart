@@ -8,7 +8,11 @@ import '../application/login_flow.dart';
 /// Acessibilidade (público idoso): textos amplos, botões altos, passos curtos.
 class LoginGate extends StatefulWidget {
   final LoginFlow flow;
-  const LoginGate({super.key, required this.flow});
+
+  /// Tela para onde seguir após autenticar (Slice 04: cadastro). Nulo em testes.
+  final WidgetBuilder? postLoginBuilder;
+
+  const LoginGate({super.key, required this.flow, this.postLoginBuilder});
 
   @override
   State<LoginGate> createState() => _LoginGateState();
@@ -136,12 +140,20 @@ class _LoginGateState extends State<LoginGate> {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Slice 03 concluído. Próximo: cadastro (04) e Home (05).',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
+            const SizedBox(height: 24),
+            if (widget.postLoginBuilder != null)
+              FilledButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: widget.postLoginBuilder!),
+                ),
+                child: const Text('Continuar para o cadastro'),
+              )
+            else
+              Text(
+                'Slice 03 concluído.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
           ],
         ),
       );

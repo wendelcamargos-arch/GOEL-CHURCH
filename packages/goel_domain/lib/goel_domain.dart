@@ -15,3 +15,7 @@ export 'src/auth/auth_models.dart';
 export 'src/auth/identity_selection.dart';
 export 'src/auth/identity_state.dart';
 export 'src/auth/identity_summary.dart';
+
+// Membro / cadastro (Slice 04)
+export 'src/member/member_profile.dart';
+export 'src/member/profile_gateway.dart';

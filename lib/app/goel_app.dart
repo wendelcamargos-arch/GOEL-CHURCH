@@ -18,7 +18,15 @@ class GoelApp extends StatelessWidget {
   /// Nulo → cai na tela de bootstrap (útil em testes e sem credenciais).
   final LoginFlow? loginFlow;
 
-  const GoelApp({super.key, this.supabaseConfigured = false, this.loginFlow});
+  /// Tela pós-login (Slice 04: cadastro), injetada pela composição raiz.
+  final WidgetBuilder? postLoginBuilder;
+
+  const GoelApp({
+    super.key,
+    this.supabaseConfigured = false,
+    this.loginFlow,
+    this.postLoginBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +36,7 @@ class GoelApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       home: loginFlow != null
-          ? LoginGate(flow: loginFlow!)
+          ? LoginGate(flow: loginFlow!, postLoginBuilder: postLoginBuilder)
           : BootstrapScreen(supabaseConfigured: supabaseConfigured),
     );
   }

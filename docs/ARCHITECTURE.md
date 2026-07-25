@@ -39,6 +39,17 @@ Híbrido: **cliente Flutter + Supabase (dados/RLS) + Edge Functions (lógica
 privilegiada/segredos)**. Segredos (ex.: token da Meta Cloud API) **nunca** no
 cliente. Materializa-se a partir do Slice 02.
 
+## Automação de Aniversário (decisão relevante)
+
+A `birth_date` do membro **não é fator de autenticação** (A1). Sua finalidade é
+a **automação de aniversário**: a Edge Function agendada `birthday-greetings`
+(diária, às ~08:00 BRT) busca os aniversariantes do dia **com opt-in** e envia,
+**automaticamente e sem qualquer intervenção humana**, uma saudação pelo
+WhatsApp. O envio depende do consentimento de comunicação (`whatsapp_opt_in`),
+coletado no cadastro (Slice 04). É o módulo *Comunicação e Relacionamento /
+Automações* do Pacote 1. A validação jurídica final do consentimento é do
+Pacote 3.
+
 ## O que está deliberadamente FORA deste código (por ora)
 
 - **Domínio Pastoral Sensível** (Assistente por IA, histórico emocional) e

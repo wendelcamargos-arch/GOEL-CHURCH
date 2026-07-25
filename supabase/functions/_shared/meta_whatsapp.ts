@@ -71,3 +71,49 @@ export async function sendOtpViaWhatsApp(
     return false;
   }
 }
+
+/// Envia a saudação AUTOMÁTICA de aniversário via WhatsApp.
+/// Usa um template próprio de aniversário (categoria utilidade/relacionamento),
+/// distinto do template de OTP. Automática: sem intervenção humana.
+export async function sendBirthdayGreeting(
+  phoneE164: string,
+  fullName: string,
+): Promise<boolean> {
+  const token = Deno.env.get("META_WHATSAPP_TOKEN") ?? "";
+  const phoneNumberId = Deno.env.get("META_WHATSAPP_PHONE_NUMBER_ID") ?? "";
+  const template = Deno.env.get("META_WHATSAPP_BIRTHDAY_TEMPLATE") ?? "";
+  const lang = Deno.env.get("META_WHATSAPP_BIRTHDAY_TEMPLATE_LANG") ?? "pt_BR";
+  if (!token || !phoneNumberId || !template) return false;
+
+  const url =
+    `https://graph.facebook.com/${GRAPH_VERSION}/${phoneNumberId}/messages`;
+  const payload = {
+    messaging_product: "whatsapp",
+    to: phoneE164,
+    type: "template",
+    template: {
+      name: template,
+      language: { code: lang },
+      components: [
+        {
+          type: "body",
+          parameters: [{ type: "text", text: fullName }],
+        },
+      ],
+    },
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch (_) {
+    return false;
+  }
+}

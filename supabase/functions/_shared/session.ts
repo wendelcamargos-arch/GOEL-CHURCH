@@ -26,6 +26,39 @@ export interface IssuedSession {
   expiresIn: number;
 }
 
+function fromB64url(s: string): Uint8Array {
+  const pad = s.replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(pad), (c) => c.charCodeAt(0));
+}
+
+/// Valida um JWT de sessão emitido por [mintSession] e retorna o `sub`
+/// (identificador canônico) se válido e não expirado; caso contrário, null.
+export async function verifySession(token: string): Promise<string | null> {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [header, payload, sig] = parts;
+
+  const secret = Deno.env.get("SUPABASE_JWT_SECRET")!;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  );
+  const ok = await crypto.subtle.verify(
+    "HMAC",
+    key,
+    fromB64url(sig),
+    new TextEncoder().encode(`${header}.${payload}`),
+  );
+  if (!ok) return null;
+
+  const claims = JSON.parse(new TextDecoder().decode(fromB64url(payload)));
+  if ((claims.exp ?? 0) < Math.floor(Date.now() / 1000)) return null;
+  return typeof claims.sub === "string" ? claims.sub : null;
+}
+
 export async function mintSession(canonicalId: string): Promise<IssuedSession> {
   const secret = Deno.env.get("SUPABASE_JWT_SECRET")!;
   const ttl = Number(Deno.env.get("SESSION_TTL_SECONDS") ?? "2592000"); // ~30d (parametrizável)

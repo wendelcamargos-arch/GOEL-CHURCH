@@ -10,6 +10,8 @@ role do Supabase vivem **apenas aqui** — nunca no cliente.
 | `request-otp` | Emite OTP via WhatsApp para números elegíveis. Resposta **uniforme** (anti-enumeração). |
 | `verify-otp` | Valida o código. Escalonamento reversível. Resolve sessão ou seleção de identidade. |
 | `select-identity` | Conclui a autenticação no caso de WhatsApp compartilhado. |
+| `save-profile` | Salva o perfil do membro (valida a sessão; upsert server-side). Slice 04. |
+| `birthday-greetings` | **Agendada** — envia a saudação automática de aniversário. Slice 04. |
 
 ## Variáveis de ambiente (secrets)
 
@@ -19,7 +21,10 @@ supabase secrets set \
   META_WHATSAPP_PHONE_NUMBER_ID=... \
   META_WHATSAPP_OTP_TEMPLATE=goel_otp \
   META_WHATSAPP_OTP_TEMPLATE_LANG=pt_BR \
-  OTP_PEPPER=<segredo-aleatório>
+  META_WHATSAPP_BIRTHDAY_TEMPLATE=goel_aniversario \
+  META_WHATSAPP_BIRTHDAY_TEMPLATE_LANG=pt_BR \
+  OTP_PEPPER=<segredo-aleatório> \
+  SCHEDULER_SECRET=<segredo-do-agendador>
 # SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY e SUPABASE_JWT_SECRET já são
 # providos pelo runtime das Edge Functions.
 ```
@@ -39,11 +44,20 @@ arquitetura): `OTP_DIGITS`, `OTP_TTL_SECONDS`, `OTP_MAX_ATTEMPTS`,
 ## Deploy
 
 ```bash
-supabase db push                       # aplica a migração
+supabase db push                       # aplica as migrações (0001 auth, 0002 perfil)
 supabase functions deploy request-otp
 supabase functions deploy verify-otp
 supabase functions deploy select-identity
+supabase functions deploy save-profile
+supabase functions deploy birthday-greetings
 ```
+
+### Agendar a automação de aniversário (diária, ~08:00 BRT)
+
+Configure um agendamento (Supabase Scheduled Functions / pg_cron) para chamar
+`birthday-greetings` uma vez ao dia, enviando o header `x-scheduler-secret`.
+Ex.: cron `0 11 * * *` (UTC) ≈ 08:00 America/Sao_Paulo. Requer um template de
+aniversário aprovado (`META_WHATSAPP_BIRTHDAY_TEMPLATE`).
 
 > **Escopo/LGPD:** estas funções tratam identidade/telefone (domínio Comunidade
 > e Membros), **não** dados pastorais sensíveis. Os Slices 08–09 permanecem

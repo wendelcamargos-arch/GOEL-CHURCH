@@ -10,6 +10,8 @@ import 'features/member/application/cadastro_flow.dart';
 import 'features/member/data/supabase_profile_gateway.dart';
 import 'features/member/presentation/cadastro_screen.dart';
 import 'features/home/presentation/home_screen.dart';
+import 'features/content/data/online_verse_repository.dart';
+import 'features/content/presentation/versiculo_screen.dart';
 
 /// Ponto de entrada da camada de entrega (Delivery Layer).
 ///
@@ -32,10 +34,15 @@ Future<void> main() async {
     loginFlow = LoginFlow(SupabaseAuthGateway(client, session));
 
     final cadastroFlow = CadastroFlow(SupabaseProfileGateway(client, session));
+    final verseRepository = OnlineVerseRepository(client);
+
     postLoginBuilder = (_) => CadastroScreen(
           flow: cadastroFlow,
-          postCadastroBuilder: (_) =>
-              HomeScreen(memberName: cadastroFlow.savedName),
+          postCadastroBuilder: (_) => HomeScreen(
+            memberName: cadastroFlow.savedName,
+            versiculoBuilder: (_) =>
+                VersiculoScreen(repository: verseRepository),
+          ),
         );
   }
 

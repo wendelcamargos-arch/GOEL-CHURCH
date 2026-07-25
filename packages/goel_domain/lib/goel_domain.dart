@@ -19,3 +19,7 @@ export 'src/auth/identity_summary.dart';
 // Membro / cadastro (Slice 04)
 export 'src/member/member_profile.dart';
 export 'src/member/profile_gateway.dart';
+
+// Conteúdo (Slice 06)
+export 'src/content/daily_verse.dart';
+export 'src/content/verse_repository.dart';

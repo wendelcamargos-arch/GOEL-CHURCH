@@ -12,6 +12,24 @@ role do Supabase vivem **apenas aqui** — nunca no cliente.
 | `select-identity` | Conclui a autenticação no caso de WhatsApp compartilhado. |
 | `save-profile` | Salva o perfil do membro (valida a sessão; upsert server-side). Slice 04. |
 | `birthday-greetings` | **Agendada** — envia a saudação automática de aniversário. Slice 04. |
+| `verse-of-the-day` | Versículo do dia (NVI) de API bíblica **licenciada**, chave server-side. Slice 06. |
+
+### Conteúdo bíblico (Slice 06) — licenciamento
+
+A **NVI é conteúdo licenciado** (Biblica), não é domínio público. `verse-of-the-day`
+busca o texto de uma **API bíblica licenciada** (ex.: API.Bible) com a chave
+protegida server-side. Configure:
+
+```bash
+supabase secrets set \
+  BIBLE_API_URL=https://api.scripture.api.bible \
+  BIBLE_API_KEY=<sua-chave> \
+  BIBLE_NVI_ID=<id-da-NVI-na-API>
+supabase functions deploy verse-of-the-day
+```
+
+Sem essas chaves, o app usa um **fallback offline de domínio público**. A licença
+da NVI e a curadoria do conteúdo são responsabilidade do owner.
 
 ## Variáveis de ambiente (secrets)
 

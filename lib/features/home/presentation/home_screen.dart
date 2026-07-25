@@ -8,7 +8,18 @@ import 'package:flutter/material.dart';
 /// pontos de entrada.
 class HomeScreen extends StatelessWidget {
   final String? memberName;
-  const HomeScreen({super.key, this.memberName});
+
+  /// Destinos das jornadas, injetados pela composição raiz conforme os slices
+  /// vão existindo. Nulo → placeholder "Em breve".
+  final WidgetBuilder? versiculoBuilder;
+  final WidgetBuilder? devocionalBuilder;
+
+  const HomeScreen({
+    super.key,
+    this.memberName,
+    this.versiculoBuilder,
+    this.devocionalBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +46,14 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.auto_stories_outlined,
               title: 'Versículo do dia',
               subtitle: 'Uma palavra para hoje',
-              onTap: () => _open(context, 'Versículo do dia'),
+              onTap: () => _go(context, 'Versículo do dia', versiculoBuilder),
             ),
             const SizedBox(height: 16),
             _HomeCard(
               icon: Icons.menu_book_outlined,
               title: 'Devocionais',
               subtitle: 'Leituras para o seu dia',
-              onTap: () => _open(context, 'Devocionais'),
+              onTap: () => _go(context, 'Devocionais', devocionalBuilder),
             ),
           ],
         ),
@@ -50,10 +61,14 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _open(BuildContext context, String title) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => _ComingSoonScreen(title: title)),
-    );
+  void _go(BuildContext context, String title, WidgetBuilder? builder) {
+    final WidgetBuilder destination;
+    if (builder != null) {
+      destination = builder;
+    } else {
+      destination = (_) => _ComingSoonScreen(title: title);
+    }
+    Navigator.of(context).push(MaterialPageRoute(builder: destination));
   }
 }
 

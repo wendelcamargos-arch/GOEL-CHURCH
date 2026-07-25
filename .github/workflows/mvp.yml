@@ -1,0 +1,45 @@
+name: MVP 01-07
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+env:
+  PATCH_FILE: patches/GOEL-CHURCH-mvp-slices-01-07-completo.patch
+
+jobs:
+  build-mvp:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@goel.church"
+
+      - name: Aplicar patch cumulativo 01-07
+        run: git am --3way < "$PATCH_FILE"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - name: Formatação
+        run: dart format --set-exit-if-changed .
+
+      - run: flutter analyze
+
+      - run: flutter test
+
+      - name: Deps do domínio
+        working-directory: packages/goel_domain
+        run: dart pub get
+
+      - name: Testes do domínio
+        working-directory: packages/goel_domain
+        run: dart test

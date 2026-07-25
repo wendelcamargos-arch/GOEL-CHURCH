@@ -1,0 +1,522 @@
+From 0167f802140269beaa596a2b561f0763f597a3d0 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 25 Jul 2026 20:14:17 +0000
+Subject: [PATCH] =?UTF-8?q?Slice=2006=20=E2=80=94=20Vers=C3=ADculo=20do=20?=
+ =?UTF-8?q?dia=20(NVI=20online=20+=20fallback=20offline)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Domínio (Dart puro):
+- DailyVerse + seleção determinística por dia; contrato VerseRepository
+
+Server-side:
+- verse-of-the-day: busca o texto da NVI em API bíblica LICENCIADA (chave
+  server-side); rotação diária de referência; "unavailable" se não configurada
+
+Cliente (Flutter):
+- OnlineVerseRepository: online NVI via Edge Function + cache + FALLBACK OFFLINE
+  de domínio público (não quebra sem internet)
+- VersiculoScreen; Home passa a abrir o versículo real
+
+Licenciamento: NVI é conteúdo licenciado (Biblica) — nunca embutido; vem da API
+do owner. Fallback offline é de domínio público (curadoria do owner).
+
+Testes de domínio (seleção) e de tela (fake repo).
+Slices 08-09 seguem adiados por LGPD.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01RTHmakg1DfBPPXxEY96aFi
+---
+ README.md                                     |  2 +-
+ assets/content/verses_fallback.json           |  7 +++
+ .../content/data/online_verse_repository.dart | 58 ++++++++++++++++++
+ .../presentation/versiculo_screen.dart        | 51 ++++++++++++++++
+ .../home/presentation/home_screen.dart        | 29 ++++++---
+ lib/main.dart                                 | 11 +++-
+ packages/goel_domain/lib/goel_domain.dart     |  4 ++
+ .../lib/src/content/daily_verse.dart          | 24 ++++++++
+ .../lib/src/content/verse_repository.dart     |  9 +++
+ .../goel_domain/test/daily_verse_test.dart    | 31 ++++++++++
+ pubspec.yaml                                  |  2 +
+ supabase/functions/README.md                  | 18 ++++++
+ supabase/functions/verse-of-the-day/index.ts  | 59 +++++++++++++++++++
+ test/versiculo_screen_test.dart               | 24 ++++++++
+ 14 files changed, 319 insertions(+), 10 deletions(-)
+ create mode 100644 assets/content/verses_fallback.json
+ create mode 100644 lib/features/content/data/online_verse_repository.dart
+ create mode 100644 lib/features/content/presentation/versiculo_screen.dart
+ create mode 100644 packages/goel_domain/lib/src/content/daily_verse.dart
+ create mode 100644 packages/goel_domain/lib/src/content/verse_repository.dart
+ create mode 100644 packages/goel_domain/test/daily_verse_test.dart
+ create mode 100644 supabase/functions/verse-of-the-day/index.ts
+ create mode 100644 test/versiculo_screen_test.dart
+
+diff --git a/README.md b/README.md
+index cd3cfe1..88e7729 100644
+--- a/README.md
++++ b/README.md
+@@ -37,7 +37,7 @@ oficial já aprovada (Pacotes 1 e 2A).
+ | 03 | Login via WhatsApp OTP | ✅ |
+ | 04 | Cadastro do membro (+ automação de aniversário) | ✅ |
+ | 05 | Home | ✅ |
+-| 06 | Versículo do dia | ⏳ |
++| 06 | Versículo do dia (NVI online + fallback offline) | ✅ |
+ | 07 | Devocional | ⏳ |
+ | 08 | Pedido de oração | ⛔ adiado (LGPD — Parte B / Pacote 3) |
+ | 09 | Assistente Pastoral por IA | ⛔ adiado (LGPD — Parte B / Pacote 3) |
+diff --git a/assets/content/verses_fallback.json b/assets/content/verses_fallback.json
+new file mode 100644
+index 0000000..c42a133
+--- /dev/null
++++ b/assets/content/verses_fallback.json
+@@ -0,0 +1,7 @@
++[
++  { "reference": "João 3:16", "text": "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna." },
++  { "reference": "Salmos 23:1", "text": "O Senhor é o meu pastor; nada me faltará." },
++  { "reference": "Filipenses 4:13", "text": "Posso todas as coisas naquele que me fortalece." },
++  { "reference": "Provérbios 3:5", "text": "Confia no Senhor de todo o teu coração e não te estribes no teu próprio entendimento." },
++  { "reference": "Josué 1:9", "text": "Sê forte e corajoso; não temas, nem te espantes, porque o Senhor, teu Deus, é contigo por onde quer que andares." }
++]
+diff --git a/lib/features/content/data/online_verse_repository.dart b/lib/features/content/data/online_verse_repository.dart
+new file mode 100644
+index 0000000..55706a3
+--- /dev/null
++++ b/lib/features/content/data/online_verse_repository.dart
+@@ -0,0 +1,58 @@
++import 'dart:convert';
++
++import 'package:flutter/services.dart' show rootBundle;
++import 'package:goel_domain/goel_domain.dart';
++import 'package:supabase_flutter/supabase_flutter.dart';
++
++/// Versículo do dia com origem ONLINE (NVI, via Edge Function `verse-of-the-day`,
++/// chave server-side) e FALLBACK OFFLINE de domínio público.
++///
++/// Robustez para o público idoso: se a rede/API falhar, ainda exibe algo —
++/// o último versículo obtido ou o fallback local de domínio público.
++///
++/// Nota: os textos de fallback devem ser curados para uma edição confirmada de
++/// domínio público (responsabilidade do owner).
++class OnlineVerseRepository implements VerseRepository {
++  final SupabaseClient _client;
++
++  DailyVerse? _lastOnline;
++  List<DailyVerse>? _fallback;
++
++  OnlineVerseRepository(this._client);
++
++  @override
++  Future<DailyVerse> verseForToday(DateTime today) async {
++    try {
++      final res = await _client.functions.invoke('verse-of-the-day');
++      final data = Map<String, dynamic>.from(res.data as Map);
++      if (data['status'] == 'ok') {
++        final verse = DailyVerse(
++          reference: data['reference'] as String,
++          text: data['text'] as String,
++        );
++        _lastOnline = verse;
++        return verse;
++      }
++    } catch (_) {
++      // cai para o fallback abaixo
++    }
++    return _lastOnline ?? await _fallbackForToday(today);
++  }
++
++  Future<DailyVerse> _fallbackForToday(DateTime today) async {
++    _fallback ??= await _loadFallback();
++    return DailyVerseSelector.pick(_fallback!, today);
++  }
++
++  Future<List<DailyVerse>> _loadFallback() async {
++    final raw =
++        await rootBundle.loadString('assets/content/verses_fallback.json');
++    final list = (jsonDecode(raw) as List)
++        .map((e) => DailyVerse(
++              reference: e['reference'] as String,
++              text: e['text'] as String,
++            ))
++        .toList();
++    return list;
++  }
++}
+diff --git a/lib/features/content/presentation/versiculo_screen.dart b/lib/features/content/presentation/versiculo_screen.dart
+new file mode 100644
+index 0000000..a53c412
+--- /dev/null
++++ b/lib/features/content/presentation/versiculo_screen.dart
+@@ -0,0 +1,51 @@
++import 'package:flutter/material.dart';
++import 'package:goel_domain/goel_domain.dart';
++
++/// Tela do Versículo do dia (Slice 06). Acessível ao idoso: texto amplo,
++/// centrado, alto contraste (do tema).
++class VersiculoScreen extends StatelessWidget {
++  final VerseRepository repository;
++  const VersiculoScreen({super.key, required this.repository});
++
++  @override
++  Widget build(BuildContext context) {
++    final textTheme = Theme.of(context).textTheme;
++    return Scaffold(
++      appBar: AppBar(title: const Text('Versículo do dia')),
++      body: SafeArea(
++        child: FutureBuilder<DailyVerse>(
++          future: repository.verseForToday(DateTime.now()),
++          builder: (context, snapshot) {
++            if (snapshot.connectionState != ConnectionState.done) {
++              return const Center(child: CircularProgressIndicator());
++            }
++            if (!snapshot.hasData) {
++              return Center(
++                child: Text('Não foi possível carregar agora.',
++                    style: textTheme.titleMedium),
++              );
++            }
++            final verse = snapshot.data!;
++            return Padding(
++              padding: const EdgeInsets.all(24),
++              child: Center(
++                child: Column(
++                  mainAxisSize: MainAxisSize.min,
++                  children: [
++                    Text(
++                      '"${verse.text}"',
++                      textAlign: TextAlign.center,
++                      style: textTheme.headlineSmall,
++                    ),
++                    const SizedBox(height: 24),
++                    Text(verse.reference, style: textTheme.titleMedium),
++                  ],
++                ),
++              ),
++            );
++          },
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/features/home/presentation/home_screen.dart b/lib/features/home/presentation/home_screen.dart
+index f393015..e245c67 100644
+--- a/lib/features/home/presentation/home_screen.dart
++++ b/lib/features/home/presentation/home_screen.dart
+@@ -8,7 +8,18 @@ import 'package:flutter/material.dart';
+ /// pontos de entrada.
+ class HomeScreen extends StatelessWidget {
+   final String? memberName;
+-  const HomeScreen({super.key, this.memberName});
++
++  /// Destinos das jornadas, injetados pela composição raiz conforme os slices
++  /// vão existindo. Nulo → placeholder "Em breve".
++  final WidgetBuilder? versiculoBuilder;
++  final WidgetBuilder? devocionalBuilder;
++
++  const HomeScreen({
++    super.key,
++    this.memberName,
++    this.versiculoBuilder,
++    this.devocionalBuilder,
++  });
+ 
+   @override
+   Widget build(BuildContext context) {
+@@ -35,14 +46,14 @@ class HomeScreen extends StatelessWidget {
+               icon: Icons.auto_stories_outlined,
+               title: 'Versículo do dia',
+               subtitle: 'Uma palavra para hoje',
+-              onTap: () => _open(context, 'Versículo do dia'),
++              onTap: () => _go(context, 'Versículo do dia', versiculoBuilder),
+             ),
+             const SizedBox(height: 16),
+             _HomeCard(
+               icon: Icons.menu_book_outlined,
+               title: 'Devocionais',
+               subtitle: 'Leituras para o seu dia',
+-              onTap: () => _open(context, 'Devocionais'),
++              onTap: () => _go(context, 'Devocionais', devocionalBuilder),
+             ),
+           ],
+         ),
+@@ -50,10 +61,14 @@ class HomeScreen extends StatelessWidget {
+     );
+   }
+ 
+-  void _open(BuildContext context, String title) {
+-    Navigator.of(context).push(
+-      MaterialPageRoute(builder: (_) => _ComingSoonScreen(title: title)),
+-    );
++  void _go(BuildContext context, String title, WidgetBuilder? builder) {
++    final WidgetBuilder destination;
++    if (builder != null) {
++      destination = builder;
++    } else {
++      destination = (_) => _ComingSoonScreen(title: title);
++    }
++    Navigator.of(context).push(MaterialPageRoute(builder: destination));
+   }
+ }
+ 
+diff --git a/lib/main.dart b/lib/main.dart
+index f538cab..9709a1f 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -10,6 +10,8 @@ import 'features/member/application/cadastro_flow.dart';
+ import 'features/member/data/supabase_profile_gateway.dart';
+ import 'features/member/presentation/cadastro_screen.dart';
+ import 'features/home/presentation/home_screen.dart';
++import 'features/content/data/online_verse_repository.dart';
++import 'features/content/presentation/versiculo_screen.dart';
+ 
+ /// Ponto de entrada da camada de entrega (Delivery Layer).
+ ///
+@@ -32,10 +34,15 @@ Future<void> main() async {
+     loginFlow = LoginFlow(SupabaseAuthGateway(client, session));
+ 
+     final cadastroFlow = CadastroFlow(SupabaseProfileGateway(client, session));
++    final verseRepository = OnlineVerseRepository(client);
++
+     postLoginBuilder = (_) => CadastroScreen(
+           flow: cadastroFlow,
+-          postCadastroBuilder: (_) =>
+-              HomeScreen(memberName: cadastroFlow.savedName),
++          postCadastroBuilder: (_) => HomeScreen(
++            memberName: cadastroFlow.savedName,
++            versiculoBuilder: (_) =>
++                VersiculoScreen(repository: verseRepository),
++          ),
+         );
+   }
+ 
+diff --git a/packages/goel_domain/lib/goel_domain.dart b/packages/goel_domain/lib/goel_domain.dart
+index cc9ed84..fee0130 100644
+--- a/packages/goel_domain/lib/goel_domain.dart
++++ b/packages/goel_domain/lib/goel_domain.dart
+@@ -19,3 +19,7 @@ export 'src/auth/identity_summary.dart';
+ // Membro / cadastro (Slice 04)
+ export 'src/member/member_profile.dart';
+ export 'src/member/profile_gateway.dart';
++
++// Conteúdo (Slice 06)
++export 'src/content/daily_verse.dart';
++export 'src/content/verse_repository.dart';
+diff --git a/packages/goel_domain/lib/src/content/daily_verse.dart b/packages/goel_domain/lib/src/content/daily_verse.dart
+new file mode 100644
+index 0000000..288463f
+--- /dev/null
++++ b/packages/goel_domain/lib/src/content/daily_verse.dart
+@@ -0,0 +1,24 @@
++/// Um versículo com referência e texto.
++class DailyVerse {
++  final String reference;
++  final String text;
++
++  const DailyVerse({required this.reference, required this.text});
++}
++
++/// Seleção determinística do "versículo do dia" (Framework Independence).
++///
++/// Offline-first (ADR-015): dada a lista local de versículos, o mesmo dia
++/// resolve sempre o mesmo versículo, sem depender de rede.
++class DailyVerseSelector {
++  const DailyVerseSelector._();
++
++  static DailyVerse pick(List<DailyVerse> verses, DateTime day) {
++    if (verses.isEmpty) {
++      throw StateError('Nenhum versículo disponível.');
++    }
++    final normalized = DateTime(day.year, day.month, day.day);
++    final ordinal = normalized.difference(DateTime(day.year, 1, 1)).inDays;
++    return verses[ordinal % verses.length];
++  }
++}
+diff --git a/packages/goel_domain/lib/src/content/verse_repository.dart b/packages/goel_domain/lib/src/content/verse_repository.dart
+new file mode 100644
+index 0000000..877058c
+--- /dev/null
++++ b/packages/goel_domain/lib/src/content/verse_repository.dart
+@@ -0,0 +1,9 @@
++import 'daily_verse.dart';
++
++/// Contrato de acesso ao versículo do dia (Stable Module Boundaries).
++///
++/// A origem (API licenciada online via Edge Function, com fallback offline) é
++/// detalhe da camada de dados. O domínio não conhece HTTP nem provedor.
++abstract interface class VerseRepository {
++  Future<DailyVerse> verseForToday(DateTime today);
++}
+diff --git a/packages/goel_domain/test/daily_verse_test.dart b/packages/goel_domain/test/daily_verse_test.dart
+new file mode 100644
+index 0000000..f793dab
+--- /dev/null
++++ b/packages/goel_domain/test/daily_verse_test.dart
+@@ -0,0 +1,31 @@
++import 'package:goel_domain/goel_domain.dart';
++import 'package:test/test.dart';
++
++void main() {
++  const verses = [
++    DailyVerse(reference: 'A', text: 'a'),
++    DailyVerse(reference: 'B', text: 'b'),
++    DailyVerse(reference: 'C', text: 'c'),
++  ];
++
++  group('DailyVerseSelector', () {
++    test('mesmo dia resolve o mesmo versículo', () {
++      final d = DateTime(2026, 7, 25);
++      expect(
++        DailyVerseSelector.pick(verses, d).reference,
++        DailyVerseSelector.pick(verses, d).reference,
++      );
++    });
++
++    test('rotaciona deterministicamente por dia', () {
++      expect(DailyVerseSelector.pick(verses, DateTime(2026, 1, 1)).reference, 'A');
++      expect(DailyVerseSelector.pick(verses, DateTime(2026, 1, 2)).reference, 'B');
++      expect(DailyVerseSelector.pick(verses, DateTime(2026, 1, 3)).reference, 'C');
++      expect(DailyVerseSelector.pick(verses, DateTime(2026, 1, 4)).reference, 'A');
++    });
++
++    test('lista vazia lança StateError', () {
++      expect(() => DailyVerseSelector.pick([], DateTime(2026)), throwsStateError);
++    });
++  });
++}
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 1836809..37bd378 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -23,3 +23,5 @@ dev_dependencies:
+ 
+ flutter:
+   uses-material-design: true
++  assets:
++    - assets/content/verses_fallback.json
+diff --git a/supabase/functions/README.md b/supabase/functions/README.md
+index de1df20..918370d 100644
+--- a/supabase/functions/README.md
++++ b/supabase/functions/README.md
+@@ -12,6 +12,24 @@ role do Supabase vivem **apenas aqui** — nunca no cliente.
+ | `select-identity` | Conclui a autenticação no caso de WhatsApp compartilhado. |
+ | `save-profile` | Salva o perfil do membro (valida a sessão; upsert server-side). Slice 04. |
+ | `birthday-greetings` | **Agendada** — envia a saudação automática de aniversário. Slice 04. |
++| `verse-of-the-day` | Versículo do dia (NVI) de API bíblica **licenciada**, chave server-side. Slice 06. |
++
++### Conteúdo bíblico (Slice 06) — licenciamento
++
++A **NVI é conteúdo licenciado** (Biblica), não é domínio público. `verse-of-the-day`
++busca o texto de uma **API bíblica licenciada** (ex.: API.Bible) com a chave
++protegida server-side. Configure:
++
++```bash
++supabase secrets set \
++  BIBLE_API_URL=https://api.scripture.api.bible \
++  BIBLE_API_KEY=<sua-chave> \
++  BIBLE_NVI_ID=<id-da-NVI-na-API>
++supabase functions deploy verse-of-the-day
++```
++
++Sem essas chaves, o app usa um **fallback offline de domínio público**. A licença
++da NVI e a curadoria do conteúdo são responsabilidade do owner.
+ 
+ ## Variáveis de ambiente (secrets)
+ 
+diff --git a/supabase/functions/verse-of-the-day/index.ts b/supabase/functions/verse-of-the-day/index.ts
+new file mode 100644
+index 0000000..bb893a7
+--- /dev/null
++++ b/supabase/functions/verse-of-the-day/index.ts
+@@ -0,0 +1,59 @@
++// Edge Function: verse-of-the-day
++//
++// Retorna o versículo do dia. Escolhe uma referência de forma determinística
++// (mesma no dia) e busca o TEXTO na API bíblica LICENCIADA (ex.: API.Bible)
++// com a chave protegida SERVER-SIDE. Se não configurada / indisponível, retorna
++// "unavailable" e o cliente usa seu fallback offline (domínio público).
++//
++// A NVI é conteúdo licenciado: a licença/curadoria é responsabilidade do owner.
++
++import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
++import { preflight, json } from "../_shared/responses.ts";
++
++// Referências (não são protegidas; só o TEXTO é). Formato de passagem no
++// padrão API.Bible (ex.: JHN.3.16). Rotação diária determinística.
++const REFERENCES: Array<{ display: string; passageId: string }> = [
++  { display: "João 3:16", passageId: "JHN.3.16" },
++  { display: "Salmos 23:1", passageId: "PSA.23.1" },
++  { display: "Filipenses 4:13", passageId: "PHP.4.13" },
++  { display: "Provérbios 3:5", passageId: "PRO.3.5" },
++  { display: "Isaías 41:10", passageId: "ISA.41.10" },
++  { display: "Romanos 8:28", passageId: "ROM.8.28" },
++  { display: "Josué 1:9", passageId: "JOS.1.9" },
++  { display: "Mateus 11:28", passageId: "MAT.11.28" },
++  { display: "Jeremias 29:11", passageId: "JER.29.11" },
++  { display: "Salmos 46:1", passageId: "PSA.46.1" },
++];
++
++function ordinalDay(now: Date): number {
++  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
++  const diff = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - start;
++  return Math.floor(diff / 86400000);
++}
++
++serve(async (req) => {
++  if (req.method === "OPTIONS") return preflight();
++
++  const apiUrl = Deno.env.get("BIBLE_API_URL") ?? "https://api.scripture.api.bible";
++  const apiKey = Deno.env.get("BIBLE_API_KEY") ?? "";
++  const bibleId = Deno.env.get("BIBLE_NVI_ID") ?? ""; // id da NVI na API licenciada
++
++  const ref = REFERENCES[ordinalDay(new Date()) % REFERENCES.length];
++
++  if (!apiKey || !bibleId) {
++    return json({ status: "unavailable", reference: ref.display });
++  }
++
++  try {
++    const url = `${apiUrl}/v1/bibles/${bibleId}/passages/${ref.passageId}` +
++      `?content-type=text&include-verse-numbers=false&include-notes=false&include-titles=false`;
++    const res = await fetch(url, { headers: { "api-key": apiKey } });
++    if (!res.ok) return json({ status: "unavailable", reference: ref.display });
++    const body = await res.json();
++    const text = (body?.data?.content ?? "").toString().trim();
++    if (!text) return json({ status: "unavailable", reference: ref.display });
++    return json({ status: "ok", reference: ref.display, text });
++  } catch (_) {
++    return json({ status: "unavailable", reference: ref.display });
++  }
++});
+diff --git a/test/versiculo_screen_test.dart b/test/versiculo_screen_test.dart
+new file mode 100644
+index 0000000..a44b306
+--- /dev/null
++++ b/test/versiculo_screen_test.dart
+@@ -0,0 +1,24 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:goel_church/features/content/presentation/versiculo_screen.dart';
++import 'package:goel_domain/goel_domain.dart';
++
++class _FakeVerseRepository implements VerseRepository {
++  @override
++  Future<DailyVerse> verseForToday(DateTime today) async => const DailyVerse(
++        reference: 'João 3:16',
++        text: 'Porque Deus amou o mundo de tal maneira...',
++      );
++}
++
++void main() {
++  testWidgets('exibe o versículo do dia', (tester) async {
++    await tester.pumpWidget(
++      MaterialApp(home: VersiculoScreen(repository: _FakeVerseRepository())),
++    );
++    await tester.pumpAndSettle();
++
++    expect(find.text('João 3:16'), findsOneWidget);
++    expect(find.textContaining('Deus amou o mundo'), findsOneWidget);
++  });
++}
+-- 
+2.43.0

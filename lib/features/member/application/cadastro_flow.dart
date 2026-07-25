@@ -13,6 +13,9 @@ class CadastroFlow extends ChangeNotifier {
   bool done = false;
   String? message;
 
+  /// Nome salvo — usado na saudação da Home após o cadastro.
+  String? savedName;
+
   Future<void> submit({
     required String fullName,
     required DateTime? birthDate,
@@ -34,8 +37,9 @@ class CadastroFlow extends ChangeNotifier {
       whatsappOptIn: whatsappOptIn,
     ));
 
-    r.fold((_) {
+    r.fold((saved) {
       done = true;
+      savedName = saved.fullName;
     }, (e) {
       message = switch (e) {
         ProfileError.unauthenticated => 'Sua sessão expirou. Entre novamente.',

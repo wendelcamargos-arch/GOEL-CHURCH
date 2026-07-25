@@ -36,7 +36,7 @@ oficial já aprovada (Pacotes 1 e 2A).
 | 02 | Integração Flutter + Supabase | ✅ |
 | 03 | Login via WhatsApp OTP | ✅ |
 | 04 | Cadastro do membro (+ automação de aniversário) | ✅ |
-| 05 | Home | ⏳ |
+| 05 | Home | ✅ |
 | 06 | Versículo do dia | ⏳ |
 | 07 | Devocional | ⏳ |
 | 08 | Pedido de oração | ⛔ adiado (LGPD — Parte B / Pacote 3) |

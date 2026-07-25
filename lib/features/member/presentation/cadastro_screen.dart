@@ -8,7 +8,15 @@ import '../application/cadastro_flow.dart';
 /// mensagem AUTOMÁTICA de aniversário no WhatsApp — nunca como senha/login.
 class CadastroScreen extends StatefulWidget {
   final CadastroFlow flow;
-  const CadastroScreen({super.key, required this.flow});
+
+  /// Tela para onde seguir após concluir o cadastro (Slice 05: Home).
+  final WidgetBuilder? postCadastroBuilder;
+
+  const CadastroScreen({
+    super.key,
+    required this.flow,
+    this.postCadastroBuilder,
+  });
 
   @override
   State<CadastroScreen> createState() => _CadastroScreenState();
@@ -115,9 +123,14 @@ class _CadastroScreenState extends State<CadastroScreen> {
             const SizedBox(height: 16),
             Text('Cadastro concluído!',
                 style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text('Slice 04 concluído. Próximo: Home (05).',
-                style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: 24),
+            if (widget.postCadastroBuilder != null)
+              FilledButton(
+                onPressed: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: widget.postCadastroBuilder!),
+                ),
+                child: const Text('Ir para o início'),
+              ),
           ],
         ),
       );

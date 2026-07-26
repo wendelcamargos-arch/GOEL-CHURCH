@@ -14,12 +14,12 @@ import '../features/member/presentation/cadastro_screen.dart';
 
 /// MODO DE PREVIEW VISUAL — ativado por `--dart-define=UI_PREVIEW=true`.
 ///
-/// Objetivo: permitir que o Owner revise TODA a interface no navegador, sem
-/// depender de Supabase, WhatsApp, OTP, backend ou persistência. Abre direto
-/// na Home e oferece um menu flutuante ("Telas") que navega para todas as telas
-/// de inspeção. NÃO faz parte do fluxo normal do app; nada aqui é usado quando
-/// `UI_PREVIEW=false`. Não altera domínio nem arquitetura — apenas compõe as
-/// telas existentes com dados fake em memória.
+/// Objetivo: permitir que o Owner revise a interface no navegador, sem depender
+/// de Supabase, WhatsApp, OTP, backend ou persistência. A tela inicial é um
+/// LAUNCHER DE HOMOLOGAÇÃO ("GOEL CHURCH UI PREVIEW"): cada item abre direto a
+/// tela correspondente, sem navegação obrigatória. NÃO faz parte do fluxo normal
+/// do app; nada aqui é usado quando `UI_PREVIEW=false`. Não altera domínio,
+/// arquitetura nem contratos — apenas compõe as telas existentes com dados fake.
 class UiPreviewApp extends StatelessWidget {
   const UiPreviewApp({super.key});
 
@@ -45,113 +45,120 @@ class UiPreviewApp extends StatelessWidget {
           postCadastroBuilder: (_) => homeScreen(),
         );
 
-    Widget loginScreen() {
-      final flow = LoginFlow(_PreviewAuthGateway());
-      return LoginGate(
-        flow: flow,
-        postLoginBuilder: (_) => cadastroScreen(),
-      );
-    }
+    Widget loginScreen() => LoginGate(
+          flow: LoginFlow(_PreviewAuthGateway()),
+          postLoginBuilder: (_) => cadastroScreen(),
+        );
 
     final destinations = <_PreviewDestination>[
-      _PreviewDestination('Splash', Icons.flag_outlined,
-          (_) => const BootstrapScreen(supabaseConfigured: true),),
       _PreviewDestination(
-          'Login (visual)', Icons.login_outlined, (_) => loginScreen(),),
+        'Splash',
+        'Tela de inicialização',
+        Icons.flag_outlined,
+        (_) => const BootstrapScreen(supabaseConfigured: true),
+      ),
       _PreviewDestination(
-          'Cadastro', Icons.person_add_alt_outlined, (_) => cadastroScreen(),),
+        'Login',
+        'Entrada por WhatsApp (visual)',
+        Icons.login_outlined,
+        (_) => loginScreen(),
+      ),
       _PreviewDestination(
-          'Home', Icons.home_outlined, (_) => homeScreen(),),
-      _PreviewDestination('Versículo do dia', Icons.auto_stories_outlined,
-          (_) => VersiculoScreen(
-                repository: verseRepository,
-                sourceLabel: 'Almeida — domínio público',
-              ),),
-      _PreviewDestination('Devocionais', Icons.menu_book_outlined,
-          (_) => DevocionaisScreen(repository: devotionalRepository),),
+        'Cadastro',
+        'Perfil do membro (visual)',
+        Icons.person_add_alt_outlined,
+        (_) => cadastroScreen(),
+      ),
+      _PreviewDestination(
+        'Home',
+        'Tela inicial do membro',
+        Icons.home_outlined,
+        (_) => homeScreen(),
+      ),
+      _PreviewDestination(
+        'Versículo',
+        'Versículo do dia',
+        Icons.auto_stories_outlined,
+        (_) => VersiculoScreen(
+          repository: verseRepository,
+          sourceLabel: 'Almeida — domínio público',
+        ),
+      ),
+      _PreviewDestination(
+        'Devocional',
+        'Lista de devocionais',
+        Icons.menu_book_outlined,
+        (_) => DevocionaisScreen(repository: devotionalRepository),
+      ),
     ];
 
     return MaterialApp(
-      title: 'Goel Church — Preview',
+      title: 'Goel Church — UI Preview',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      home: homeScreen(),
-      // Menu flutuante de inspeção sobreposto a qualquer tela (fica acima do
-      // Navigator, então navega de qualquer lugar).
-      builder: (context, child) => Stack(
-        children: [
-          child ?? const SizedBox.shrink(),
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: SafeArea(
-              child: _PreviewMenuButton(destinations: destinations),
-            ),
-          ),
-        ],
-      ),
+      home: _PreviewLauncher(destinations: destinations),
     );
   }
 }
 
-/// Um destino de inspeção do menu de preview.
+/// Um destino de inspeção do launcher de homologação.
 class _PreviewDestination {
   final String label;
+  final String subtitle;
   final IconData icon;
   final WidgetBuilder builder;
-  const _PreviewDestination(this.label, this.icon, this.builder);
+  const _PreviewDestination(
+    this.label,
+    this.subtitle,
+    this.icon,
+    this.builder,
+  );
 }
 
-/// Botão flutuante que abre a lista de telas para inspeção visual.
-class _PreviewMenuButton extends StatelessWidget {
+/// Launcher de Homologação — tela inicial do modo preview. Lista as telas para
+/// inspeção; tocar abre diretamente a tela correspondente.
+class _PreviewLauncher extends StatelessWidget {
   final List<_PreviewDestination> destinations;
-  const _PreviewMenuButton({required this.destinations});
+  const _PreviewLauncher({required this.destinations});
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton.extended(
-      heroTag: 'preview-menu',
-      icon: const Icon(Icons.palette_outlined),
-      label: const Text('Telas'),
-      onPressed: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (sheetContext) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
-                child: Row(
-                  children: [
-                    const Icon(Icons.visibility_outlined),
-                    const SizedBox(width: 12),
-                    Text('Preview visual — telas',
-                        style: Theme.of(sheetContext).textTheme.titleMedium,),
-                  ],
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            Text('GOEL CHURCH UI PREVIEW', style: textTheme.headlineSmall),
+            const SizedBox(height: 4),
+            Text(
+              'Homologação visual — toque em uma tela para abri-la. '
+              'Sem backend, sem autenticação, sem persistência.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            for (final d in destinations) ...[
+              Card(
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  leading: Icon(d.icon, size: 32),
+                  title: Text(d.label, style: textTheme.titleLarge),
+                  subtitle: Text(d.subtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: d.builder),
+                  ),
                 ),
               ),
-              for (final d in destinations)
-                ListTile(
-                  leading: Icon(d.icon),
-                  title: Text(d.label),
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    // "Home" volta à raiz; as demais são empilhadas.
-                    if (d.label == 'Home') {
-                      Navigator.of(context)
-                          .popUntil((route) => route.isFirst);
-                    } else {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: d.builder),
-                      );
-                    }
-                  },
-                ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -174,27 +181,34 @@ const IdentitySummary _previewIdentity = IdentitySummary(
 class _PreviewAuthGateway implements AuthGateway {
   @override
   Future<Result<OtpRequestOutcome, AuthFailure>> requestOtp(
-          String phoneE164,) async =>
+    String phoneE164,
+  ) async =>
       const Ok<OtpRequestOutcome, AuthFailure>(OtpRequestOutcome.uniform());
 
   @override
   Future<Result<VerificationOutcome, AuthFailure>> verifyOtp(
-          String phoneE164, String code,) async =>
+    String phoneE164,
+    String code,
+  ) async =>
       const Ok<VerificationOutcome, AuthFailure>(
-          SessionEstablished(_previewIdentity),);
+        SessionEstablished(_previewIdentity),
+      );
 
   @override
   Future<Result<SessionEstablished, AuthFailure>> selectIdentity(
-          String canonicalId,) async =>
+    String canonicalId,
+  ) async =>
       const Ok<SessionEstablished, AuthFailure>(
-          SessionEstablished(_previewIdentity),);
+        SessionEstablished(_previewIdentity),
+      );
 }
 
 /// Gateway de perfil fake: o cadastro é apenas VISUAL — nada é persistido.
 class _PreviewProfileGateway implements MemberProfileGateway {
   @override
   Future<Result<MemberProfile, ProfileError>> save(
-          MemberProfile profile,) async =>
+    MemberProfile profile,
+  ) async =>
       Ok<MemberProfile, ProfileError>(profile);
 }
 

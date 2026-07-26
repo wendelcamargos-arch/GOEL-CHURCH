@@ -53,7 +53,9 @@ class _BootstrapScreenState extends State<BootstrapScreen>
             child: Image.asset(
               _bgAsset,
               fit: BoxFit.cover,
-              alignment: Alignment.center,
+              // Enquadramento: leve viés para o centro/entrada (destaca a
+              // entrada principal, a cruz e a arquitetura central).
+              alignment: const Alignment(0, 0.25),
               // Fallback caso o asset real ainda não tenha sido adicionado.
               errorBuilder: (_, __, ___) =>
                   const ColoredBox(color: Color(0xFF14210F)),

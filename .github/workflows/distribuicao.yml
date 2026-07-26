@@ -62,6 +62,9 @@ jobs:
         run: |
           set -euo pipefail
           flutter pub get
+          cd packages/goel_domain
+          dart pub get
+          cd ../..
           flutter analyze
           flutter test
           RELEASE_NAME="1.0.${BUILD_NUMBER}"

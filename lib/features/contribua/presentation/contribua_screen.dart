@@ -28,10 +28,10 @@ class ContribuaScreen extends StatelessWidget {
 
   const ContribuaScreen({
     super.key,
-    this.pixKey = '00.000.000/0001-00',
-    this.pixKeyLabel = 'CNPJ',
+    this.pixKey = 'Goel.missão@gmail.com',
+    this.pixKeyLabel = 'E-mail',
     this.favorecido = 'Goel Church',
-    this.qrAsset,
+    this.qrAsset = 'assets/contribua/qr_pix.png',
     this.banco,
     this.agencia,
     this.conta,
@@ -249,24 +249,14 @@ class _QrCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: qrAsset == null
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.qr_code_2,
-                                  size: 96, color: scheme.onSurfaceVariant,),
-                              const SizedBox(height: 8),
-                              Text(
-                                'QR a adicionar',
-                                style: textTheme.labelMedium
-                                    ?.copyWith(color: scheme.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
-                        )
+                      ? _placeholder(context)
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: Image.asset(qrAsset!, fit: BoxFit.contain),
+                          child: Image.asset(
+                            qrAsset!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => _placeholder(context),
+                          ),
                         ),
                 ),
               ),
@@ -280,6 +270,25 @@ class _QrCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _placeholder(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.qr_code_2, size: 96, color: scheme.onSurfaceVariant),
+          const SizedBox(height: 8),
+          Text(
+            'QR a adicionar',
+            style: textTheme.labelMedium
+                ?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }

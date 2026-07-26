@@ -30,3 +30,4 @@ flutter:
     # Marca oficial (Splash). Substituir os placeholders pelos assets reais,
     # mantendo os nomes: goel_logo.png (logotipo) e church_facade.jpg (fachada).
     - assets/brand/
+    - assets/contribua/

@@ -28,7 +28,7 @@ class ContribuaScreen extends StatelessWidget {
 
   const ContribuaScreen({
     super.key,
-    this.pixKey = 'Goel.missão@gmail.com',
+    this.pixKey = 'goel.missao@gmail.com',
     this.pixKeyLabel = 'E-mail',
     this.favorecido = 'Goel Church',
     this.qrAsset = 'assets/contribua/qr_pix.png',

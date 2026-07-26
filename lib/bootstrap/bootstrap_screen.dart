@@ -63,7 +63,7 @@ class _BootstrapScreenState extends State<BootstrapScreen>
           // 2) Overlay escuro + leve blur para leitura dos elementos centrais.
           BackdropFilter(
             filter: ui.ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
-            child: const ColoredBox(color: Color(0xA6000000)), // preto ~65%
+            child: const ColoredBox(color: Color(0x99000000)), // preto ~60%
           ),
 
           // 3) Conteúdo central (rolável — evita overflow em landscape/telas
@@ -85,15 +85,36 @@ class _BootstrapScreenState extends State<BootstrapScreen>
                           Semantics(
                             label: 'Logotipo Goel Church',
                             image: true,
-                            child: Image.asset(
-                              _logoAsset,
-                              width: 132,
-                              height: 132,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                Icons.church_outlined,
-                                size: 96,
-                                color: Colors.white,
+                            child: Container(
+                              width: 148,
+                              height: 148,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha: 0.22),
+                                    blurRadius: 30,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  _logoAsset,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const ColoredBox(
+                                    color: Colors.black,
+                                    child: Icon(
+                                      Icons.church_outlined,
+                                      size: 84,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

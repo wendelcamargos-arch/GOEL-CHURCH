@@ -70,10 +70,20 @@ void main() {
     expect(find.textContaining('Olá, Ana'), findsNothing);
   });
 
-  testWidgets('trocar de aba mostra o conteúdo "Em breve"', (tester) async {
+  testWidgets('aba ainda sem tela mostra o conteúdo "Em breve"',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: MainShell()));
+    await tester.tap(find.text('Palavras'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Em breve'), findsWidgets);
+  });
+
+  testWidgets('aba Contribua mostra a chave Pix e o botão copiar',
+      (tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainShell()));
     await tester.tap(find.text('Contribua'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Em breve'), findsWidgets);
+    expect(find.text('Chave Pix'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Copiar chave'), findsOneWidget);
   });
 }

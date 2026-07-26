@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../contribua/presentation/contribua_screen.dart';
 import 'coming_soon_view.dart';
 import 'home_screen.dart';
 
@@ -60,11 +61,7 @@ class _MainShellState extends State<MainShell> {
         versiculoBuilder: widget.versiculoBuilder,
         devocionalBuilder: widget.devocionalBuilder,
       ),
-      const ComingSoonView(
-        icon: Icons.favorite_outline,
-        title: 'Contribua',
-        message: 'Participe com a sua contribuição.\nEm breve por aqui.',
-      ),
+      const ContribuaScreen(),
       _MaisTab(
         memberName: widget.memberName,
         versiculoBuilder: widget.versiculoBuilder,

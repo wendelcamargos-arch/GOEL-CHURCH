@@ -26,6 +26,10 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
+      - name: Resolve domain package deps
+        run: dart pub get
+        working-directory: packages/goel_domain
+
       - name: Analyze
         run: flutter analyze
 

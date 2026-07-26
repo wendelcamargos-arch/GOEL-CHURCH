@@ -35,6 +35,8 @@ class GoelApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      // Identidade preto e branco: o app é sempre escuro (sem verde).
+      themeMode: ThemeMode.dark,
       home: loginFlow != null
           ? LoginGate(flow: loginFlow!, postLoginBuilder: postLoginBuilder)
           : BootstrapScreen(supabaseConfigured: supabaseConfigured),

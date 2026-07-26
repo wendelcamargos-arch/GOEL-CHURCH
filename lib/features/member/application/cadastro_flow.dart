@@ -35,7 +35,7 @@ class CadastroFlow extends ChangeNotifier {
       fullName: fullName.trim(),
       birthDate: birthDate!,
       whatsappOptIn: whatsappOptIn,
-    ));
+    ),);
 
     r.fold((saved) {
       done = true;

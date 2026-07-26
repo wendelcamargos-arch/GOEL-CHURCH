@@ -25,7 +25,7 @@ class LocalVerseRepository implements VerseRepository {
         .map((e) => DailyVerse(
               reference: e['reference'] as String,
               text: e['text'] as String,
-            ))
+            ),)
         .toList();
   }
 }

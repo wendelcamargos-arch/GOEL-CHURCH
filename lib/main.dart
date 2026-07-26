@@ -64,5 +64,5 @@ Future<void> main() async {
     supabaseConfigured: supabaseConfigured,
     loginFlow: loginFlow,
     postLoginBuilder: postLoginBuilder,
-  ));
+  ),);
 }

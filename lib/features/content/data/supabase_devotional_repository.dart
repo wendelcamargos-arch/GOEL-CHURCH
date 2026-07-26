@@ -59,7 +59,7 @@ class SupabaseDevotionalRepository implements DevotionalRepository {
               body: e['body'] as String,
               author: e['author'] as String?,
               publishedAt: DateTime.parse(e['publishedAt'] as String),
-            ))
+            ),)
         .toList();
   }
 }

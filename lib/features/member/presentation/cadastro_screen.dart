@@ -67,7 +67,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
   Widget _form(CadastroFlow flow) => ListView(
         children: [
           Text('Complete seu cadastro',
-              style: Theme.of(context).textTheme.headlineSmall),
+              style: Theme.of(context).textTheme.headlineSmall,),
           const SizedBox(height: 24),
           TextField(
             controller: _nameCtrl,
@@ -110,7 +110,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Text(flow.message!,
-                  style: Theme.of(context).textTheme.bodyLarge),
+                  style: Theme.of(context).textTheme.bodyLarge,),
             ),
         ],
       );
@@ -122,7 +122,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
             const Icon(Icons.check_circle, size: 64),
             const SizedBox(height: 16),
             Text('Cadastro concluído!',
-                style: Theme.of(context).textTheme.titleLarge),
+                style: Theme.of(context).textTheme.titleLarge,),
             const SizedBox(height: 24),
             if (widget.postCadastroBuilder != null)
               FilledButton(

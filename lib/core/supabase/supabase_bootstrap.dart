@@ -17,7 +17,10 @@ class SupabaseBootstrap {
     if (!env.isConfigured) return false;
     await Supabase.initialize(
       url: env.supabaseUrl,
-      anonKey: env.supabaseAnonKey,
+      // A chave publishable (`sb_publishable_…`) é passada via `publishableKey`
+      // (o parâmetro `anonKey` foi depreciado); o valor vem do mesmo
+      // --dart-define=SUPABASE_ANON_KEY.
+      publishableKey: env.supabaseAnonKey,
     );
     return true;
   }

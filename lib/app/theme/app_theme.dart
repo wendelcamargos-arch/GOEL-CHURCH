@@ -22,9 +22,19 @@ class AppTheme {
     );
     final base = ThemeData(colorScheme: scheme, useMaterial3: true);
 
+    // Tipografia ampliada para leitura confortável do público idoso.
+    // O `fontSize` vive na GEOMETRIA (`englishLike`), não no tema de cor
+    // (`black`/`white`). Mesclamos geometria + cor para garantir `fontSize`
+    // em todos os estilos antes de aplicar o fator — aplicar sobre um tema
+    // com `fontSize` nulo dispara assertion no Flutter.
+    final typography = Typography.material2021(platform: TargetPlatform.android);
+    final colored =
+        brightness == Brightness.dark ? typography.white : typography.black;
+    final scaledTextTheme =
+        typography.englishLike.merge(colored).apply(fontSizeFactor: 1.15);
+
     return base.copyWith(
-      // Tipografia ampliada para leitura confortável do público idoso.
-      textTheme: base.textTheme.apply(fontSizeFactor: 1.15),
+      textTheme: scaledTextTheme,
       visualDensity: VisualDensity.comfortable,
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

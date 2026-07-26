@@ -22,7 +22,7 @@ class DevocionaisScreen extends StatelessWidget {
             if (items.isEmpty) {
               return Center(
                 child: Text('Nenhum devocional disponível.',
-                    style: Theme.of(context).textTheme.titleMedium),
+                    style: Theme.of(context).textTheme.titleMedium,),
               );
             }
             return ListView.separated(

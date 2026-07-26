@@ -30,7 +30,7 @@ class VersiculoScreen extends StatelessWidget {
             if (!snapshot.hasData) {
               return Center(
                 child: Text('Não foi possível carregar agora.',
-                    style: textTheme.titleMedium),
+                    style: textTheme.titleMedium,),
               );
             }
             final verse = snapshot.data!;

@@ -161,8 +161,11 @@ class _CadastroScreenState extends State<CadastroScreen>
           ),
           const SizedBox(height: 8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('🎂 ', style: TextStyle(fontSize: 14)),
+              Icon(Icons.cake_outlined,
+                  size: 16, color: Colors.white.withValues(alpha: 0.75)),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'Usamos sua data apenas para te enviar uma mensagem de '

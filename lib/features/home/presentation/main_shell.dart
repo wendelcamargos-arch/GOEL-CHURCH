@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../contribua/presentation/contribua_screen.dart';
+import '../../testemunho/presentation/testemunho_screen.dart';
 import 'coming_soon_view.dart';
 import 'home_screen.dart';
 
@@ -274,7 +275,8 @@ class _MaisTab extends StatelessWidget {
       _MaisEntry(Icons.menu_book_outlined, 'Devocionais', devocionalBuilder),
       const _MaisEntry(Icons.volunteer_activism_outlined, 'Oração', null),
       const _MaisEntry(Icons.campaign_outlined, 'Pregações', null),
-      const _MaisEntry(Icons.record_voice_over_outlined, 'Testemunho', null),
+      _MaisEntry(Icons.record_voice_over_outlined, 'Testemunho',
+          (_) => const TestemunhoScreen()),
       const _MaisEntry(Icons.celebration_outlined, 'Eventos', null),
       const _MaisEntry(Icons.event_note_outlined, 'Agenda', null),
       const _MaisEntry(Icons.pix, 'Pix', null),

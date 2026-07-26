@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../agenda/presentation/agenda_screen.dart';
 import '../../aniversariantes/presentation/aniversariantes_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
+import '../../devocional_tematico/presentation/devocional_tematico_screen.dart';
+import '../../galeria/presentation/galeria_screen.dart';
 import '../../oracao/presentation/oracao_screen.dart';
 import '../../pregacoes/presentation/pregacoes_screen.dart';
+import '../../propositos/presentation/propositos_screen.dart';
 import '../../testemunho/presentation/testemunho_screen.dart';
 import 'coming_soon_view.dart';
 import 'home_screen.dart';
@@ -287,13 +290,27 @@ class _MaisTab extends StatelessWidget {
           (_) => const AgendaScreen(),),
       _MaisEntry(Icons.event_note_outlined, 'Agenda',
           (_) => const AgendaScreen(),),
-      const _MaisEntry(Icons.pix, 'Pix', null),
+      _MaisEntry(Icons.pix, 'Pix', (_) => const ContribuaScreen()),
       _MaisEntry(Icons.cake_outlined, 'Aniversariantes',
           (_) => const AniversariantesScreen(),),
-      const _MaisEntry(Icons.photo_library_outlined, 'Fotos e vídeos', null),
-      const _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens', null),
-      const _MaisEntry(Icons.self_improvement_outlined, 'Devocional Mulheres', null),
-      const _MaisEntry(Icons.landscape_outlined, 'Propósitos no Monte', null),
+      _MaisEntry(Icons.photo_library_outlined, 'Fotos e vídeos',
+          (_) => const GaleriaScreen(),),
+      _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens',
+          (_) => const DevocionalTematicoScreen(
+                appBarTitle: 'Devocional Homens',
+                introTitulo: 'Para os homens da casa',
+                introSubtitulo: 'Uma palavra para liderar com fé e integridade.',
+                itens: _devocionalHomens,
+              ),),
+      _MaisEntry(Icons.self_improvement_outlined, 'Devocional Mulheres',
+          (_) => const DevocionalTematicoScreen(
+                appBarTitle: 'Devocional Mulheres',
+                introTitulo: 'Para as mulheres da casa',
+                introSubtitulo: 'Uma palavra de força, fé e cuidado.',
+                itens: _devocionalMulheres,
+              ),),
+      _MaisEntry(Icons.landscape_outlined, 'Propósitos no Monte',
+          (_) => const PropositosScreen(),),
     ];
 
     return ListView(
@@ -352,6 +369,39 @@ class _MaisEntry {
   final WidgetBuilder? builder;
   const _MaisEntry(this.icon, this.label, this.builder);
 }
+
+// Conteúdo de EXEMPLO das trilhas devocionais (o Owner substitui depois).
+const _devocionalHomens = <ItemDevocional>[
+  ItemDevocional(
+    'Liderança que serve',
+    'O maior no Reino é aquele que serve. Liderar a sua casa começa de '
+        'joelhos, buscando a Deus antes de decidir. Seja um homem de oração '
+        'e a sua família colherá os frutos.',
+    autor: 'Goel Church',
+  ),
+  ItemDevocional(
+    'Integridade no oculto',
+    'O caráter se prova onde ninguém vê. Aquilo que você é no secreto é o '
+        'que Deus recompensa em público. Guarde o seu coração.',
+    autor: 'Goel Church',
+  ),
+];
+
+const _devocionalMulheres = <ItemDevocional>[
+  ItemDevocional(
+    'Força e dignidade',
+    'A mulher virtuosa se reveste de força e dignidade e sorri diante do '
+        'futuro. A sua confiança não está nas circunstâncias, mas no Deus '
+        'que a sustenta.',
+    autor: 'Goel Church',
+  ),
+  ItemDevocional(
+    'O valor do descanso',
+    'Você não precisa carregar tudo sozinha. Entregue os seus cuidados a '
+        'Deus e descanse — Ele cuida de você com amor eterno.',
+    autor: 'Goel Church',
+  ),
+];
 
 class _MaisTile extends StatelessWidget {
   final _MaisEntry entry;

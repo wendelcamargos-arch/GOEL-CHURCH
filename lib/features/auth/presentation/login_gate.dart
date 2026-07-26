@@ -241,9 +241,13 @@ class _LoginGateState extends State<LoginGate>
     );
   }
 
-  ButtonStyle get _primaryStyle => FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(56),
-        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+  ButtonStyle get _primaryStyle =>
+      FilledButton.styleFrom(minimumSize: const Size.fromHeight(56));
+
+  // Texto do botão como filho (herda a família de fonte do tema).
+  Widget _btnLabel(String t) => Text(
+        t,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       );
 
   // --- Passo 1: número ------------------------------------------------------
@@ -278,7 +282,7 @@ class _LoginGateState extends State<LoginGate>
             onPressed: flow.loading ? null : () => _submitPhone(flow),
             child: flow.loading
                 ? const _BtnSpinner()
-                : const Text('Receber código'),
+                : _btnLabel('Receber código'),
           ),
           _messageBanner(flow),
         ],
@@ -323,7 +327,7 @@ class _LoginGateState extends State<LoginGate>
                 ? null
                 : () => flow.submitCode(_otpCtrl.text),
             child:
-                flow.loading ? const _BtnSpinner() : const Text('Confirmar'),
+                flow.loading ? const _BtnSpinner() : _btnLabel('Confirmar'),
           ),
           const SizedBox(height: 12),
           Center(
@@ -410,7 +414,7 @@ class _LoginGateState extends State<LoginGate>
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: widget.postLoginBuilder!),
               ),
-              child: const Text('Continuar'),
+              child: _btnLabel('Continuar'),
             ),
         ],
       );

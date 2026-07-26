@@ -1,0 +1,29 @@
+name: goel_church
+description: "Aplicativo oficial da Goel Church — MVP. Camada de entrega (Flutter)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Framework Independence: a regra de negócio vive no pacote de domínio (Dart puro).
+  goel_domain:
+    path: packages/goel_domain
+  # Slice 02 — plataforma Supabase (dados/auth/storage) consumida pela camada de dados.
+  supabase_flutter: ^2.5.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/content/versiculos_dominio_publico.json
+    - assets/content/verses_fallback.json
+    - assets/content/devotionals_fallback.json

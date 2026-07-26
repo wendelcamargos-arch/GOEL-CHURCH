@@ -1,0 +1,25 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+**/doc/api/
+.fvm/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Segredos / ambiente (NUNCA versionar chaves)
+.env
+.env.*
+**/secrets.dart
+google-services.json
+GoogleService-Info.plist
+
+# SO
+.DS_Store
+Thumbs.db

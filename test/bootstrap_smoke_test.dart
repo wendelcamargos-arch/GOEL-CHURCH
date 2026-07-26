@@ -8,7 +8,7 @@ void main() {
 
     expect(find.text('GOEL CHURCH'), findsOneWidget);
     expect(
-      find.textContaining('Compartilhando Esperança'),
+      find.textContaining('família para você pertencer'),
       findsOneWidget,
     );
   });

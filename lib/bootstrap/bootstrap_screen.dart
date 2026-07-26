@@ -53,9 +53,9 @@ class _BootstrapScreenState extends State<BootstrapScreen>
             child: Image.asset(
               _bgAsset,
               fit: BoxFit.cover,
-              // Enquadramento: leve viés para o centro/entrada (destaca a
-              // entrada principal, a cruz e a arquitetura central).
-              alignment: const Alignment(0, 0.25),
+              // Enquadramento: leve viés para o topo, deixando visível a placa
+              // "GOEL CHURCH" da fachada ao fundo.
+              alignment: const Alignment(0, -0.1),
               // Fallback caso o asset real ainda não tenha sido adicionado.
               errorBuilder: (_, __, ___) =>
                   const ColoredBox(color: Color(0xFF14210F)),
@@ -131,13 +131,41 @@ class _BootstrapScreenState extends State<BootstrapScreen>
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text(
-                            'Vivendo a Palavra.\nCompartilhando Esperança.',
-                            textAlign: TextAlign.center,
-                            style: textTheme.titleMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              height: 1.4,
+                          Text.rich(
+                            TextSpan(
+                              style: textTheme.titleMedium?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                height: 1.45,
+                              ),
+                              children: const [
+                                TextSpan(text: 'Uma '),
+                                TextSpan(
+                                  text: 'igreja',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                TextSpan(text: ' para você '),
+                                TextSpan(
+                                  text: 'frequentar',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                TextSpan(text: ' e uma '),
+                                TextSpan(
+                                  text: 'família',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                TextSpan(text: ' para você '),
+                                TextSpan(
+                                  text: 'pertencer',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                TextSpan(text: '.'),
+                              ],
                             ),
+                            textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 56),
                           const SizedBox(

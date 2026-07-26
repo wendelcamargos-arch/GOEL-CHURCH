@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Tela de bootstrap dos Slices 01–02 — placeholder neutro que confirma que a
-/// aplicação inicializa, o tema é aplicado e mostra o estado da integração com
-/// a plataforma Supabase.
+/// Splash / tela de abertura do Goel Church.
 ///
-/// NÃO é a Home (Slice 05) nem qualquer funcionalidade de slices posteriores.
+/// Primeira impressão do app para a comunidade: marca + acolhimento, sem ruído
+/// técnico. Para o usuário final a tela é limpa. O parâmetro
+/// [supabaseConfigured] apenas exibe um aviso DISCRETO de desenvolvimento quando
+/// o backend não está configurado (nunca aparece em produção configurada).
 class BootstrapScreen extends StatelessWidget {
   final bool supabaseConfigured;
 
@@ -16,68 +17,80 @@ class BootstrapScreen extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: scheme.surface,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Goel Church', style: textTheme.headlineMedium),
-                const SizedBox(height: 12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: Column(
+            children: [
+              const Spacer(flex: 3),
+
+              // Marca — placeholder do logotipo oficial da igreja (substituir
+              // por asset quando disponível). Semântica para leitor de tela.
+              Semantics(
+                label: 'Goel Church',
+                image: true,
+                child: Container(
+                  width: 116,
+                  height: 116,
+                  decoration: BoxDecoration(
+                    color: scheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.church_outlined,
+                    size: 62,
+                    color: scheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              Text(
+                'Goel Church',
+                textAlign: TextAlign.center,
+                style: textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Uma igreja para você frequentar e uma família para você '
+                'pertencer.',
+                textAlign: TextAlign.center,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+
+              const Spacer(flex: 3),
+
+              // Indicação calma de carregamento.
+              SizedBox(
+                width: 26,
+                height: 26,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: scheme.primary,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Aviso DISCRETO apenas em ambiente de desenvolvimento sem backend.
+              if (!supabaseConfigured)
                 Text(
-                  'Uma igreja para você frequentar e uma família para você '
-                  'pertencer.',
+                  'Ambiente de desenvolvimento — backend não configurado',
                   textAlign: TextAlign.center,
-                  style: textTheme.bodyLarge,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
-                const SizedBox(height: 24),
-                _SupabaseStatus(
-                  configured: supabaseConfigured,
-                  onColor: scheme.primary,
-                  offColor: scheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text('MVP • Slice 02 — Supabase', style: textTheme.labelMedium),
-              ],
-            ),
+            ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SupabaseStatus extends StatelessWidget {
-  final bool configured;
-  final Color onColor;
-  final Color offColor;
-
-  const _SupabaseStatus({
-    required this.configured,
-    required this.onColor,
-    required this.offColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = configured ? onColor : offColor;
-    final label = configured
-        ? 'Supabase: conectado'
-        : 'Supabase: não configurado\n(defina SUPABASE_URL e SUPABASE_ANON_KEY)';
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(configured ? Icons.check_circle : Icons.info_outline, color: color),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color),
-          ),
-        ),
-      ],
     );
   }
 }

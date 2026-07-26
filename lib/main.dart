@@ -10,7 +10,7 @@ import 'features/auth/data/supabase_auth_gateway.dart';
 import 'features/member/application/cadastro_flow.dart';
 import 'features/member/data/supabase_profile_gateway.dart';
 import 'features/member/presentation/cadastro_screen.dart';
-import 'features/home/presentation/home_screen.dart';
+import 'features/home/presentation/main_shell.dart';
 import 'features/content/data/local_verse_repository.dart';
 import 'features/content/data/supabase_devotional_repository.dart';
 import 'features/content/presentation/versiculo_screen.dart';
@@ -52,7 +52,7 @@ Future<void> main() async {
 
     postLoginBuilder = (_) => CadastroScreen(
           flow: cadastroFlow,
-          postCadastroBuilder: (_) => HomeScreen(
+          postCadastroBuilder: (_) => MainShell(
             memberName: cadastroFlow.savedName,
             versiculoBuilder: (_) => VersiculoScreen(
               repository: verseRepository,

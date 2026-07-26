@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// Home (Slice 05) — hub acolhedor após login/cadastro.
+import 'coming_soon_view.dart';
+
+/// Home (aba **Início**) — hub acolhedor após login/cadastro.
 ///
-/// APENAS camada de apresentação/experiência — contrato preservado
-/// (memberName + builders de jornada + onLogout). Continuidade visual com as
-/// Sprints anteriores via cabeçalho de marca (fachada + logo); corpo claro para
-/// leitura confortável no uso diário. Acessibilidade (todas as idades): alvos
-/// amplos, tipografia grande, contraste e Semantics.
+/// APENAS camada de apresentação/experiência — contrato preservado (memberName
+/// + builders de jornada). A ação de Logout e o índice completo de recursos
+/// vivem na aba "Mais" (ver [MainShell]); aqui o foco é acolhimento e as
+/// jornadas do dia. Continuidade visual com as Sprints anteriores via cabeçalho
+/// de marca (fachada + logo). Acessibilidade: alvos amplos, tipografia grande,
+/// contraste e Semantics.
 class HomeScreen extends StatelessWidget {
   final String? memberName;
 
@@ -15,16 +18,11 @@ class HomeScreen extends StatelessWidget {
   final WidgetBuilder? versiculoBuilder;
   final WidgetBuilder? devocionalBuilder;
 
-  /// Ação de limpeza da sessão local (Logout). A navegação de volta ao Login é
-  /// feita pela própria Home após chamar esta ação.
-  final VoidCallback? onLogout;
-
   const HomeScreen({
     super.key,
     this.memberName,
     this.versiculoBuilder,
     this.devocionalBuilder,
-    this.onLogout,
   });
 
   @override
@@ -40,7 +38,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Header(greeting: greeting, onLogout: onLogout, onLogoutTap: _logout),
+            _Header(greeting: greeting),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               child: LayoutBuilder(
@@ -87,32 +85,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _logout(BuildContext context) {
-    // Logout LOCAL (sem revogação server-side): limpa a sessão e o estado.
-    onLogout?.call();
-    // Limpa a pilha de navegação, voltando à raiz (Login). Impede "Voltar"
-    // para a Home.
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
   void _go(BuildContext context, String title, WidgetBuilder? builder) {
-    final WidgetBuilder destination =
-        builder ?? (_) => _ComingSoonScreen(title: title);
+    final WidgetBuilder destination = builder ??
+        (_) => ComingSoonScreen(icon: Icons.auto_stories_outlined, title: title);
     Navigator.of(context).push(MaterialPageRoute(builder: destination));
   }
 }
 
-/// Cabeçalho de marca: fachada + overlay + logo + saudação (e ação Sair).
+/// Cabeçalho de marca: fachada + overlay + logo + saudação.
 class _Header extends StatelessWidget {
   final String greeting;
-  final VoidCallback? onLogout;
-  final void Function(BuildContext) onLogoutTap;
 
-  const _Header({
-    required this.greeting,
-    required this.onLogout,
-    required this.onLogoutTap,
-  });
+  const _Header({required this.greeting});
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +123,7 @@ class _Header extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(20, topInset + 12, 12, 20),
+            padding: EdgeInsets.fromLTRB(20, topInset + 16, 20, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -158,12 +142,6 @@ class _Header extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (onLogout != null)
-                      IconButton(
-                        icon: const Icon(Icons.logout, color: Colors.white),
-                        tooltip: 'Sair',
-                        onPressed: () => onLogoutTap(context),
-                      ),
                   ],
                 ),
                 const Spacer(),
@@ -272,25 +250,6 @@ class _HomeCard extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Placeholder até o conteúdo do slice correspondente (06/07) existir.
-class _ComingSoonScreen extends StatelessWidget {
-  final String title;
-  const _ComingSoonScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          'Em breve.',
-          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
     );

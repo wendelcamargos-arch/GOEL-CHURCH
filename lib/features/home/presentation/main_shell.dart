@@ -277,6 +277,7 @@ class _MaisTab extends StatelessWidget {
       _MaisEntry(Icons.menu_book_outlined, 'Devocionais', devocionalBuilder),
       const _MaisEntry(Icons.volunteer_activism_outlined, 'Oração', null),
       const _MaisEntry(Icons.campaign_outlined, 'Pregações', null),
+      const _MaisEntry(Icons.record_voice_over_outlined, 'Testemunho', null),
       const _MaisEntry(Icons.celebration_outlined, 'Eventos', null),
       const _MaisEntry(Icons.event_note_outlined, 'Agenda', null),
       const _MaisEntry(Icons.pix, 'Pix', null),

@@ -71,6 +71,16 @@ class LoginFlow extends ChangeNotifier {
     });
   }
 
+  /// Reinicia o fluxo para o estado inicial (usado no Logout local).
+  void reset() {
+    phase = LoginPhase.phone;
+    loading = false;
+    message = null;
+    phoneE164 = '';
+    selectable = const [];
+    notifyListeners();
+  }
+
   Future<void> _run(Future<bool> Function() action) async {
     loading = true;
     message = null;

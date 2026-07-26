@@ -50,6 +50,12 @@ Future<void> main() async {
             ),
             devocionalBuilder: (_) =>
                 DevocionaisScreen(repository: devotionalRepository),
+            // Logout LOCAL: limpa a sessão em memória e reinicia o fluxo de
+            // login. Sem revogação server-side (escopo do MVP).
+            onLogout: () {
+              session.clear();
+              loginFlow?.reset();
+            },
           ),
         );
   }

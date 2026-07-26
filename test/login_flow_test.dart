@@ -53,6 +53,24 @@ void main() {
       await flow.chooseIdentity('a');
       expect(flow.phase, LoginPhase.authenticated);
     });
+
+    test('reset (Logout local) volta ao estado inicial', () async {
+      final flow = LoginFlow(_FakeGateway(SessionEstablished(_id('a'))));
+      await flow.submitPhone('+5511999999999');
+      await flow.submitCode('123456');
+      expect(flow.phase, LoginPhase.authenticated);
+
+      var notified = false;
+      flow.addListener(() => notified = true);
+      flow.reset();
+
+      expect(flow.phase, LoginPhase.phone);
+      expect(flow.loading, isFalse);
+      expect(flow.message, isNull);
+      expect(flow.phoneE164, isEmpty);
+      expect(flow.selectable, isEmpty);
+      expect(notified, isTrue);
+    });
   });
 
   testWidgets('LoginGate exibe a entrada por WhatsApp', (tester) async {

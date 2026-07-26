@@ -14,11 +14,16 @@ class HomeScreen extends StatelessWidget {
   final WidgetBuilder? versiculoBuilder;
   final WidgetBuilder? devocionalBuilder;
 
+  /// Ação de limpeza da sessão local (Logout). A navegação de volta ao Login é
+  /// feita pela própria Home após chamar esta ação.
+  final VoidCallback? onLogout;
+
   const HomeScreen({
     super.key,
     this.memberName,
     this.versiculoBuilder,
     this.devocionalBuilder,
+    this.onLogout,
   });
 
   @override
@@ -29,7 +34,17 @@ class HomeScreen extends StatelessWidget {
         : 'Olá, ${memberName!.split(' ').first}';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Goel Church')),
+      appBar: AppBar(
+        title: const Text('Goel Church'),
+        actions: [
+          if (onLogout != null)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Sair',
+              onPressed: () => _logout(context),
+            ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(24),
@@ -59,6 +74,14 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _logout(BuildContext context) {
+    // Logout LOCAL (sem revogação server-side): limpa a sessão e o estado.
+    onLogout?.call();
+    // Limpa a pilha de navegação, voltando à raiz (Login). Impede "Voltar"
+    // para a Home.
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _go(BuildContext context, String title, WidgetBuilder? builder) {

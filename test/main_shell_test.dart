@@ -70,12 +70,18 @@ void main() {
     expect(find.textContaining('Olá, Ana'), findsNothing);
   });
 
-  testWidgets('aba ainda sem tela mostra o conteúdo "Em breve"',
-      (tester) async {
+  testWidgets('aba Palavras mostra o hub de pregações', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainShell()));
     await tester.tap(find.text('Palavras'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Em breve'), findsWidgets);
+    expect(find.text('Pregações e publicações da Goel Church.'), findsOneWidget);
+  });
+
+  testWidgets('aba Bíblia mostra a porta de entrada da leitura', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: MainShell()));
+    await tester.tap(find.text('Bíblia'));
+    await tester.pumpAndSettle();
+    expect(find.text('A Palavra de Deus, sempre à mão.'), findsOneWidget);
   });
 
   testWidgets('aba Contribua mostra a chave Pix e o botão copiar',

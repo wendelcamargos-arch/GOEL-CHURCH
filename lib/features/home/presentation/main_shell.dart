@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../agenda/presentation/agenda_screen.dart';
 import '../../aniversariantes/presentation/aniversariantes_screen.dart';
+import '../../biblia/presentation/biblia_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
 import '../../devocional_tematico/presentation/devocional_tematico_screen.dart';
 import '../../galeria/presentation/galeria_screen.dart';
 import '../../oracao/presentation/oracao_screen.dart';
+import '../../palavras/presentation/palavras_screen.dart';
 import '../../pregacoes/presentation/pregacoes_screen.dart';
 import '../../propositos/presentation/propositos_screen.dart';
 import '../../testemunho/presentation/testemunho_screen.dart';
@@ -54,16 +56,8 @@ class _MainShellState extends State<MainShell> {
     final scheme = Theme.of(context).colorScheme;
 
     final tabs = <Widget>[
-      const ComingSoonView(
-        icon: Icons.play_circle_outline,
-        title: 'Palavras',
-        message: 'Pregações e publicações da Goel Church.\nEm breve por aqui.',
-      ),
-      const ComingSoonView(
-        icon: Icons.menu_book_outlined,
-        title: 'Bíblia',
-        message: 'Sua Bíblia, sempre à mão.\nEm breve por aqui.',
-      ),
+      const PalavrasScreen(),
+      const BibliaScreen(),
       HomeScreen(
         memberName: widget.memberName,
         versiculoBuilder: widget.versiculoBuilder,

@@ -14,21 +14,32 @@ jobs:
   distribute-android:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      FIREBASE_APP_ID_ANDROID: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+      FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Validate required secrets
-        env:
-          FIREBASE_APP_ID_ANDROID: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
-          FIREBASE_CI_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
-          FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS }}
         run: |
           set -euo pipefail
           test -n "${FIREBASE_APP_ID_ANDROID}" || (echo "Missing secret: FIREBASE_APP_ID_ANDROID" && exit 1)
-          test -n "${FIREBASE_CI_TOKEN}" || (echo "Missing secret: FIREBASE_CI_TOKEN" && exit 1)
+          test -n "${FIREBASE_SERVICE_ACCOUNT_JSON}" || (echo "Missing secret: FIREBASE_SERVICE_ACCOUNT_JSON" && exit 1)
           test -n "${FIREBASE_TESTER_GROUPS}" || (echo "Missing secret: FIREBASE_TESTER_GROUPS" && exit 1)
+
+      - name: Materialize Firebase service account
+        run: |
+          set -euo pipefail
+          CREDENTIALS_PATH="$RUNNER_TEMP/firebase-service-account.json"
+          printf '%s' "${FIREBASE_SERVICE_ACCOUNT_JSON}" > "${CREDENTIALS_PATH}"
+          test -s "${CREDENTIALS_PATH}" || (echo "Service account JSON is empty" && exit 1)
+          {
+            echo "GOOGLE_APPLICATION_CREDENTIALS=${CREDENTIALS_PATH}"
+            echo "GOOGLE_GHA_CREDS_PATH=${CREDENTIALS_PATH}"
+          } >> "$GITHUB_ENV"
 
       - name: Download artifact from successful Android Build run
         if: ${{ github.event_name == 'workflow_run' }}
@@ -70,10 +81,6 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Distribute APK to Firebase App Distribution
-        env:
-          FIREBASE_APP_ID_ANDROID: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
-          FIREBASE_CI_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
-          FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS }}
         run: |
           set -euo pipefail
           APK_PATH="ci-artifacts/app-release.apk"
@@ -84,6 +91,5 @@ jobs:
           fi
           firebase appdistribution:distribute "${APK_PATH}" \
             --app "${FIREBASE_APP_ID_ANDROID}" \
-            --token "${FIREBASE_CI_TOKEN}" \
             --groups "${FIREBASE_TESTER_GROUPS}" \
             --release-notes "${RELEASE_NOTES}"

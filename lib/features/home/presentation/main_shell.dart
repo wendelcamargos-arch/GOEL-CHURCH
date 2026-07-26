@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../agenda/presentation/agenda_screen.dart';
+import '../../aniversariantes/presentation/aniversariantes_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
 import '../../oracao/presentation/oracao_screen.dart';
+import '../../pregacoes/presentation/pregacoes_screen.dart';
 import '../../testemunho/presentation/testemunho_screen.dart';
 import 'coming_soon_view.dart';
 import 'home_screen.dart';
@@ -276,13 +279,17 @@ class _MaisTab extends StatelessWidget {
       _MaisEntry(Icons.menu_book_outlined, 'Devocionais', devocionalBuilder),
       _MaisEntry(Icons.volunteer_activism_outlined, 'Oração',
           (_) => const OracaoScreen(),),
-      const _MaisEntry(Icons.campaign_outlined, 'Pregações', null),
+      _MaisEntry(Icons.campaign_outlined, 'Pregações',
+          (_) => const PregacoesScreen(),),
       _MaisEntry(Icons.record_voice_over_outlined, 'Testemunho',
           (_) => const TestemunhoScreen(),),
-      const _MaisEntry(Icons.celebration_outlined, 'Eventos', null),
-      const _MaisEntry(Icons.event_note_outlined, 'Agenda', null),
+      _MaisEntry(Icons.celebration_outlined, 'Eventos',
+          (_) => const AgendaScreen(),),
+      _MaisEntry(Icons.event_note_outlined, 'Agenda',
+          (_) => const AgendaScreen(),),
       const _MaisEntry(Icons.pix, 'Pix', null),
-      const _MaisEntry(Icons.cake_outlined, 'Aniversariantes', null),
+      _MaisEntry(Icons.cake_outlined, 'Aniversariantes',
+          (_) => const AniversariantesScreen(),),
       const _MaisEntry(Icons.photo_library_outlined, 'Fotos e vídeos', null),
       const _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens', null),
       const _MaisEntry(Icons.self_improvement_outlined, 'Devocional Mulheres', null),

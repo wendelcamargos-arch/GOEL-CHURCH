@@ -2,13 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/app/goel_app.dart';
 
 void main() {
-  testWidgets('o app inicializa e exibe o Splash com marca e acolhimento',
+  testWidgets('o app inicializa e exibe o Splash com marca e slogan',
       (tester) async {
     await tester.pumpWidget(const GoelApp());
 
-    expect(find.text('Goel Church'), findsOneWidget);
+    expect(find.text('GOEL CHURCH'), findsOneWidget);
     expect(
-      find.textContaining('família para você pertencer'),
+      find.textContaining('Compartilhando Esperança'),
       findsOneWidget,
     );
   });

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app/goel_app.dart';
 import 'core/env/app_env.dart';
 import 'core/supabase/supabase_bootstrap.dart';
+import 'preview/ui_preview_app.dart';
 import 'features/auth/application/login_flow.dart';
 import 'features/auth/data/session_store.dart';
 import 'features/auth/data/supabase_auth_gateway.dart';
@@ -24,6 +25,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final env = AppEnv.fromEnvironment();
+
+  // Modo de PREVIEW VISUAL (--dart-define=UI_PREVIEW=true): inspeção da UI no
+  // navegador SEM Supabase, WhatsApp, OTP, backend nem persistência. Isolado do
+  // fluxo normal — retorna aqui e nada mais da composição de produção roda.
+  if (env.uiPreview) {
+    runApp(const UiPreviewApp());
+    return;
+  }
+
   final supabaseConfigured = await SupabaseBootstrap.initialize(env);
 
   LoginFlow? loginFlow;

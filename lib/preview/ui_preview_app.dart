@@ -14,19 +14,35 @@ import '../features/member/presentation/cadastro_screen.dart';
 
 /// MODO DE PREVIEW VISUAL — ativado por `--dart-define=UI_PREVIEW=true`.
 ///
-/// Objetivo: permitir que o Owner revise a interface no navegador, sem depender
-/// de Supabase, WhatsApp, OTP, backend ou persistência. A tela inicial é um
-/// LAUNCHER DE HOMOLOGAÇÃO ("GOEL CHURCH UI PREVIEW"): cada item abre direto a
-/// tela correspondente, sem navegação obrigatória. NÃO faz parte do fluxo normal
-/// do app; nada aqui é usado quando `UI_PREVIEW=false`. Não altera domínio,
-/// arquitetura nem contratos — apenas compõe as telas existentes com dados fake.
-class UiPreviewApp extends StatelessWidget {
+/// Ferramenta OFICIAL de homologação visual. Abre uma CENTRAL DE HOMOLOGAÇÃO
+/// ("GOEL CHURCH UI PREVIEW") que reúne as telas do app e ferramentas de
+/// inspeção (tema, fonte, simulação de dispositivo). Sem Supabase, WhatsApp,
+/// OTP, Firebase, Meta, backend ou persistência. NÃO faz parte do fluxo normal:
+/// nada aqui roda quando `UI_PREVIEW=false`. Não altera domínio, arquitetura
+/// nem contratos — apenas compõe as telas existentes com dados fake.
+class UiPreviewApp extends StatefulWidget {
   const UiPreviewApp({super.key});
 
   @override
+  State<UiPreviewApp> createState() => _UiPreviewAppState();
+}
+
+/// Simulação de dispositivo aplicada ao preview.
+enum _DeviceSim { none, mobile, tablet }
+
+class _UiPreviewAppState extends State<UiPreviewApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+  bool _largeFont = false;
+  _DeviceSim _device = _DeviceSim.none;
+
+  void _reset() => setState(() {
+        _themeMode = ThemeMode.light;
+        _largeFont = false;
+        _device = _DeviceSim.none;
+      });
+
+  @override
   Widget build(BuildContext context) {
-    // Repositórios de inspeção: versículo é offline por natureza (domínio
-    // público); devocional usa dados fake em memória (sem rede).
     final verseRepository = LocalVerseRepository();
     final devotionalRepository = _PreviewDevotionalRepository();
 
@@ -50,46 +66,45 @@ class UiPreviewApp extends StatelessWidget {
           postLoginBuilder: (_) => cadastroScreen(),
         );
 
-    final destinations = <_PreviewDestination>[
-      _PreviewDestination(
-        'Splash',
-        'Tela de inicialização',
-        Icons.flag_outlined,
-        (_) => const BootstrapScreen(supabaseConfigured: true),
-      ),
-      _PreviewDestination(
-        'Login',
-        'Entrada por WhatsApp (visual)',
-        Icons.login_outlined,
-        (_) => loginScreen(),
-      ),
-      _PreviewDestination(
-        'Cadastro',
-        'Perfil do membro (visual)',
-        Icons.person_add_alt_outlined,
-        (_) => cadastroScreen(),
-      ),
-      _PreviewDestination(
-        'Home',
-        'Tela inicial do membro',
-        Icons.home_outlined,
-        (_) => homeScreen(),
-      ),
-      _PreviewDestination(
-        'Versículo',
-        'Versículo do dia',
-        Icons.auto_stories_outlined,
-        (_) => VersiculoScreen(
-          repository: verseRepository,
-          sourceLabel: 'Almeida — domínio público',
-        ),
-      ),
-      _PreviewDestination(
-        'Devocional',
-        'Lista de devocionais',
-        Icons.menu_book_outlined,
-        (_) => DevocionaisScreen(repository: devotionalRepository),
-      ),
+    final fluxoPrincipal = <_ScreenItem>[
+      _ScreenItem('Splash', 'Inicialização', Icons.flag_outlined,
+          (_) => const BootstrapScreen(supabaseConfigured: true),),
+      _ScreenItem('Login', 'Entrada por WhatsApp (visual)',
+          Icons.login_outlined, (_) => loginScreen(),),
+      _ScreenItem('Cadastro', 'Perfil do membro (visual)',
+          Icons.person_add_alt_outlined, (_) => cadastroScreen(),),
+      _ScreenItem('Home', 'Tela inicial do membro', Icons.home_outlined,
+          (_) => homeScreen(),),
+    ];
+
+    final conteudo = <_ScreenItem>[
+      _ScreenItem('Versículo', 'Versículo do dia', Icons.auto_stories_outlined,
+          (_) => VersiculoScreen(
+                repository: verseRepository,
+                sourceLabel: 'Almeida — domínio público',
+              ),),
+      _ScreenItem('Devocional', 'Lista de devocionais',
+          Icons.menu_book_outlined,
+          (_) => DevocionaisScreen(repository: devotionalRepository),),
+    ];
+
+    final ferramentas = <_ToolItem>[
+      _ToolItem('Tema Claro', Icons.light_mode_outlined,
+          active: _themeMode == ThemeMode.light,
+          onTap: () => setState(() => _themeMode = ThemeMode.light),),
+      _ToolItem('Tema Escuro', Icons.dark_mode_outlined,
+          active: _themeMode == ThemeMode.dark,
+          onTap: () => setState(() => _themeMode = ThemeMode.dark),),
+      _ToolItem('Fonte Grande', Icons.format_size,
+          active: _largeFont,
+          onTap: () => setState(() => _largeFont = !_largeFont),),
+      _ToolItem('Simulação Mobile', Icons.smartphone,
+          active: _device == _DeviceSim.mobile,
+          onTap: () => setState(() => _device = _DeviceSim.mobile),),
+      _ToolItem('Simulação Tablet', Icons.tablet_mac,
+          active: _device == _DeviceSim.tablet,
+          onTap: () => setState(() => _device = _DeviceSim.tablet),),
+      _ToolItem('Reset Preview', Icons.restart_alt, onTap: _reset),
     ];
 
     return MaterialApp(
@@ -97,30 +112,90 @@ class UiPreviewApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      home: _PreviewLauncher(destinations: destinations),
+      themeMode: _themeMode,
+      builder: (context, child) => _frame(context, child),
+      home: _CentralLauncher(
+        fluxoPrincipal: fluxoPrincipal,
+        conteudo: conteudo,
+        ferramentas: ferramentas,
+      ),
+    );
+  }
+
+  /// Aplica fonte grande (textScaler) e a moldura de simulação de dispositivo
+  /// sobre TODA a árvore (launcher + telas empilhadas).
+  Widget _frame(BuildContext context, Widget? child) {
+    final base = MediaQuery.of(context);
+    final scaler = TextScaler.linear(_largeFont ? 1.35 : 1.0);
+    final content = child ?? const SizedBox.shrink();
+
+    final double? width = switch (_device) {
+      _DeviceSim.mobile => 412,
+      _DeviceSim.tablet => 834,
+      _DeviceSim.none => null,
+    };
+
+    if (width == null) {
+      return MediaQuery(
+        data: base.copyWith(textScaler: scaler),
+        child: content,
+      );
+    }
+
+    final height = base.size.height * 0.94;
+    return ColoredBox(
+      color: const Color(0xFF20232A),
+      child: Center(
+        child: Material(
+          elevation: 8,
+          clipBehavior: Clip.antiAlias,
+          borderRadius: BorderRadius.circular(20),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: MediaQuery(
+              data: base.copyWith(
+                textScaler: scaler,
+                size: Size(width, height),
+              ),
+              child: content,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
-/// Um destino de inspeção do launcher de homologação.
-class _PreviewDestination {
+/// Item de tela: abre diretamente a tela correspondente.
+class _ScreenItem {
   final String label;
   final String subtitle;
   final IconData icon;
   final WidgetBuilder builder;
-  const _PreviewDestination(
-    this.label,
-    this.subtitle,
-    this.icon,
-    this.builder,
-  );
+  const _ScreenItem(this.label, this.subtitle, this.icon, this.builder);
 }
 
-/// Launcher de Homologação — tela inicial do modo preview. Lista as telas para
-/// inspeção; tocar abre diretamente a tela correspondente.
-class _PreviewLauncher extends StatelessWidget {
-  final List<_PreviewDestination> destinations;
-  const _PreviewLauncher({required this.destinations});
+/// Item de ferramenta: dispara uma ação de inspeção (tema/fonte/simulação).
+class _ToolItem {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool active;
+  const _ToolItem(this.label, this.icon, {required this.onTap, this.active = false});
+}
+
+/// Central de Homologação — tela inicial do modo preview.
+class _CentralLauncher extends StatelessWidget {
+  final List<_ScreenItem> fluxoPrincipal;
+  final List<_ScreenItem> conteudo;
+  final List<_ToolItem> ferramentas;
+
+  const _CentralLauncher({
+    required this.fluxoPrincipal,
+    required this.conteudo,
+    required this.ferramentas,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -135,31 +210,63 @@ class _PreviewLauncher extends StatelessWidget {
             Text('GOEL CHURCH UI PREVIEW', style: textTheme.headlineSmall),
             const SizedBox(height: 4),
             Text(
-              'Homologação visual — toque em uma tela para abri-la. '
-              'Sem backend, sem autenticação, sem persistência.',
-              style: textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
+              'Central de homologação visual — sem backend, sem autenticação, '
+              'sem persistência.',
+              style: textTheme.bodyMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
-            for (final d in destinations) ...[
-              Card(
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  leading: Icon(d.icon, size: 32),
-                  title: Text(d.label, style: textTheme.titleLarge),
-                  subtitle: Text(d.subtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: d.builder),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
+            _section(context, 'FLUXO PRINCIPAL'),
+            for (final s in fluxoPrincipal) _screenTile(context, s),
+            const SizedBox(height: 16),
+            _section(context, 'CONTEÚDO'),
+            for (final s in conteudo) _screenTile(context, s),
+            const SizedBox(height: 16),
+            _section(context, 'FERRAMENTAS DE HOMOLOGAÇÃO'),
+            for (final t in ferramentas) _toolTile(context, t),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _section(BuildContext context, String title) => Padding(
+        padding: const EdgeInsets.only(bottom: 8, top: 4),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                letterSpacing: 1.1,
+              ),
+        ),
+      );
+
+  Widget _screenTile(BuildContext context, _ScreenItem s) => Card(
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+          leading: Icon(s.icon, size: 30),
+          title: Text(s.label, style: Theme.of(context).textTheme.titleLarge),
+          subtitle: Text(s.subtitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context)
+              .push(MaterialPageRoute<void>(builder: s.builder)),
+        ),
+      );
+
+  Widget _toolTile(BuildContext context, _ToolItem t) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      color: t.active ? scheme.primaryContainer : null,
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        leading: Icon(t.icon, size: 28),
+        title: Text(t.label, style: Theme.of(context).textTheme.titleMedium),
+        trailing: t.active
+            ? const Icon(Icons.check_circle)
+            : const Icon(Icons.tune),
+        onTap: t.onTap,
       ),
     );
   }
@@ -176,8 +283,7 @@ const IdentitySummary _previewIdentity = IdentitySummary(
   state: IdentityState.active,
 );
 
-/// Gateway de autenticação fake: o login é apenas VISUAL — nenhum OTP é enviado,
-/// nenhuma chamada de rede ocorre. Qualquer número/código "avança" a tela.
+/// Gateway de autenticação fake: login apenas VISUAL — nenhum OTP, nenhuma rede.
 class _PreviewAuthGateway implements AuthGateway {
   @override
   Future<Result<OtpRequestOutcome, AuthFailure>> requestOtp(
@@ -203,7 +309,7 @@ class _PreviewAuthGateway implements AuthGateway {
       );
 }
 
-/// Gateway de perfil fake: o cadastro é apenas VISUAL — nada é persistido.
+/// Gateway de perfil fake: cadastro apenas VISUAL — nada é persistido.
 class _PreviewProfileGateway implements MemberProfileGateway {
   @override
   Future<Result<MemberProfile, ProfileError>> save(

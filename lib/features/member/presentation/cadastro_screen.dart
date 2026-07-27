@@ -164,7 +164,7 @@ class _CadastroScreenState extends State<CadastroScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(Icons.cake_outlined,
-                  size: 16, color: Colors.white.withValues(alpha: 0.75)),
+                  size: 16, color: Colors.white.withValues(alpha: 0.75),),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(

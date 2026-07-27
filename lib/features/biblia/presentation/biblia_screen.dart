@@ -9,9 +9,18 @@ class BibliaScreen extends StatelessWidget {
   const BibliaScreen({super.key});
 
   static const _livros = <String>[
-    'Gênesis', 'Salmos', 'Provérbios', 'Isaías',
-    'Mateus', 'João', 'Atos', 'Romanos',
-    'Filipenses', 'Tiago', '1 João', 'Apocalipse',
+    'Gênesis',
+    'Salmos',
+    'Provérbios',
+    'Isaías',
+    'Mateus',
+    'João',
+    'Atos',
+    'Romanos',
+    'Filipenses',
+    'Tiago',
+    '1 João',
+    'Apocalipse',
   ];
 
   @override
@@ -28,37 +37,41 @@ class BibliaScreen extends StatelessWidget {
           children: [
             Text(
               'Bíblia',
-              style:
-                  textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
               'A Palavra de Deus, sempre à mão.',
-              style:
-                  textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+              style: textTheme.bodyMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
             // Busca visual (placeholder — sem ação por enquanto).
-            InkWell(
-              onTap: () => _aviso(context),
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: scheme.onSurfaceVariant),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Buscar livro, capítulo ou versículo',
-                      style: textTheme.bodyLarge
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                    ),
-                  ],
+            Semantics(
+              button: true,
+              label: 'Buscar na Bíblia',
+              child: InkWell(
+                onTap: () => _aviso(context),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Buscar livro, capítulo ou versículo',
+                        style: textTheme.bodyLarge
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -130,7 +143,8 @@ class _LivroChip extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 nome,
-                style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                style:
+                    textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),

@@ -76,11 +76,6 @@ class _Intro extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Propósitos no Monte',
-            style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
             'Suba ao Monte com um alvo no coração. Registre o seu propósito e '
             'permaneça firme — Deus honra quem O busca.',
             style: textTheme.bodyLarge?.copyWith(

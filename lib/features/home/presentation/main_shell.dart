@@ -310,7 +310,7 @@ class _MaisTab extends StatelessWidget {
       children: [
         Text(
           'Mais',
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 4),
         Text(

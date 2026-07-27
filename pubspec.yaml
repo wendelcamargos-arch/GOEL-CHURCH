@@ -15,6 +15,8 @@ dependencies:
     path: packages/goel_domain
   # Slice 02 — plataforma Supabase (dados/auth/storage) consumida pela camada de dados.
   supabase_flutter: ^2.5.6
+  # Abre links externos (ex.: álbuns/downloads no Google Drive) no app do sistema.
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

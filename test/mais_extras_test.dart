@@ -5,10 +5,10 @@ import 'package:goel_church/features/propositos/presentation/propositos_screen.d
 import 'package:goel_church/features/devocional_tematico/presentation/devocional_tematico_screen.dart';
 
 void main() {
-  testWidgets('Galeria mostra o cabeçalho e os itens', (tester) async {
+  testWidgets('Galeria mostra álbuns do Google Drive', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: GaleriaScreen()));
-    expect(find.text('Momentos da nossa família'), findsOneWidget);
     expect(find.text('Batismos 2026'), findsOneWidget);
+    expect(find.text('Abrir no Google Drive'), findsWidgets);
   });
 
   testWidgets('Propósitos mostra intro e lista numerada', (tester) async {

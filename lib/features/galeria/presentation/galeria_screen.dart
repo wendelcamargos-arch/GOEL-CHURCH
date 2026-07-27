@@ -1,34 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Um item de mídia (modelo de apresentação — sem domínio).
-class MidiaItem {
+/// Um álbum de fotos/vídeos hospedado no Google Drive.
+class AlbumDrive {
   final String titulo;
+  final String descricao;
   final bool video;
-  const MidiaItem(this.titulo, {this.video = false});
+
+  /// Link da pasta/álbum no Google Drive (o Owner injeta os reais).
+  final String driveUrl;
+
+  const AlbumDrive({
+    required this.titulo,
+    required this.descricao,
+    required this.driveUrl,
+    this.video = false,
+  });
 }
 
-/// Fotos e vídeos — galeria de momentos (padrão preto e branco).
+/// Fotos e vídeos — álbuns no Google Drive.
 ///
-/// APENAS camada de apresentação. Os itens chegam por parâmetro, com exemplos
-/// como padrão. Ao tocar, informa que o álbum chega em breve (sem player nem
-/// rede). Quando houver o slice de dados/armazenamento, injete os reais.
+/// As mídias ficam no Google Drive: cada álbum abre a pasta correspondente no
+/// app/navegador, onde a pessoa visualiza e baixa direto do Drive. Camada de
+/// apresentação: os álbuns chegam por parâmetro (com exemplos como padrão);
+/// o Owner substitui pelos links reais das pastas.
 class GaleriaScreen extends StatelessWidget {
-  final List<MidiaItem>? itens;
+  final List<AlbumDrive>? albuns;
 
-  const GaleriaScreen({super.key, this.itens});
+  /// Injeção opcional para abrir o link (testes). Nulo → usa url_launcher.
+  final Future<void> Function(String url)? onAbrir;
 
-  static const _exemplo = <MidiaItem>[
-    MidiaItem('Culto de Domingo', video: true),
-    MidiaItem('Batismos 2026'),
-    MidiaItem('Encontro de Jovens'),
-    MidiaItem('Ação Social'),
-    MidiaItem('Louvor ao vivo', video: true),
-    MidiaItem('Retiro da Família'),
+  const GaleriaScreen({super.key, this.albuns, this.onAbrir});
+
+  static const _exemplo = <AlbumDrive>[
+    AlbumDrive(
+      titulo: 'Cultos de Domingo',
+      descricao: 'Fotos e vídeos das celebrações',
+      driveUrl: 'https://drive.google.com/',
+      video: true,
+    ),
+    AlbumDrive(
+      titulo: 'Batismos 2026',
+      descricao: 'Momentos de decisão e fé',
+      driveUrl: 'https://drive.google.com/',
+    ),
+    AlbumDrive(
+      titulo: 'Encontro de Jovens',
+      descricao: 'Álbum do último encontro',
+      driveUrl: 'https://drive.google.com/',
+    ),
+    AlbumDrive(
+      titulo: 'Ação Social',
+      descricao: 'Servindo a nossa cidade',
+      driveUrl: 'https://drive.google.com/',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final lista = itens ?? _exemplo;
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    final lista = albuns ?? _exemplo;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Fotos e vídeos')),
       body: SafeArea(
@@ -36,24 +69,27 @@ class GaleriaScreen extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
               children: [
-                const _Intro(),
-                const SizedBox(height: 16),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
+                Row(
                   children: [
-                    for (final m in lista)
-                      _MidiaTile(
-                        item: m,
-                        onTap: () => _aviso(context),
+                    Icon(Icons.cloud_outlined, size: 20, color: scheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Os álbuns ficam no Google Drive. Toque para ver e '
+                        'baixar as fotos e vídeos.',
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                for (final a in lista) ...[
+                  _AlbumCard(album: a, onTap: () => _abrir(context, a.driveUrl)),
+                  const SizedBox(height: 12),
+                ],
               ],
             ),
           ),
@@ -62,47 +98,35 @@ class GaleriaScreen extends StatelessWidget {
     );
   }
 
-  void _aviso(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('O álbum estará disponível em breve.'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
+  Future<void> _abrir(BuildContext context, String url) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      if (onAbrir != null) {
+        await onAbrir!(url);
+      } else {
+        final ok = await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+        if (!ok) throw Exception('não foi possível abrir');
+      }
+    } catch (_) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o Google Drive agora.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
   }
 }
 
-class _Intro extends StatelessWidget {
-  const _Intro();
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Momentos da nossa família',
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Reviva os encontros e celebrações da Goel Church.',
-          style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-        ),
-      ],
-    );
-  }
-}
-
-class _MidiaTile extends StatelessWidget {
-  final MidiaItem item;
+class _AlbumCard extends StatelessWidget {
+  final AlbumDrive album;
   final VoidCallback onTap;
-  const _MidiaTile({required this.item, required this.onTap});
+  const _AlbumCard({required this.album, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -110,33 +134,65 @@ class _MidiaTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: 'Abrir ${item.titulo}',
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
-          ),
+      label: 'Abrir ${album.titulo} no Google Drive',
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Icon(
-                  item.video ? Icons.play_circle_outline : Icons.image_outlined,
-                  size: 40,
-                  color: scheme.onSurface,
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: scheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    album.video
+                        ? Icons.video_library_outlined
+                        : Icons.photo_library_outlined,
+                    size: 28,
+                    color: scheme.onPrimaryContainer,
+                  ),
                 ),
-                Text(
-                  item.titulo,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        album.titulo,
+                        style: textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        album.descricao,
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.open_in_new,
+                              size: 16, color: scheme.onSurfaceVariant,),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Abrir no Google Drive',
+                            style: textTheme.labelMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
               ],
             ),
           ),

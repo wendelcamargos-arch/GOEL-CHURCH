@@ -274,6 +274,15 @@ class _MaisTab extends StatelessWidget {
       _MaisEntry(Icons.menu_book_outlined, 'Devocionais', devocionalBuilder),
       _MaisEntry(Icons.volunteer_activism_outlined, 'Oração',
           (_) => const OracaoScreen(),),
+      _MaisEntry(Icons.home_outlined, 'Goel Home',
+          (_) => const ComingSoonScreen(
+                icon: Icons.home_outlined, title: 'Goel Home',),),
+      _MaisEntry(Icons.support_agent, 'Gabinete Pastoral',
+          (_) => const ComingSoonScreen(
+                icon: Icons.support_agent, title: 'Gabinete Pastoral',),),
+      _MaisEntry(Icons.handshake_outlined, 'Quero ser Servo',
+          (_) => const ComingSoonScreen(
+                icon: Icons.handshake_outlined, title: 'Quero ser Servo',),),
       _MaisEntry(Icons.campaign_outlined, 'Pregações',
           (_) => const PregacoesScreen(),),
       _MaisEntry(Icons.record_voice_over_outlined, 'Testemunho',

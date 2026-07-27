@@ -27,13 +27,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final greeting = (memberName == null || memberName!.trim().isEmpty)
         ? 'Bem-vindo(a) à Goel Church'
         : 'Olá, ${memberName!.split(' ').first}';
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -106,19 +105,14 @@ class _Header extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/brand/church_facade.jpg',
-            fit: BoxFit.cover,
-            alignment: const Alignment(0, -0.1),
-            errorBuilder: (_, __, ___) =>
-                const ColoredBox(color: Color(0xFF14210F)),
-          ),
+          // A fachada vem do fundo global (AppBackground). Aqui só um leve
+          // reforço de escurecimento para destacar a saudação.
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0x88000000), Color(0xD9000000)],
+                colors: [Color(0x22000000), Color(0x66000000)],
               ),
             ),
           ),

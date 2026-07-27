@@ -67,9 +67,19 @@ class AppTheme {
         typography.englishLike.merge(typography.white).apply(fontSizeFactor: 1.15);
 
     return base.copyWith(
-      scaffoldBackgroundColor: _scheme.surface,
+      // Transparente: o fundo global (fachada) aparece por baixo de toda tela.
+      // Ver AppBackground, aplicado na raiz via MaterialApp.builder.
+      scaffoldBackgroundColor: Colors.transparent,
       textTheme: scaledTextTheme,
       visualDensity: VisualDensity.comfortable,
+      // AppBar transparente para não tapar a fachada no topo das telas abertas.
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        foregroundColor: Colors.white,
+      ),
       // Botão primário: branco com texto preto (sursurge sobre as fotos escuras
       // dos heróis com contraste máximo). Alvo de toque amplo.
       filledButtonTheme: FilledButtonThemeData(

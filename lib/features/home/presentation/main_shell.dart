@@ -53,8 +53,6 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     final tabs = <Widget>[
       const PalavrasScreen(),
       const BibliaScreen(),
@@ -73,7 +71,7 @@ class _MainShellState extends State<MainShell> {
     ];
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      backgroundColor: Colors.transparent,
       body: IndexedStack(index: _index, children: tabs),
       bottomNavigationBar: _GoelBottomBar(current: _index, onSelect: _select),
     );
@@ -102,7 +100,7 @@ class _GoelBottomBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: scheme.surface,
+        color: scheme.surface.withValues(alpha: 0.92),
         border: Border(
           top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
         ),

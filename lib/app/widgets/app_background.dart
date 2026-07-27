@@ -32,7 +32,7 @@ class AppBackground extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xC2000000), Color(0xE6000000)],
+                  colors: [Color(0x99000000), Color(0xCC000000)],
                 ),
               ),
             ),

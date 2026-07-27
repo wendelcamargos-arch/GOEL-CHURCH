@@ -5,11 +5,13 @@ import '../../aniversariantes/presentation/aniversariantes_screen.dart';
 import '../../biblia/presentation/biblia_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
 import '../../devocional_tematico/presentation/devocional_tematico_screen.dart';
+import '../../escalas/presentation/escalas_screen.dart';
 import '../../galeria/presentation/galeria_screen.dart';
 import '../../oracao/presentation/oracao_screen.dart';
 import '../../palavras/presentation/palavras_screen.dart';
 import '../../pregacoes/presentation/pregacoes_screen.dart';
 import '../../propositos/presentation/propositos_screen.dart';
+import '../../redes/presentation/redes_screen.dart';
 import '../../testemunho/presentation/testemunho_screen.dart';
 import 'coming_soon_view.dart';
 import 'home_screen.dart';
@@ -65,7 +67,6 @@ class _MainShellState extends State<MainShell> {
       _MaisTab(
         memberName: widget.memberName,
         versiculoBuilder: widget.versiculoBuilder,
-        devocionalBuilder: widget.devocionalBuilder,
         onLogout: widget.onLogout,
       ),
     ];
@@ -253,13 +254,11 @@ class _CenterItem extends StatelessWidget {
 class _MaisTab extends StatelessWidget {
   final String? memberName;
   final WidgetBuilder? versiculoBuilder;
-  final WidgetBuilder? devocionalBuilder;
   final VoidCallback? onLogout;
 
   const _MaisTab({
     required this.memberName,
     required this.versiculoBuilder,
-    required this.devocionalBuilder,
     required this.onLogout,
   });
 
@@ -271,7 +270,8 @@ class _MaisTab extends StatelessWidget {
 
     final entries = <_MaisEntry>[
       _MaisEntry(Icons.auto_stories_outlined, 'Versículo do dia', versiculoBuilder),
-      _MaisEntry(Icons.menu_book_outlined, 'Devocionais', devocionalBuilder),
+      _MaisEntry(Icons.event_available_outlined, 'Escalas',
+          (_) => const EscalasScreen(),),
       _MaisEntry(Icons.volunteer_activism_outlined, 'Oração',
           (_) => const OracaoScreen(),),
       _MaisEntry(Icons.home_outlined, 'Goel Home',
@@ -296,6 +296,8 @@ class _MaisTab extends StatelessWidget {
           (_) => const AniversariantesScreen(),),
       _MaisEntry(Icons.photo_library_outlined, 'Fotos e vídeos',
           (_) => const GaleriaScreen(),),
+      _MaisEntry(Icons.public, 'Redes Sociais',
+          (_) => const RedesScreen(),),
       _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens',
           (_) => const DevocionalTematicoScreen(
                 appBarTitle: 'Devocional Homens',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../escalas/presentation/escalas_screen.dart';
 import 'coming_soon_view.dart';
 
 /// Home (aba **Início**) — hub acolhedor após login/cadastro.
@@ -51,10 +52,14 @@ class HomeScreen extends StatelessWidget {
                           _go(context, 'Versículo do dia', versiculoBuilder),
                     ),
                     _HomeCard(
-                      icon: Icons.menu_book_outlined,
-                      title: 'Devocionais',
-                      subtitle: 'Leituras para o seu dia',
-                      onTap: () => _go(context, 'Devocionais', devocionalBuilder),
+                      icon: Icons.event_available_outlined,
+                      title: 'Escalas',
+                      subtitle: 'Escalas dos ministérios',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const EscalasScreen(),
+                        ),
+                      ),
                     ),
                   ];
                   // Tablet: duas colunas; mobile: uma coluna.

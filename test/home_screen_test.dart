@@ -10,7 +10,7 @@ void main() {
 
     expect(find.textContaining('Olá, Ana'), findsOneWidget);
     expect(find.text('Versículo do dia'), findsOneWidget);
-    expect(find.text('Devocionais'), findsOneWidget);
+    expect(find.text('Escalas'), findsOneWidget);
   });
 
   testWidgets('sem nome, mostra saudação genérica', (tester) async {

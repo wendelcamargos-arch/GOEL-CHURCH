@@ -6,12 +6,15 @@ import '../../biblia/presentation/biblia_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
 import '../../devocional_tematico/presentation/devocional_tematico_screen.dart';
 import '../../escalas/presentation/escalas_screen.dart';
+import '../../gabinete/presentation/gabinete_screen.dart';
 import '../../galeria/presentation/galeria_screen.dart';
+import '../../goelhome/presentation/goel_home_screen.dart';
 import '../../oracao/presentation/oracao_screen.dart';
 import '../../palavras/presentation/palavras_screen.dart';
 import '../../pregacoes/presentation/pregacoes_screen.dart';
 import '../../propositos/presentation/propositos_screen.dart';
 import '../../redes/presentation/redes_screen.dart';
+import '../../servo/presentation/servo_screen.dart';
 import '../../testemunho/presentation/testemunho_screen.dart';
 import 'coming_soon_view.dart';
 import 'home_screen.dart';
@@ -275,14 +278,11 @@ class _MaisTab extends StatelessWidget {
       _MaisEntry(Icons.volunteer_activism_outlined, 'Oração',
           (_) => const OracaoScreen(),),
       _MaisEntry(Icons.home_outlined, 'Goel Home',
-          (_) => const ComingSoonScreen(
-                icon: Icons.home_outlined, title: 'Goel Home',),),
+          (_) => const GoelHomeScreen(),),
       _MaisEntry(Icons.support_agent, 'Gabinete Pastoral',
-          (_) => const ComingSoonScreen(
-                icon: Icons.support_agent, title: 'Gabinete Pastoral',),),
+          (_) => const GabineteScreen(),),
       _MaisEntry(Icons.handshake_outlined, 'Quero ser Servo',
-          (_) => const ComingSoonScreen(
-                icon: Icons.handshake_outlined, title: 'Quero ser Servo',),),
+          (_) => const ServoScreen(),),
       _MaisEntry(Icons.campaign_outlined, 'Pregações',
           (_) => const PregacoesScreen(),),
       _MaisEntry(Icons.record_voice_over_outlined, 'Testemunho',

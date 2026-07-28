@@ -65,6 +65,43 @@ class GoelHomeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
               children: [
+                // Palavra de acolhimento ao visitante.
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.favorite_outline,
+                              size: 20, color: scheme.onSurface,),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Você é bem-vindo(a)!',
+                            style: textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Que alegria ter você aqui! Na Goel você não é visita, é '
+                        'família. Escolha um grupo nas casas, venha caminhar '
+                        'conosco e faça parte dessa história. Estamos te '
+                        'esperando de braços abertos.',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
                 Text(
                   'Grupos nas casas',
                   style: textTheme.titleMedium

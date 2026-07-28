@@ -9,6 +9,7 @@ import '../../escalas/presentation/escalas_screen.dart';
 import '../../gabinete/presentation/gabinete_screen.dart';
 import '../../galeria/presentation/galeria_screen.dart';
 import '../../goelhome/presentation/goel_home_screen.dart';
+import '../../membros/presentation/membros_screen.dart';
 import '../../oracao/presentation/oracao_screen.dart';
 import '../../palavras/presentation/palavras_screen.dart';
 import '../../pregacoes/presentation/pregacoes_screen.dart';
@@ -298,6 +299,8 @@ class _MaisTab extends StatelessWidget {
           (_) => const GaleriaScreen(),),
       _MaisEntry(Icons.public, 'Redes Sociais',
           (_) => const RedesScreen(),),
+      _MaisEntry(Icons.people_alt_outlined, 'Membros',
+          (_) => const MembrosScreen(),),
       _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens',
           (_) => const DevocionalTematicoScreen(
                 appBarTitle: 'Devocional Homens',

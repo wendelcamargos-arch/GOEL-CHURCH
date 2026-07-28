@@ -24,8 +24,10 @@ class GaleriaScreen extends StatelessWidget {
     super.key,
     this.pastaGeralUrl =
         'https://drive.google.com/drive/folders/1BsRKnvIXsRAKJZat1_Yor4UJiHo4gU3k?usp=drive_link',
-    this.fotosUrl,
-    this.videosUrl,
+    this.fotosUrl =
+        'https://drive.google.com/drive/folders/1DXIZ4vO4JSA7kIU6xF6m3EVW4z9nY3C1?usp=drive_link',
+    this.videosUrl =
+        'https://drive.google.com/drive/folders/10L8ofVnspDgglw-bEMxoCUXJIDZwXCGm?usp=drive_link',
     this.onAbrir,
   });
 

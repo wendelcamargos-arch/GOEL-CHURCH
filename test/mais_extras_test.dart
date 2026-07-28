@@ -5,10 +5,20 @@ import 'package:goel_church/features/propositos/presentation/propositos_screen.d
 import 'package:goel_church/features/devocional_tematico/presentation/devocional_tematico_screen.dart';
 
 void main() {
-  testWidgets('Galeria mostra álbuns do Google Drive', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: GaleriaScreen()));
-    expect(find.text('Batismos 2026'), findsOneWidget);
+  testWidgets('Galeria mostra as pastas Fotos e Vídeos do Google Drive',
+      (tester) async {
+    final abertos = <String>[];
+    await tester.pumpWidget(MaterialApp(
+      home: GaleriaScreen(onAbrir: (url) async => abertos.add(url)),
+    ),);
+    expect(find.text('Fotos'), findsOneWidget);
+    expect(find.text('Vídeos'), findsOneWidget);
     expect(find.text('Abrir no Google Drive'), findsWidgets);
+
+    // Tocar em "Fotos" abre a pasta geral do Drive (link real por padrão).
+    await tester.tap(find.text('Fotos'));
+    await tester.pump();
+    expect(abertos.single, contains('drive.google.com'));
   });
 
   testWidgets('Propósitos mostra intro e lista numerada', (tester) async {

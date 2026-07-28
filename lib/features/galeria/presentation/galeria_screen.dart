@@ -1,66 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Um álbum de fotos/vídeos hospedado no Google Drive.
-class AlbumDrive {
-  final String titulo;
-  final String descricao;
-  final bool video;
-
-  /// Link da pasta/álbum no Google Drive (o Owner injeta os reais).
-  final String driveUrl;
-
-  const AlbumDrive({
-    required this.titulo,
-    required this.descricao,
-    required this.driveUrl,
-    this.video = false,
-  });
-}
-
-/// Fotos e vídeos — álbuns no Google Drive.
+/// Fotos e vídeos — as mídias ficam no Google Drive.
 ///
-/// As mídias ficam no Google Drive: cada álbum abre a pasta correspondente no
-/// app/navegador, onde a pessoa visualiza e baixa direto do Drive. Camada de
-/// apresentação: os álbuns chegam por parâmetro (com exemplos como padrão);
-/// o Owner substitui pelos links reais das pastas.
+/// O link padrão é o da PASTA GERAL, que contém duas subpastas: "Fotos" e
+/// "Vídeos". A pessoa escolhe uma pasta e vê/baixa tudo direto do Drive.
+///
+/// Se um dia houver os links DIRETOS de cada subpasta, basta passar [fotosUrl]
+/// e/ou [videosUrl] — os cartões passam a abrir a pasta certa direto. Enquanto
+/// não houver, ambos abrem a pasta geral (onde as duas pastas aparecem).
 class GaleriaScreen extends StatelessWidget {
-  final List<AlbumDrive>? albuns;
+  /// Pasta geral no Google Drive (contém as pastas Fotos e Vídeos).
+  final String pastaGeralUrl;
+
+  /// Links diretos (opcionais) de cada subpasta.
+  final String? fotosUrl;
+  final String? videosUrl;
 
   /// Injeção opcional para abrir o link (testes). Nulo → usa url_launcher.
   final Future<void> Function(String url)? onAbrir;
 
-  const GaleriaScreen({super.key, this.albuns, this.onAbrir});
-
-  static const _exemplo = <AlbumDrive>[
-    AlbumDrive(
-      titulo: 'Cultos de Domingo',
-      descricao: 'Fotos e vídeos das celebrações',
-      driveUrl: 'https://drive.google.com/',
-      video: true,
-    ),
-    AlbumDrive(
-      titulo: 'Batismos 2026',
-      descricao: 'Momentos de decisão e fé',
-      driveUrl: 'https://drive.google.com/',
-    ),
-    AlbumDrive(
-      titulo: 'Encontro de Jovens',
-      descricao: 'Álbum do último encontro',
-      driveUrl: 'https://drive.google.com/',
-    ),
-    AlbumDrive(
-      titulo: 'Ação Social',
-      descricao: 'Servindo a nossa cidade',
-      driveUrl: 'https://drive.google.com/',
-    ),
-  ];
+  const GaleriaScreen({
+    super.key,
+    this.pastaGeralUrl =
+        'https://drive.google.com/drive/folders/1BsRKnvIXsRAKJZat1_Yor4UJiHo4gU3k?usp=drive_link',
+    this.fotosUrl,
+    this.videosUrl,
+    this.onAbrir,
+  });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final lista = albuns ?? _exemplo;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Fotos e vídeos')),
@@ -69,27 +41,45 @@ class GaleriaScreen extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
                 Row(
                   children: [
-                    Icon(Icons.cloud_outlined, size: 20, color: scheme.onSurfaceVariant),
+                    Icon(Icons.cloud_outlined,
+                        size: 20, color: scheme.onSurfaceVariant,),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Os álbuns ficam no Google Drive. Toque para ver e '
-                        'baixar as fotos e vídeos.',
+                        'As nossas fotos e vídeos ficam no Google Drive. '
+                        'Escolha uma pasta — você vê e baixa tudo direto do Drive.',
                         style: textTheme.bodyMedium
                             ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                for (final a in lista) ...[
-                  _AlbumCard(album: a, onTap: () => _abrir(context, a.driveUrl)),
-                  const SizedBox(height: 12),
-                ],
+                const SizedBox(height: 20),
+                _PastaCard(
+                  titulo: 'Fotos',
+                  descricao: 'Os melhores momentos em imagens',
+                  icon: Icons.photo_library_outlined,
+                  onTap: () => _abrir(context, fotosUrl ?? pastaGeralUrl),
+                ),
+                const SizedBox(height: 12),
+                _PastaCard(
+                  titulo: 'Vídeos',
+                  descricao: 'Cultos, eventos e testemunhos em vídeo',
+                  icon: Icons.video_library_outlined,
+                  onTap: () => _abrir(context, videosUrl ?? pastaGeralUrl),
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () => _abrir(context, pastaGeralUrl),
+                    icon: const Icon(Icons.folder_open_outlined),
+                    label: const Text('Abrir a pasta geral no Drive'),
+                  ),
+                ),
               ],
             ),
           ),
@@ -123,10 +113,17 @@ class GaleriaScreen extends StatelessWidget {
   }
 }
 
-class _AlbumCard extends StatelessWidget {
-  final AlbumDrive album;
+class _PastaCard extends StatelessWidget {
+  final String titulo;
+  final String descricao;
+  final IconData icon;
   final VoidCallback onTap;
-  const _AlbumCard({required this.album, required this.onTap});
+  const _PastaCard({
+    required this.titulo,
+    required this.descricao,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -134,29 +131,23 @@ class _AlbumCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: 'Abrir ${album.titulo} no Google Drive',
+      label: 'Abrir $titulo no Google Drive',
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: scheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    album.video
-                        ? Icons.video_library_outlined
-                        : Icons.photo_library_outlined,
-                    size: 28,
-                    color: scheme.onPrimaryContainer,
-                  ),
+                  child: Icon(icon, size: 30, color: scheme.onPrimaryContainer),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -164,13 +155,13 @@ class _AlbumCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        album.titulo,
-                        style: textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        titulo,
+                        style: textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        album.descricao,
+                        descricao,
                         style: textTheme.bodyMedium
                             ?.copyWith(color: scheme.onSurfaceVariant),
                       ),

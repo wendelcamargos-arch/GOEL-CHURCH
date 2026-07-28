@@ -1,24 +1,40 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:goel_domain/goel_domain.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../data/verse_audio_source.dart';
+
+/// Frase-gatilho exibida ao final de cada áudio, para multiplicar a Palavra.
+const String kGatilhoCompartilhar =
+    'Envie essa palavra poderosa para 7 pessoas serem abençoadas.';
+
 /// Tela do Versículo do dia (Slice 06) — redesign visual (preto e branco).
 ///
 /// APENAS camada de apresentação: o contrato é preservado
-/// (`VersiculoScreen(repository:, sourceLabel:)`). Leitura para todas as idades:
-/// texto amplo, centrado, entrelinhas confortáveis e alto contraste. Traz a
-/// data de hoje e as ações de compartilhar (no grupo) e copiar.
+/// (`VersiculoScreen(repository:, sourceLabel:)`, agora com `audioSource`
+/// opcional). Traz a logo da Goel, o áudio da Palavra (voz ElevenLabs, quando
+/// configurada) e, ao final da reprodução, o gatilho de compartilhamento.
 class VersiculoScreen extends StatelessWidget {
   final VerseRepository repository;
 
   /// Rótulo opcional de fonte/atribuição (ex.: "Almeida — domínio público").
   final String? sourceLabel;
 
+  /// Fonte do áudio da Palavra (voz ElevenLabs). Sem ela, a tela mostra o
+  /// estado honesto "áudio em breve".
+  final VerseAudioSource audioSource;
+
+  /// Preview: inicia já no estado "áudio concluído" para exibir o gatilho.
+  final bool debugStartCompleted;
+
   const VersiculoScreen({
     super.key,
     required this.repository,
     this.sourceLabel,
+    this.audioSource = const UnavailableVerseAudioSource(),
+    this.debugStartCompleted = false,
   });
 
   @override
@@ -41,7 +57,12 @@ class VersiculoScreen extends StatelessWidget {
                 ),
               );
             }
-            return _VerseView(verse: snapshot.data!, sourceLabel: sourceLabel);
+            return _VerseView(
+              verse: snapshot.data!,
+              sourceLabel: sourceLabel,
+              audioSource: audioSource,
+              debugStartCompleted: debugStartCompleted,
+            );
           },
         ),
       ),
@@ -49,15 +70,88 @@ class VersiculoScreen extends StatelessWidget {
   }
 }
 
-class _VerseView extends StatelessWidget {
+enum _AudioEstado { parado, carregando, tocando, concluido }
+
+class _VerseView extends StatefulWidget {
   final DailyVerse verse;
   final String? sourceLabel;
+  final VerseAudioSource audioSource;
+  final bool debugStartCompleted;
 
-  const _VerseView({required this.verse, this.sourceLabel});
+  const _VerseView({
+    required this.verse,
+    required this.audioSource,
+    required this.debugStartCompleted,
+    this.sourceLabel,
+  });
 
-  /// Texto pronto para compartilhar/copiar.
+  @override
+  State<_VerseView> createState() => _VerseViewState();
+}
+
+class _VerseViewState extends State<_VerseView> {
+  late final AudioPlayer _player;
+  _AudioEstado _estado = _AudioEstado.parado;
+
+  /// Texto pronto para compartilhar/copiar (com o gatilho ao final).
   String get _compartilhavel =>
-      '"${verse.text}"\n\n— ${verse.reference}\n\nGoel Church · Versículo do dia';
+      '"${widget.verse.text}"\n\n— ${widget.verse.reference}\n\n'
+      '$kGatilhoCompartilhar\n\nGoel Church · Palavra do dia';
+
+  @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayer();
+    _player.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _estado = _AudioEstado.concluido);
+    });
+    if (widget.debugStartCompleted) _estado = _AudioEstado.concluido;
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _ouvir() async {
+    if (_estado == _AudioEstado.tocando) {
+      await _player.pause();
+      setState(() => _estado = _AudioEstado.parado);
+      return;
+    }
+    setState(() => _estado = _AudioEstado.carregando);
+    final fonte = await widget.audioSource.audioFor(widget.verse);
+    if (!mounted) return;
+    if (fonte == null) {
+      // Honesto: a voz (ElevenLabs) ainda não foi configurada.
+      setState(() => _estado = _AudioEstado.parado);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+          content: Text(
+            'A voz da Palavra (ElevenLabs) entra assim que for configurada.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),);
+      return;
+    }
+    try {
+      await _player.play(
+        fonte.startsWith('http') ? UrlSource(fonte) : AssetSource(fonte),
+      );
+      if (mounted) setState(() => _estado = _AudioEstado.tocando);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _estado = _AudioEstado.parado);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+          content: Text('Não foi possível tocar o áudio agora.'),
+          behavior: SnackBarBehavior.floating,
+        ),);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,46 +166,42 @@ class _VerseView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _DataDeHoje(dia: DateTime.now()),
-              const SizedBox(height: 24),
-              Icon(
-                Icons.format_quote,
-                size: 56,
-                color: scheme.onSurfaceVariant,
+              Image.asset(
+                'assets/brand/goel_logo.png',
+                height: 56,
+                fit: BoxFit.contain,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
+              _DataDeHoje(dia: DateTime.now()),
+              const SizedBox(height: 22),
+              Icon(Icons.format_quote, size: 48, color: scheme.onSurfaceVariant),
+              const SizedBox(height: 10),
               Text(
-                verse.text,
+                widget.verse.text,
                 textAlign: TextAlign.center,
                 style: textTheme.headlineSmall?.copyWith(
                   height: 1.5,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 28),
-              _ReferencePill(reference: verse.reference),
-              if (sourceLabel != null) ...[
-                const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              _ReferencePill(reference: widget.verse.reference),
+              if (widget.sourceLabel != null) ...[
+                const SizedBox(height: 14),
                 Text(
-                  sourceLabel!,
+                  widget.sourceLabel!,
                   textAlign: TextAlign.center,
-                  style: textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: textTheme.labelSmall
+                      ?.copyWith(color: scheme.onSurfaceVariant),
                 ),
               ],
               const SizedBox(height: 28),
-              // Ações em largura cheia (padrão de CTA do app), empilhadas para
-              // caber com folga em qualquer largura de tela.
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => _compartilhar(context),
-                  icon: const Icon(Icons.share_outlined),
-                  label: const Text('Compartilhar'),
-                ),
-              ),
-              const SizedBox(height: 12),
+              _BotaoOuvir(estado: _estado, onTap: _ouvir),
+              if (_estado == _AudioEstado.concluido) ...[
+                const SizedBox(height: 24),
+                _GatilhoCard(onCompartilhar: () => _compartilhar(context)),
+              ],
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -155,10 +245,115 @@ class _VerseView extends StatelessWidget {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(const SnackBar(
-        content: Text('Versículo copiado.'),
+        content: Text('Palavra copiada.'),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
       ),);
+  }
+}
+
+/// Botão redondo grande para ouvir a narração da Palavra.
+class _BotaoOuvir extends StatelessWidget {
+  final _AudioEstado estado;
+  final VoidCallback onTap;
+  const _BotaoOuvir({required this.estado, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final (IconData icone, String rotulo) = switch (estado) {
+      _AudioEstado.tocando => (Icons.pause_rounded, 'Tocando…'),
+      _AudioEstado.carregando => (Icons.hourglass_top_rounded, 'Preparando…'),
+      _AudioEstado.concluido => (Icons.replay_rounded, 'Ouvir de novo'),
+      _AudioEstado.parado => (Icons.play_arrow_rounded, 'Ouvir a Palavra'),
+    };
+
+    return Column(
+      children: [
+        Semantics(
+          button: true,
+          label: rotulo,
+          child: InkWell(
+            onTap: estado == _AudioEstado.carregando ? null : onTap,
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                shape: BoxShape.circle,
+              ),
+              child: estado == _AudioEstado.carregando
+                  ? Padding(
+                      padding: const EdgeInsets.all(26),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: scheme.onPrimary,
+                      ),
+                    )
+                  : Icon(icone, size: 44, color: scheme.onPrimary),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          rotulo,
+          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'Voz ElevenLabs · narração acolhedora',
+          style: textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+/// Card exibido ao final do áudio: gatilho para compartilhar com 7 pessoas.
+class _GatilhoCard extends StatelessWidget {
+  final VoidCallback onCompartilhar;
+  const _GatilhoCard({required this.onCompartilhar});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.volunteer_activism_outlined,
+              size: 30, color: scheme.onSurface,),
+          const SizedBox(height: 12),
+          Text(
+            kGatilhoCompartilhar,
+            textAlign: TextAlign.center,
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: onCompartilhar,
+              icon: const Icon(Icons.share_outlined),
+              label: const Text('Compartilhar com 7 pessoas'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

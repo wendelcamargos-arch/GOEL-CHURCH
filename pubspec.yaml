@@ -8,6 +8,7 @@ environment:
   flutter: '>=3.22.0'
 
 dependencies:
+  audioplayers: ^6.8.1
   flutter:
     sdk: flutter
   # Framework Independence: a regra de negócio vive no pacote de domínio (Dart puro).

@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Uma pregação/publicação (modelo de apresentação — sem domínio).
 class Pregacao {
   final String titulo;
   final String pregador;
   final DateTime quando;
+
+  /// Tema/resumo curto da mensagem (opcional).
+  final String? tema;
+
+  /// Link do vídeo (YouTube etc.). Quando presente, "Assistir" abre o link;
+  /// quando nulo, a tela avisa de forma honesta que o vídeo chega em breve.
+  final String? videoUrl;
+
   const Pregacao({
     required this.titulo,
     required this.pregador,
     required this.quando,
+    this.tema,
+    this.videoUrl,
   });
 }
 
@@ -29,16 +40,19 @@ class PregacoesScreen extends StatelessWidget {
       titulo: 'A graça que transforma',
       pregador: 'Pr. João Batista',
       quando: DateTime(2026, 7, 20),
+      tema: 'O poder da graça para recomeçar.',
     ),
     Pregacao(
       titulo: 'Uma família para pertencer',
       pregador: 'Pra. Ana',
       quando: DateTime(2026, 7, 13),
+      tema: 'Você foi criado para pertencer ao corpo de Cristo.',
     ),
     Pregacao(
       titulo: 'Fé que move montanhas',
       pregador: 'Pr. Paulo',
       quando: DateTime(2026, 7, 6),
+      tema: 'Uma fé que age diante do impossível.',
     ),
   ];
 
@@ -65,6 +79,7 @@ class PregacoesScreen extends StatelessWidget {
                       return _PregacaoCard(
                         pregacao: p,
                         onTap: () => _abrir(context, p),
+                        onCompartilhar: () => _compartilhar(context, p),
                       );
                     },
                   ),
@@ -74,12 +89,25 @@ class PregacoesScreen extends StatelessWidget {
     );
   }
 
-  void _abrir(BuildContext context, Pregacao p) {
+  Future<void> _abrir(BuildContext context, Pregacao p) async {
     if (onAbrir != null) {
       onAbrir!(p);
       return;
     }
-    ScaffoldMessenger.of(context)
+    final messenger = ScaffoldMessenger.of(context);
+    // Se houver vídeo, abre o link; senão, avisa de forma honesta.
+    if (p.videoUrl != null) {
+      try {
+        final ok = await launchUrl(
+          Uri.parse(p.videoUrl!),
+          mode: LaunchMode.externalApplication,
+        );
+        if (ok) return;
+      } catch (_) {
+        // cai no aviso abaixo
+      }
+    }
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
         const SnackBar(
@@ -88,6 +116,26 @@ class PregacoesScreen extends StatelessWidget {
           duration: Duration(seconds: 2),
         ),
       );
+  }
+
+  Future<void> _compartilhar(BuildContext context, Pregacao p) async {
+    final linha = p.tema != null ? '\n${p.tema}' : '';
+    final link = p.videoUrl != null ? '\n\nAssista: ${p.videoUrl}' : '';
+    final texto = 'Pregação: ${p.titulo}\n'
+        '${p.pregador} · ${_fmtData(p.quando)}$linha$link\n\nGoel Church';
+    final messenger = ScaffoldMessenger.of(context);
+    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(texto)}');
+    try {
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok) throw Exception('falha');
+    } catch (_) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+          content: Text('Não foi possível abrir o compartilhamento agora.'),
+          behavior: SnackBarBehavior.floating,
+        ),);
+    }
   }
 }
 
@@ -121,7 +169,12 @@ class _Intro extends StatelessWidget {
 class _PregacaoCard extends StatelessWidget {
   final Pregacao pregacao;
   final VoidCallback onTap;
-  const _PregacaoCard({required this.pregacao, required this.onTap});
+  final VoidCallback onCompartilhar;
+  const _PregacaoCard({
+    required this.pregacao,
+    required this.onTap,
+    required this.onCompartilhar,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +190,7 @@ class _PregacaoCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   width: 52,
@@ -164,10 +218,24 @@ class _PregacaoCard extends StatelessWidget {
                         style: textTheme.labelMedium
                             ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
+                      if (pregacao.tema != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          pregacao.tema!,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+                IconButton(
+                  icon: const Icon(Icons.share_outlined),
+                  tooltip: 'Compartilhar ${pregacao.titulo}',
+                  onPressed: onCompartilhar,
+                ),
               ],
             ),
           ),

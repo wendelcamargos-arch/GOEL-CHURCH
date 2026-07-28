@@ -14,8 +14,8 @@ class GabineteScreen extends StatefulWidget {
 
   const GabineteScreen({
     super.key,
-    this.whatsappPastor = '5500000000000',
-    this.whatsappPastora = '5500000000000',
+    this.whatsappPastor = '5562995422169', // Pastor Linniker
+    this.whatsappPastora = '5562993095993', // Pastora Wanessa
   });
 
   @override

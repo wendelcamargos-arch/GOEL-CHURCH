@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Um membro da igreja (modelo de apresentação).
@@ -35,6 +36,24 @@ class MembrosScreen extends StatefulWidget {
 class _MembrosScreenState extends State<MembrosScreen> {
   String _busca = '';
 
+  /// Exporta a lista (nome + telefone) em CSV. Interino: copia para a área de
+  /// transferência. O download/exportação de arquivo definitivo (e o controle
+  /// de acesso "somente administradores") entram com o backend.
+  void _exportar(List<Membro> todos) {
+    final csv = StringBuffer('Nome,Telefone\n');
+    for (final m in [...todos]..sort((a, b) => a.nome.compareTo(b.nome))) {
+      csv.writeln('"${m.nome}","${m.contato}"');
+    }
+    Clipboard.setData(ClipboardData(text: csv.toString()));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text('Lista de ${todos.length} membros copiada (CSV).'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),);
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -46,7 +65,16 @@ class _MembrosScreenState extends State<MembrosScreen> {
       ..sort((a, b) => a.nome.compareTo(b.nome));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Membros')),
+      appBar: AppBar(
+        title: const Text('Membros'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download_outlined),
+            tooltip: 'Baixar lista (administradores)',
+            onPressed: () => _exportar(todos),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -54,7 +82,25 @@ class _MembrosScreenState extends State<MembrosScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Row(
+                    children: [
+                      Icon(Icons.groups_outlined,
+                          size: 18, color: scheme.onSurfaceVariant,),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Quem acessa o app já entra na lista de membros. '
+                          'Administradores podem baixar (nome + telefone).',
+                          style: textTheme.bodySmall
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   child: TextField(
                     onChanged: (v) => setState(() => _busca = v),
                     decoration: const InputDecoration(

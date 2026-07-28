@@ -323,11 +323,6 @@ class _BotaoOuvir extends StatelessWidget {
           rotulo,
           style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 2),
-        Text(
-          'Voz ElevenLabs · narração acolhedora',
-          style: textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
-        ),
       ],
     );
   }

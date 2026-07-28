@@ -6,9 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/verse_audio_source.dart';
 
-/// Frase-gatilho exibida ao final de cada áudio, para multiplicar a Palavra.
+/// Frase-gatilho para multiplicar a Palavra — aparece para quem ouve (ao final
+/// do áudio) e também para quem prefere ler (sempre disponível).
 const String kGatilhoCompartilhar =
-    'Envie essa palavra poderosa para 7 pessoas serem abençoadas.';
+    'Envie essa mensagem poderosa para 7 pessoas que serão abençoadas.';
 
 /// Tela do Versículo do dia (Slice 06) — redesign visual (preto e branco).
 ///
@@ -197,11 +198,11 @@ class _VerseViewState extends State<_VerseView> {
               ],
               const SizedBox(height: 28),
               _BotaoOuvir(estado: _estado, onTap: _ouvir),
-              if (_estado == _AudioEstado.concluido) ...[
-                const SizedBox(height: 24),
-                _GatilhoCard(onCompartilhar: () => _compartilhar(context)),
-              ],
               const SizedBox(height: 24),
+              // Sempre disponível: quem prefere LER também compartilha a Palavra
+              // (e o mesmo card fecha a experiência de quem OUVE, ao final).
+              _GatilhoCard(onCompartilhar: () => _compartilhar(context)),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(

@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_REF: rzxeqvczjfwcggkgcsxw
-      PATCH_FILE: GOEL-CHURCH-slice-06-versiculo.patch
+      PATCH_FILE: GOEL-CHURCH-mvp-slices-01-07-completo.patch
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_EXPORT_PASSPHRASE: ${{ secrets.SUPABASE_EXPORT_PASSPHRASE }}
 

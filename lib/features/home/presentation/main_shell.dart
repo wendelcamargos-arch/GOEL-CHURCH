@@ -384,12 +384,31 @@ const _devocionalHomens = <ItemDevocional>[
         'joelhos, buscando a Deus antes de decidir. Seja um homem de oração '
         'e a sua família colherá os frutos.',
     autor: 'Goel Church',
+    referencia: 'Marcos 10:43-44',
   ),
   ItemDevocional(
     'Integridade no oculto',
     'O caráter se prova onde ninguém vê. Aquilo que você é no secreto é o '
-        'que Deus recompensa em público. Guarde o seu coração.',
+        'que Deus recompensa em público. Guarde o seu coração acima de '
+        'todas as coisas.',
     autor: 'Goel Church',
+    referencia: 'Provérbios 4:23',
+  ),
+  ItemDevocional(
+    'Coragem e firmeza',
+    'Vigiai, estai firmes na fé, portai-vos varonilmente e fortalecei-vos. '
+        'Ser homem de Deus é enfrentar as batalhas com fé, sem desanimar '
+        'diante das lutas.',
+    autor: 'Goel Church',
+    referencia: '1 Coríntios 16:13',
+  ),
+  ItemDevocional(
+    'Provedor com propósito',
+    'Trabalhe como para o Senhor, não para os homens. O seu suor tem '
+        'propósito quando é oferecido a Deus. Ele honra o homem fiel e '
+        'trabalhador.',
+    autor: 'Goel Church',
+    referencia: 'Colossenses 3:23',
   ),
 ];
 
@@ -400,12 +419,28 @@ const _devocionalMulheres = <ItemDevocional>[
         'futuro. A sua confiança não está nas circunstâncias, mas no Deus '
         'que a sustenta.',
     autor: 'Goel Church',
+    referencia: 'Provérbios 31:25',
   ),
   ItemDevocional(
     'O valor do descanso',
     'Você não precisa carregar tudo sozinha. Entregue os seus cuidados a '
         'Deus e descanse — Ele cuida de você com amor eterno.',
     autor: 'Goel Church',
+    referencia: '1 Pedro 5:7',
+  ),
+  ItemDevocional(
+    'Beleza que não passa',
+    'A verdadeira beleza não está no exterior, mas num espírito manso e '
+        'tranquilo, precioso diante de Deus. Você é fruto do cuidado dele.',
+    autor: 'Goel Church',
+    referencia: '1 Pedro 3:3-4',
+  ),
+  ItemDevocional(
+    'Semeando a fé em casa',
+    'Como Loide e Eunice, a sua fé sincera deixa marcas por gerações. O '
+        'que você semeia hoje na sua casa, Deus faz florescer amanhã.',
+    autor: 'Goel Church',
+    referencia: '2 Timóteo 1:5',
   ),
 ];
 

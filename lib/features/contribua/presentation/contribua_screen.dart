@@ -245,7 +245,9 @@ class _QrCard extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 240, maxHeight: 240),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHighest,
+                    // Fundo branco: garante contraste do QR e cantos limpos
+                    // (sem "triângulos" escuros ao arredondar as bordas).
+                    color: qrAsset == null ? scheme.surfaceContainerHighest : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: qrAsset == null

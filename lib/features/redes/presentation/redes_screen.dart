@@ -33,25 +33,13 @@ class RedesScreen extends StatelessWidget {
       titulo: 'Grupo de Boas-vindas',
       subtitulo: 'Entre no nosso grupo do WhatsApp',
       icon: Icons.chat_bubble_outline,
-      url: 'https://chat.whatsapp.com/',
+      url: 'https://chat.whatsapp.com/GTQFGZniKpLKaxW03zTmbd?mode=gi_t',
     ),
     RedeLink(
       titulo: 'Instagram',
-      subtitulo: '@goelchurch',
+      subtitulo: '@goelchurch_',
       icon: Icons.camera_alt_outlined,
-      url: 'https://instagram.com/',
-    ),
-    RedeLink(
-      titulo: 'Canal no WhatsApp',
-      subtitulo: 'Receba os avisos oficiais',
-      icon: Icons.campaign_outlined,
-      url: 'https://whatsapp.com/channel/',
-    ),
-    RedeLink(
-      titulo: 'YouTube',
-      subtitulo: 'Assista às nossas transmissões',
-      icon: Icons.smart_display_outlined,
-      url: 'https://youtube.com/',
+      url: 'https://www.instagram.com/goelchurch_?igsh=MjJ5Y2ExN2w0NTh6',
     ),
   ];
 

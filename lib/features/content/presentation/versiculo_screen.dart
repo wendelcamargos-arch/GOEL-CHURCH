@@ -6,10 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/verse_audio_source.dart';
 
-/// Frase-gatilho para multiplicar a Palavra — aparece para quem ouve (ao final
-/// do áudio) e também para quem prefere ler (sempre disponível).
+/// Frase-gatilho para multiplicar a Palavra — aparece ao tocar em
+/// "Compartilhar" (e também ao final de cada áudio ouvido).
 const String kGatilhoCompartilhar =
-    'Envie essa mensagem poderosa para 7 pessoas que serão abençoadas.';
+    'Compartilhe essa palavra poderosa para mais 7 pessoas serem abençoadas.';
 
 /// Tela do Versículo do dia (Slice 06) — redesign visual (preto e branco).
 ///
@@ -104,9 +104,17 @@ class _VerseViewState extends State<_VerseView> {
     super.initState();
     _player = AudioPlayer();
     _player.onPlayerComplete.listen((_) {
-      if (mounted) setState(() => _estado = _AudioEstado.concluido);
+      if (!mounted) return;
+      setState(() => _estado = _AudioEstado.concluido);
+      // Ao final do áudio, o mesmo gatilho de compartilhamento aparece.
+      _abrirCompartilhar(context);
     });
-    if (widget.debugStartCompleted) _estado = _AudioEstado.concluido;
+    if (widget.debugStartCompleted) {
+      _estado = _AudioEstado.concluido;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _abrirCompartilhar(context);
+      });
+    }
   }
 
   @override
@@ -199,26 +207,38 @@ class _VerseViewState extends State<_VerseView> {
               const SizedBox(height: 28),
               _BotaoOuvir(estado: _estado, onTap: _ouvir),
               const SizedBox(height: 24),
-              // Sempre disponível: quem prefere LER também compartilha a Palavra
-              // (e o mesmo card fecha a experiência de quem OUVE, ao final).
-              _GatilhoCard(onCompartilhar: () => _compartilhar(context)),
-              const SizedBox(height: 16),
+              // Na tela, apenas o botão de compartilhar. A frase-gatilho aparece
+              // ao tocar nele (na folha de compartilhamento).
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    foregroundColor: scheme.onSurface,
-                    side: BorderSide(color: scheme.outline),
-                  ),
-                  onPressed: () => _copiar(context),
-                  icon: const Icon(Icons.copy_outlined),
-                  label: const Text('Copiar'),
+                child: FilledButton.icon(
+                  onPressed: () => _abrirCompartilhar(context),
+                  icon: const Icon(Icons.share_outlined),
+                  label: const Text('Compartilhar'),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Ao tocar em "Compartilhar", mostra a frase-gatilho e a ação de enviar.
+  void _abrirCompartilhar(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => _CompartilharSheet(
+        onEnviar: () {
+          Navigator.of(sheetContext).pop();
+          _compartilhar(context);
+        },
+        onCopiar: () {
+          Navigator.of(sheetContext).pop();
+          _copiar(context);
+        },
       ),
     );
   }
@@ -313,46 +333,58 @@ class _BotaoOuvir extends StatelessWidget {
   }
 }
 
-/// Card exibido ao final do áudio: gatilho para compartilhar com 7 pessoas.
-class _GatilhoCard extends StatelessWidget {
-  final VoidCallback onCompartilhar;
-  const _GatilhoCard({required this.onCompartilhar});
+/// Folha aberta ao tocar em "Compartilhar": mostra a frase-gatilho e envia.
+class _CompartilharSheet extends StatelessWidget {
+  final VoidCallback onEnviar;
+  final VoidCallback onCopiar;
+  const _CompartilharSheet({required this.onEnviar, required this.onCopiar});
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: scheme.outlineVariant),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.volunteer_activism_outlined,
-              size: 30, color: scheme.onSurface,),
-          const SizedBox(height: 12),
-          Text(
-            kGatilhoCompartilhar,
-            textAlign: TextAlign.center,
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              height: 1.35,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.volunteer_activism_outlined,
+                size: 34, color: scheme.onSurface,),
+            const SizedBox(height: 16),
+            Text(
+              kGatilhoCompartilhar,
+              textAlign: TextAlign.center,
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: onCompartilhar,
-              icon: const Icon(Icons.share_outlined),
-              label: const Text('Compartilhar com 7 pessoas'),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onEnviar,
+                icon: const Icon(Icons.share_outlined),
+                label: const Text('Compartilhar no WhatsApp'),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  foregroundColor: scheme.onSurface,
+                  side: BorderSide(color: scheme.outline),
+                ),
+                onPressed: onCopiar,
+                icon: const Icon(Icons.copy_outlined),
+                label: const Text('Copiar texto'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

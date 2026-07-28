@@ -23,6 +23,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true
@@ -34,3 +36,22 @@ flutter:
     # mantendo os nomes: goel_logo.png (logotipo) e church_facade.jpg (fachada).
     - assets/brand/
     - assets/contribua/
+
+# Ícones do app (Android/iOS) gerados a partir da logo da Goel.
+# Rodar: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  remove_alpha_ios: true
+
+# Splash nativa (antes do Flutter carregar): logo branca sobre preto.
+# Rodar: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#000000"
+  image: assets/splash/splash_logo.png
+  android_12:
+    color: "#000000"
+    image: assets/splash/splash_logo.png

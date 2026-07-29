@@ -8,10 +8,10 @@ environment:
   flutter: '>=3.22.0'
 
 dependencies:
-  audioplayers: ^6.8.1
   flutter:
     sdk: flutter
   # Framework Independence: a regra de negócio vive no pacote de domínio (Dart puro).
+  flutter_tts: ^4.2.5
   goel_domain:
     path: packages/goel_domain
   # Slice 02 — plataforma Supabase (dados/auth/storage) consumida pela camada de dados.

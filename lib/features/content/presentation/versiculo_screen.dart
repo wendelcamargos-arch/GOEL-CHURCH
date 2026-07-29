@@ -1,10 +1,8 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:goel_domain/goel_domain.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../data/verse_audio_source.dart';
 
 /// Frase-gatilho para multiplicar a Palavra — aparece ao tocar em
 /// "Compartilhar" (e também ao final de cada áudio ouvido).
@@ -14,18 +12,14 @@ const String kGatilhoCompartilhar =
 /// Tela do Versículo do dia (Slice 06) — redesign visual (preto e branco).
 ///
 /// APENAS camada de apresentação: o contrato é preservado
-/// (`VersiculoScreen(repository:, sourceLabel:)`, agora com `audioSource`
-/// opcional). Traz a logo da Goel, o áudio da Palavra (voz ElevenLabs, quando
-/// configurada) e, ao final da reprodução, o gatilho de compartilhamento.
+/// (`VersiculoScreen(repository:, sourceLabel:)`). Traz a logo da Goel e o áudio
+/// da Palavra usando a VOZ DO PRÓPRIO APARELHO (Text-to-Speech nativo — grátis,
+/// offline, em português) e, ao final da leitura, o gatilho de compartilhamento.
 class VersiculoScreen extends StatelessWidget {
   final VerseRepository repository;
 
   /// Rótulo opcional de fonte/atribuição (ex.: "Almeida — domínio público").
   final String? sourceLabel;
-
-  /// Fonte do áudio da Palavra (voz ElevenLabs). Sem ela, a tela mostra o
-  /// estado honesto "áudio em breve".
-  final VerseAudioSource audioSource;
 
   /// Preview: inicia já no estado "áudio concluído" para exibir o gatilho.
   final bool debugStartCompleted;
@@ -34,7 +28,6 @@ class VersiculoScreen extends StatelessWidget {
     super.key,
     required this.repository,
     this.sourceLabel,
-    this.audioSource = const UnavailableVerseAudioSource(),
     this.debugStartCompleted = false,
   });
 
@@ -61,7 +54,6 @@ class VersiculoScreen extends StatelessWidget {
             return _VerseView(
               verse: snapshot.data!,
               sourceLabel: sourceLabel,
-              audioSource: audioSource,
               debugStartCompleted: debugStartCompleted,
             );
           },
@@ -76,12 +68,10 @@ enum _AudioEstado { parado, carregando, tocando, concluido }
 class _VerseView extends StatefulWidget {
   final DailyVerse verse;
   final String? sourceLabel;
-  final VerseAudioSource audioSource;
   final bool debugStartCompleted;
 
   const _VerseView({
     required this.verse,
-    required this.audioSource,
     required this.debugStartCompleted,
     this.sourceLabel,
   });
@@ -91,7 +81,7 @@ class _VerseView extends StatefulWidget {
 }
 
 class _VerseViewState extends State<_VerseView> {
-  late final AudioPlayer _player;
+  final FlutterTts _tts = FlutterTts();
   _AudioEstado _estado = _AudioEstado.parado;
 
   /// Texto pronto para compartilhar/copiar (com o gatilho ao final).
@@ -102,13 +92,7 @@ class _VerseViewState extends State<_VerseView> {
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
-    _player.onPlayerComplete.listen((_) {
-      if (!mounted) return;
-      setState(() => _estado = _AudioEstado.concluido);
-      // Ao final do áudio, o mesmo gatilho de compartilhamento aparece.
-      _abrirCompartilhar(context);
-    });
+    _configurarVoz();
     if (widget.debugStartCompleted) {
       _estado = _AudioEstado.concluido;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -117,46 +101,46 @@ class _VerseViewState extends State<_VerseView> {
     }
   }
 
+  Future<void> _configurarVoz() async {
+    // Voz do próprio aparelho (Text-to-Speech nativo): grátis, offline, pt-BR.
+    await _tts.setLanguage('pt-BR');
+    await _tts.setSpeechRate(0.45); // ritmo calmo e acolhedor
+    await _tts.setPitch(1.0);
+    _tts.setCompletionHandler(() {
+      if (!mounted) return;
+      setState(() => _estado = _AudioEstado.concluido);
+      // Ao final da leitura, o gatilho de compartilhamento aparece.
+      _abrirCompartilhar(context);
+    });
+    _tts.setCancelHandler(() {
+      if (mounted) setState(() => _estado = _AudioEstado.parado);
+    });
+  }
+
   @override
   void dispose() {
-    _player.dispose();
+    _tts.stop();
     super.dispose();
   }
 
   Future<void> _ouvir() async {
     if (_estado == _AudioEstado.tocando) {
-      await _player.pause();
-      setState(() => _estado = _AudioEstado.parado);
+      await _tts.stop();
+      if (mounted) setState(() => _estado = _AudioEstado.parado);
       return;
     }
-    setState(() => _estado = _AudioEstado.carregando);
-    final fonte = await widget.audioSource.audioFor(widget.verse);
-    if (!mounted) return;
-    if (fonte == null) {
-      // Honesto: a voz (ElevenLabs) ainda não foi configurada.
-      setState(() => _estado = _AudioEstado.parado);
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text(
-            'A voz da Palavra (ElevenLabs) entra assim que for configurada.',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),);
-      return;
-    }
+    setState(() => _estado = _AudioEstado.tocando);
+    // Lê o versículo e a referência com a voz do sistema.
+    final texto = '${widget.verse.text}. ${widget.verse.reference}.';
     try {
-      await _player.play(
-        fonte.startsWith('http') ? UrlSource(fonte) : AssetSource(fonte),
-      );
-      if (mounted) setState(() => _estado = _AudioEstado.tocando);
+      await _tts.speak(texto);
     } catch (_) {
       if (!mounted) return;
       setState(() => _estado = _AudioEstado.parado);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(const SnackBar(
-          content: Text('Não foi possível tocar o áudio agora.'),
+          content: Text('Não foi possível ler a Palavra agora.'),
           behavior: SnackBarBehavior.floating,
         ),);
     }

@@ -4,6 +4,7 @@ import '../bootstrap/bootstrap_screen.dart';
 import '../features/auth/application/login_flow.dart';
 import '../features/auth/presentation/login_gate.dart';
 import 'theme/app_theme.dart';
+import 'widgets/app_background.dart';
 
 /// Raiz da camada de entrega (Delivery Layer).
 ///
@@ -35,6 +36,10 @@ class GoelApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      // Identidade preto e branco: o app é sempre escuro (sem verde).
+      themeMode: ThemeMode.dark,
+      // Fundo global (fachada) atrás de todas as rotas.
+      builder: (context, child) => AppBackground(child: child ?? const SizedBox.shrink()),
       home: loginFlow != null
           ? LoginGate(flow: loginFlow!, postLoginBuilder: postLoginBuilder)
           : BootstrapScreen(supabaseConfigured: supabaseConfigured),

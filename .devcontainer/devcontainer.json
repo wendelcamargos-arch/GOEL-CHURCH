@@ -1,0 +1,23 @@
+{
+  "name": "Goel Church — Flutter Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "onCreateCommand": "bash bootstrap-codespace.sh",
+  "remoteEnv": {
+    "FLUTTER_HOME": "/opt/flutter",
+    "ANDROID_SDK_ROOT": "/opt/android-sdk",
+    "ANDROID_HOME": "/opt/android-sdk",
+    "PATH": "/opt/flutter/bin:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:${containerEnv:PATH}"
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "UI Preview (web)", "onAutoForward": "notify" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["Dart-Code.dart-code", "Dart-Code.flutter"]
+    }
+  }
+}

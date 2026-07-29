@@ -73,9 +73,10 @@ void main() {
     });
   });
 
-  testWidgets('LoginGate exibe a entrada por WhatsApp', (tester) async {
+  testWidgets('LoginGate exibe a entrada (passo do número)', (tester) async {
     final flow = LoginFlow(_FakeGateway(SessionEstablished(_id('a'))));
     await tester.pumpWidget(GoelApp(loginFlow: flow));
-    expect(find.text('Entrar com o WhatsApp'), findsOneWidget);
+    expect(find.text('Entrar'), findsOneWidget);
+    expect(find.text('Receber código'), findsOneWidget);
   });
 }

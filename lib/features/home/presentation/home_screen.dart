@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Home (Slice 05) — tela inicial após login/cadastro.
+import '../../escalas/presentation/escalas_screen.dart';
+import 'coming_soon_view.dart';
+
+/// Home (aba **Início**) — hub acolhedor após login/cadastro.
 ///
-/// Navegação por JORNADAS reconhecíveis pelo público, com alvos amplos e
-/// linguagem simples (acessibilidade ao idoso é requisito arquitetural).
-/// Os conteúdos (Versículo, Devocional) entram nos Slices 06/07; aqui ficam os
-/// pontos de entrada.
+/// APENAS camada de apresentação/experiência — contrato preservado (memberName
+/// + builders de jornada). A ação de Logout e o índice completo de recursos
+/// vivem na aba "Mais" (ver [MainShell]); aqui o foco é acolhimento e as
+/// jornadas do dia. Continuidade visual com as Sprints anteriores via cabeçalho
+/// de marca (fachada + logo). Acessibilidade: alvos amplos, tipografia grande,
+/// contraste e Semantics.
 class HomeScreen extends StatelessWidget {
   final String? memberName;
 
@@ -14,61 +19,69 @@ class HomeScreen extends StatelessWidget {
   final WidgetBuilder? versiculoBuilder;
   final WidgetBuilder? devocionalBuilder;
 
-  /// Ação de limpeza da sessão local (Logout). A navegação de volta ao Login é
-  /// feita pela própria Home após chamar esta ação.
-  final VoidCallback? onLogout;
-
   const HomeScreen({
     super.key,
     this.memberName,
     this.versiculoBuilder,
     this.devocionalBuilder,
-    this.onLogout,
   });
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final greeting = (memberName == null || memberName!.trim().isEmpty)
         ? 'Bem-vindo(a) à Goel Church'
         : 'Olá, ${memberName!.split(' ').first}';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Goel Church'),
-        actions: [
-          if (onLogout != null)
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: 'Sair',
-              onPressed: () => _logout(context),
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
+      backgroundColor: Colors.transparent,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(greeting, style: textTheme.headlineSmall),
-            const SizedBox(height: 4),
-            Text(
-              'Uma igreja para você frequentar e uma família para você '
-              'pertencer.',
-              style: textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            _HomeCard(
-              icon: Icons.auto_stories_outlined,
-              title: 'Versículo do dia',
-              subtitle: 'Uma palavra para hoje',
-              onTap: () => _go(context, 'Versículo do dia', versiculoBuilder),
-            ),
-            const SizedBox(height: 16),
-            _HomeCard(
-              icon: Icons.menu_book_outlined,
-              title: 'Devocionais',
-              subtitle: 'Leituras para o seu dia',
-              onTap: () => _go(context, 'Devocionais', devocionalBuilder),
+            _Header(greeting: greeting),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final cards = [
+                    _HomeCard(
+                      icon: Icons.auto_stories_outlined,
+                      title: 'Versículo do dia',
+                      subtitle: 'Uma palavra para hoje',
+                      onTap: () =>
+                          _go(context, 'Versículo do dia', versiculoBuilder),
+                    ),
+                    _HomeCard(
+                      icon: Icons.event_available_outlined,
+                      title: 'Escalas',
+                      subtitle: 'Escalas dos ministérios',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const EscalasScreen(),
+                        ),
+                      ),
+                    ),
+                  ];
+                  // Tablet: duas colunas; mobile: uma coluna.
+                  if (c.maxWidth >= 600) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: cards[0]),
+                        const SizedBox(width: 16),
+                        Expanded(child: cards[1]),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      cards[0],
+                      const SizedBox(height: 16),
+                      cards[1],
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -76,23 +89,104 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _logout(BuildContext context) {
-    // Logout LOCAL (sem revogação server-side): limpa a sessão e o estado.
-    onLogout?.call();
-    // Limpa a pilha de navegação, voltando à raiz (Login). Impede "Voltar"
-    // para a Home.
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
-
   void _go(BuildContext context, String title, WidgetBuilder? builder) {
-    final WidgetBuilder destination;
-    if (builder != null) {
-      destination = builder;
-    } else {
-      destination = (_) => _ComingSoonScreen(title: title);
-    }
+    final WidgetBuilder destination = builder ??
+        (_) => ComingSoonScreen(icon: Icons.auto_stories_outlined, title: title);
     Navigator.of(context).push(MaterialPageRoute(builder: destination));
   }
+}
+
+/// Cabeçalho de marca: fachada + overlay + logo + saudação.
+class _Header extends StatelessWidget {
+  final String greeting;
+
+  const _Header({required this.greeting});
+
+  @override
+  Widget build(BuildContext context) {
+    final topInset = MediaQuery.of(context).padding.top;
+    return SizedBox(
+      height: 232 + topInset,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // A fachada vem do fundo global (AppBackground). Aqui só um leve
+          // reforço de escurecimento para destacar a saudação.
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0x22000000), Color(0x66000000)],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, topInset + 16, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _logoMark(),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Goel Church',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  greeting,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Que bom ter você aqui hoje.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _logoMark() => Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border:
+              Border.all(color: Colors.white.withValues(alpha: 0.85), width: 1.5),
+        ),
+        child: ClipOval(
+          child: Image.asset(
+            'assets/brand/goel_logo.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const ColoredBox(
+              color: Colors.black,
+              child: Icon(Icons.church_outlined, color: Colors.white, size: 24),
+            ),
+          ),
+        ),
+      );
 }
 
 class _HomeCard extends StatelessWidget {
@@ -111,46 +205,50 @@ class _HomeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Icon(icon, size: 40),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: textTheme.titleLarge),
-                    Text(subtitle, style: textTheme.bodyMedium),
-                  ],
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      label: 'Abrir $title',
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: scheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 30, color: scheme.onPrimaryContainer),
                 ),
-              ),
-              const Icon(Icons.chevron_right),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+              ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Placeholder até o conteúdo do slice correspondente (06/07) existir.
-class _ComingSoonScreen extends StatelessWidget {
-  final String title;
-  const _ComingSoonScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          'Em breve.',
-          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
     );

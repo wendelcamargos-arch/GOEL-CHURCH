@@ -1,0 +1,70 @@
+name: Release AAB (assinado)
+
+# Gera o Android App Bundle (.aab) ASSINADO para enviar à Google Play.
+# Disparo manual: aba Actions → "Release AAB (assinado)" → Run workflow.
+#
+# Requer 4 segredos no repositório (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64  → conteúdo do .jks em base64
+#   ANDROID_STORE_PASSWORD   → senha do keystore
+#   ANDROID_KEY_PASSWORD     → senha da chave
+#   ANDROID_KEY_ALIAS        → alias da chave (ex.: goel)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-aab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Resolver dependências
+        run: flutter pub get
+
+      - name: Resolver deps do pacote de domínio
+        run: dart pub get
+        working-directory: packages/goel_domain
+
+      - name: Decodificar keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
+
+      - name: Criar key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Build do AAB assinado
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          flutter build appbundle --release \
+            --build-name="1.0.${BUILD_NUMBER}" \
+            --build-number="${BUILD_NUMBER}"
+
+      - name: Publicar o AAB como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: goel-church-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14

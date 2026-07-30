@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:goel_domain/goel_domain.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../data/verse_voice.dart';
+import '../data/verse_voice_factory.dart';
 
 /// Frase-gatilho para multiplicar a Palavra — aparece ao tocar em
 /// "Compartilhar" (e também ao final de cada áudio ouvido).
@@ -81,7 +83,9 @@ class _VerseView extends StatefulWidget {
 }
 
 class _VerseViewState extends State<_VerseView> {
-  final FlutterTts _tts = FlutterTts();
+  // Voz da Palavra: por padrão a voz GRÁTIS do aparelho; se houver chave da
+  // ElevenLabs configurada, a fábrica devolve a voz premium. A tela não muda.
+  late final VerseVoice _voice;
   _AudioEstado _estado = _AudioEstado.parado;
 
   /// Texto pronto para compartilhar/copiar (com o gatilho ao final).
@@ -92,7 +96,16 @@ class _VerseViewState extends State<_VerseView> {
   @override
   void initState() {
     super.initState();
-    _configurarVoz();
+    _voice = createVerseVoice();
+    _voice.onComplete = () {
+      if (!mounted) return;
+      setState(() => _estado = _AudioEstado.concluido);
+      // Ao final da leitura, o gatilho de compartilhamento aparece.
+      _abrirCompartilhar(context);
+    };
+    _voice.onCancel = () {
+      if (mounted) setState(() => _estado = _AudioEstado.parado);
+    };
     if (widget.debugStartCompleted) {
       _estado = _AudioEstado.concluido;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -101,39 +114,22 @@ class _VerseViewState extends State<_VerseView> {
     }
   }
 
-  Future<void> _configurarVoz() async {
-    // Voz do próprio aparelho (Text-to-Speech nativo): grátis, offline, pt-BR.
-    await _tts.setLanguage('pt-BR');
-    await _tts.setSpeechRate(0.45); // ritmo calmo e acolhedor
-    await _tts.setPitch(1.0);
-    _tts.setCompletionHandler(() {
-      if (!mounted) return;
-      setState(() => _estado = _AudioEstado.concluido);
-      // Ao final da leitura, o gatilho de compartilhamento aparece.
-      _abrirCompartilhar(context);
-    });
-    _tts.setCancelHandler(() {
-      if (mounted) setState(() => _estado = _AudioEstado.parado);
-    });
-  }
-
   @override
   void dispose() {
-    _tts.stop();
+    _voice.dispose();
     super.dispose();
   }
 
   Future<void> _ouvir() async {
     if (_estado == _AudioEstado.tocando) {
-      await _tts.stop();
+      await _voice.stop();
       if (mounted) setState(() => _estado = _AudioEstado.parado);
       return;
     }
     setState(() => _estado = _AudioEstado.tocando);
-    // Lê o versículo e a referência com a voz do sistema.
     final texto = '${widget.verse.text}. ${widget.verse.reference}.';
     try {
-      await _tts.speak(texto);
+      await _voice.speak(texto);
     } catch (_) {
       if (!mounted) return;
       setState(() => _estado = _AudioEstado.parado);

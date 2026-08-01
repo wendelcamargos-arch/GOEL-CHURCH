@@ -22,11 +22,17 @@ class GoelApp extends StatelessWidget {
   /// Tela pós-login (Slice 04: cadastro), injetada pela composição raiz.
   final WidgetBuilder? postLoginBuilder;
 
+  /// Tela inicial quando NÃO há login/backend (modo offline): abre o app
+  /// direto (MainShell), com o conteúdo local. Sem isso, o app ficaria preso
+  /// no splash quando o Supabase não está configurado.
+  final Widget? home;
+
   const GoelApp({
     super.key,
     this.supabaseConfigured = false,
     this.loginFlow,
     this.postLoginBuilder,
+    this.home,
   });
 
   @override
@@ -42,7 +48,7 @@ class GoelApp extends StatelessWidget {
       builder: (context, child) => AppBackground(child: child ?? const SizedBox.shrink()),
       home: loginFlow != null
           ? LoginGate(flow: loginFlow!, postLoginBuilder: postLoginBuilder)
-          : BootstrapScreen(supabaseConfigured: supabaseConfigured),
+          : (home ?? BootstrapScreen(supabaseConfigured: supabaseConfigured)),
     );
   }
 }

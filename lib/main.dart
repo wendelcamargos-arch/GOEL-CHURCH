@@ -36,6 +36,18 @@ Future<void> main() async {
 
   final supabaseConfigured = await SupabaseBootstrap.initialize(env);
 
+  // Versículo do dia: tradução de DOMÍNIO PÚBLICO, offline-first (Opção A).
+  final verseRepository = LocalVerseRepository();
+
+  // App principal — funciona OFFLINE (conteúdo local). Sem backend, abre direto
+  // (evita ficar preso no splash). Com Supabase, entra via login/cadastro.
+  final offlineHome = MainShell(
+    versiculoBuilder: (_) => VersiculoScreen(
+      repository: verseRepository,
+      sourceLabel: 'Almeida — domínio público',
+    ),
+  );
+
   LoginFlow? loginFlow;
   WidgetBuilder? postLoginBuilder;
 
@@ -46,8 +58,6 @@ Future<void> main() async {
     loginFlow = LoginFlow(SupabaseAuthGateway(client, session));
 
     final cadastroFlow = CadastroFlow(SupabaseProfileGateway(client, session));
-    // Versículo do dia: tradução de DOMÍNIO PÚBLICO, offline-first (Opção A).
-    final verseRepository = LocalVerseRepository();
     final devotionalRepository = SupabaseDevotionalRepository(client);
 
     postLoginBuilder = (_) => CadastroScreen(
@@ -74,5 +84,6 @@ Future<void> main() async {
     supabaseConfigured: supabaseConfigured,
     loginFlow: loginFlow,
     postLoginBuilder: postLoginBuilder,
+    home: offlineHome,
   ),);
 }

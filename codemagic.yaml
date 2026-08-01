@@ -1,0 +1,50 @@
+# Codemagic — build do iOS na nuvem (sem precisar de Mac/Xcode local).
+#
+# COMO USAR (depois que a conta Apple Developer estiver ATIVA):
+#   1. Em codemagic.io → Teams → Integrations → App Store Connect: adicione uma
+#      chave de API do App Store Connect e dê a ela o nome "GoelAppStoreKey"
+#      (ou troque o nome abaixo, nos dois lugares, pelo que você usar).
+#   2. Registre o app no App Store Connect com o bundle id br.com.goelchurch.goelChurch.
+#   3. No Codemagic, selecione este arquivo (codemagic.yaml) e rode o workflow "ios-release".
+#
+# O que ele faz: instala dependências, assina automaticamente (App Store),
+# gera o .ipa e envia para o TestFlight.
+
+workflows:
+  ios-release:
+    name: iOS Release (Goel Church)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # Nome da chave de API do App Store Connect configurada no Codemagic.
+      app_store_connect: GoelAppStoreKey
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: br.com.goelchurch.goelChurch
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Dependências do Flutter
+        script: flutter pub get
+      - name: Dependências do pacote de domínio
+        script: cd packages/goel_domain && dart pub get
+      - name: Assinatura (perfis do App Store Connect)
+        script: xcode-project use-profiles
+      - name: CocoaPods
+        script: find . -name "Podfile" -execdir pod install \;
+      - name: Build do IPA
+        script: |
+          flutter build ipa --release \
+            --build-name="1.0.$PROJECT_BUILD_NUMBER" \
+            --build-number="$PROJECT_BUILD_NUMBER" \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      # Envia automaticamente para o TestFlight (teste) após o build.
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

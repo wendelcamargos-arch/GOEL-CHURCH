@@ -58,7 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           flutter build appbundle --release \
-            --build-name="1.0.${BUILD_NUMBER}" \
+            --build-name="1.0.3" \
             --build-number="${BUILD_NUMBER}"
 
       - name: Publicar o AAB como artefato

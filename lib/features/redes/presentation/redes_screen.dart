@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/church/church_links.dart';
+
 /// Um link de rede/comunidade da Goel Church.
 class RedeLink {
   final String titulo;
@@ -28,18 +30,25 @@ class RedesScreen extends StatelessWidget {
 
   const RedesScreen({super.key, this.links, this.onAbrir});
 
+  // Links institucionais centralizados em ChurchLinks (nada hardcoded aqui).
   static const _exemplo = <RedeLink>[
     RedeLink(
       titulo: 'Grupo de Boas-vindas',
       subtitulo: 'Entre no nosso grupo do WhatsApp',
       icon: Icons.chat_bubble_outline,
-      url: 'https://chat.whatsapp.com/GTQFGZniKpLKaxW03zTmbd?mode=gi_t',
+      url: ChurchLinks.whatsappBoasVindas,
     ),
     RedeLink(
       titulo: 'Instagram',
       subtitulo: '@goelchurch_',
       icon: Icons.camera_alt_outlined,
-      url: 'https://www.instagram.com/goelchurch_?igsh=MjJ5Y2ExN2w0NTh6',
+      url: ChurchLinks.instagram,
+    ),
+    RedeLink(
+      titulo: 'Como chegar',
+      subtitulo: 'Abrir a localização da igreja no Google Maps',
+      icon: Icons.location_on_outlined,
+      url: ChurchLinks.location,
     ),
   ];
 

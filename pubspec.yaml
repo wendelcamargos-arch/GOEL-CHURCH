@@ -35,7 +35,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/content/versiculos_dominio_publico.json
-    - assets/content/verses_fallback.json
     - assets/content/devotionals_fallback.json
     # Marca oficial (Splash). Substituir os placeholders pelos assets reais,
     # mantendo os nomes: goel_logo.png (logotipo) e church_facade.jpg (fachada).

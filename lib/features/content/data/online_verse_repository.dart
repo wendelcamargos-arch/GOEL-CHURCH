@@ -44,9 +44,12 @@ class OnlineVerseRepository implements VerseRepository {
     return DailyVerseSelector.pick(_fallback!, today);
   }
 
+  // Sprint 5 (correção do defeito "apenas 5 versículos"): o fallback usa a
+  // MESMA fonte rica de domínio público do app (60+ versículos), e não mais o
+  // antigo `verses_fallback.json` (que tinha só 5). Fonte única de verdade.
   Future<List<DailyVerse>> _loadFallback() async {
-    final raw =
-        await rootBundle.loadString('assets/content/verses_fallback.json');
+    final raw = await rootBundle
+        .loadString('assets/content/versiculos_dominio_publico.json');
     final list = (jsonDecode(raw) as List<dynamic>)
         .map((e) => DailyVerse(
               reference: e['reference'] as String,

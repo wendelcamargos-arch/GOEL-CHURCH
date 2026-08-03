@@ -30,4 +30,30 @@ class ReadingStore {
     await _prefs.setStringList(_kFavoritos, f);
     return !removeu;
   }
+
+  // --- Progresso dos planos de leitura (EU-05 / EU-12) ---
+
+  String _kPlano(String planoId) => 'biblia.plano.$planoId';
+
+  /// Dias já lidos (1-based) de um plano.
+  Set<int> diasLidos(String planoId) =>
+      (_prefs.getStringList(_kPlano(planoId)) ?? const [])
+          .map(int.tryParse)
+          .whereType<int>()
+          .toSet();
+
+  bool diaLido(String planoId, int dia) => diasLidos(planoId).contains(dia);
+
+  /// Marca/desmarca um dia como lido; retorna `true` se ficou lido.
+  Future<bool> alternarDia(String planoId, int dia) async {
+    final dias = diasLidos(planoId);
+    // remove() retorna true se estava lido → então desmarcamos (agora = false).
+    final agora = !dias.remove(dia);
+    if (agora) dias.add(dia);
+    await _prefs.setStringList(
+      _kPlano(planoId),
+      dias.map((d) => '$d').toList(),
+    );
+    return agora;
+  }
 }

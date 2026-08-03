@@ -6,6 +6,7 @@ import '../data/reading_store.dart';
 import 'busca_screen.dart';
 import 'capitulos_screen.dart';
 import 'favoritos_screen.dart';
+import 'planos_screen.dart';
 
 /// Aba "Bíblia" — lista os 66 livros (Almeida 1911, domínio público), agrupados
 /// por Testamento, carregados do manifest via [BibleRepository]. Busca e
@@ -85,7 +86,29 @@ class _BibliaScreenState extends State<BibliaScreen> {
                   children: [
                     _BuscaBar(repo: _repo, store: store, livros: livros),
                     const SizedBox(height: 10),
-                    _FavoritosBar(repo: _repo, store: store, livros: livros),
+                    _AtalhoBar(
+                      icone: Icons.star,
+                      corIcone: Colors.amber,
+                      texto: 'Meus favoritos',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => FavoritosScreen(
+                              repository: _repo, store: store, livros: livros,),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _AtalhoBar(
+                      icone: Icons.event_note_outlined,
+                      corIcone: scheme.primary,
+                      texto: 'Planos de leitura',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => PlanosScreen(
+                              repository: _repo, store: store, livros: livros,),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     const _SecaoTitulo(texto: 'Antigo Testamento'),
                     const SizedBox(height: 8),
@@ -153,12 +176,17 @@ class _BuscaBar extends StatelessWidget {
   }
 }
 
-class _FavoritosBar extends StatelessWidget {
-  final BibleRepository repo;
-  final ReadingStore store;
-  final List<BibleBookMeta> livros;
-  const _FavoritosBar(
-      {required this.repo, required this.store, required this.livros,});
+class _AtalhoBar extends StatelessWidget {
+  final IconData icone;
+  final Color corIcone;
+  final String texto;
+  final VoidCallback onTap;
+  const _AtalhoBar({
+    required this.icone,
+    required this.corIcone,
+    required this.texto,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -166,14 +194,9 @@ class _FavoritosBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: 'Meus favoritos',
+      label: texto,
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) =>
-                FavoritosScreen(repository: repo, store: store, livros: livros),
-          ),
-        ),
+        onTap: onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -183,10 +206,10 @@ class _FavoritosBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.star, color: Colors.amber),
+              Icon(icone, color: corIcone),
               const SizedBox(width: 12),
               Text(
-                'Meus favoritos',
+                texto,
                 style: textTheme.bodyLarge
                     ?.copyWith(color: scheme.onSurfaceVariant),
               ),

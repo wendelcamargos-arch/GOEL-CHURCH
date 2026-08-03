@@ -1,0 +1,28 @@
+{
+  "planos": [
+    {
+      "id": "anual",
+      "nome": "Bíblia em 1 ano",
+      "descricao": "Toda a Bíblia, do Gênesis ao Apocalipse, em 365 dias.",
+      "dias": 365
+    },
+    {
+      "id": "90-dias",
+      "nome": "Bíblia em 90 dias",
+      "descricao": "Uma leitura intensiva de toda a Bíblia em 3 meses.",
+      "dias": 90
+    },
+    {
+      "id": "30-dias",
+      "nome": "Novo Testamento em 30 dias",
+      "descricao": "Do Evangelho ao Apocalipse em um mês.",
+      "dias": 30
+    },
+    {
+      "id": "goel-church",
+      "nome": "Plano Goel Church",
+      "descricao": "21 dias pelos capítulos que fundamentam a nossa fé.",
+      "dias": 21
+    }
+  ]
+}

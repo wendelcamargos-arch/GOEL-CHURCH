@@ -45,6 +45,7 @@ flutter:
     # Bible Engine — Almeida 1911 (domínio público). Manifest + 1 arquivo/livro.
     - assets/biblia/manifest.json
     - assets/biblia/livros/
+    - assets/biblia/planos/
     # Marca oficial (Splash). Substituir os placeholders pelos assets reais,
     # mantendo os nomes: goel_logo.png (logotipo) e church_facade.jpg (fachada).
     - assets/brand/

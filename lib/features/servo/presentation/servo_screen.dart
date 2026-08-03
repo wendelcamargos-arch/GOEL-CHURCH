@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/whatsapp/whatsapp_links.dart';
+
 /// Quero ser Servo — inscrição para servir em um ministério.
 ///
 /// APENAS camada de apresentação: sem envio real nem persistência. Ao enviar,
-/// mostra confirmação. Injete [onSubmit] quando houver o slice de dados.
+/// abre automaticamente o grupo Quero Ser Servo no WhatsApp (via
+/// [WhatsAppLinks.servo]) e mostra confirmação. Injete [onSubmit] quando houver
+/// o slice de dados.
 class ServoScreen extends StatefulWidget {
   final Future<void> Function(String nome, String contato, List<String> areas)?
       onSubmit;
@@ -15,9 +19,10 @@ class ServoScreen extends StatefulWidget {
 }
 
 class _ServoScreenState extends State<ServoScreen> {
+  // Lista sugerida (Sprint 4 — EU-04).
   static const _areas = <String>[
-    'Mídia', 'Louvor', 'Cozinha', 'Sala das Crianças',
-    'Recepção', 'Limpeza', 'Intercessão', 'Ação Social',
+    'Recepção', 'Louvor', 'Infantil', 'Mídia', 'Intercessão',
+    'Limpeza', 'Evangelismo', 'Administração', 'Outro',
   ];
 
   final _nome = TextEditingController();
@@ -47,6 +52,13 @@ class _ServoScreenState extends State<ServoScreen> {
       _nome.text.trim(),
       _contato.text.trim(),
       _selecionadas.toList(),
+    );
+    if (!mounted) return;
+    // Abre automaticamente o grupo Quero Ser Servo (placeholder por ora).
+    await abrirGrupoWhatsApp(
+      context,
+      WhatsAppLinks.servo,
+      aviso: 'O grupo Quero Ser Servo será disponibilizado em breve.',
     );
     if (!mounted) return;
     setState(() {

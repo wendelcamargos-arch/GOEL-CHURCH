@@ -9,8 +9,11 @@ void main() {
     );
 
     expect(find.textContaining('Olá, Ana'), findsOneWidget);
+    // Sprint 4 — EU-01: os quatro cards da Home.
     expect(find.text('Versículo do dia'), findsOneWidget);
-    expect(find.text('Escalas'), findsOneWidget);
+    expect(find.text('Testemunho'), findsOneWidget);
+    expect(find.text('Pedido de Oração'), findsOneWidget);
+    expect(find.text('Quero Ser Servo'), findsOneWidget);
   });
 
   testWidgets('sem nome, mostra saudação genérica', (tester) async {

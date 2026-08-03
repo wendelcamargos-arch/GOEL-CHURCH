@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../escalas/presentation/escalas_screen.dart';
+import '../../oracao/presentation/oracao_screen.dart';
+import '../../servo/presentation/servo_screen.dart';
+import '../../testemunho/presentation/testemunho_screen.dart';
 import 'coming_soon_view.dart';
 
 /// Home (aba **Início**) — hub acolhedor após login/cadastro.
@@ -43,7 +45,7 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               child: LayoutBuilder(
                 builder: (context, c) {
-                  final cards = [
+                  final cards = <Widget>[
                     _HomeCard(
                       icon: Icons.auto_stories_outlined,
                       title: 'Versículo do dia',
@@ -52,32 +54,54 @@ class HomeScreen extends StatelessWidget {
                           _go(context, 'Versículo do dia', versiculoBuilder),
                     ),
                     _HomeCard(
-                      icon: Icons.event_available_outlined,
-                      title: 'Escalas',
-                      subtitle: 'Escalas dos ministérios',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const EscalasScreen(),
-                        ),
-                      ),
+                      icon: Icons.record_voice_over_outlined,
+                      title: 'Testemunho',
+                      subtitle: 'Conte o que Deus fez',
+                      onTap: () => _push(context, const TestemunhoScreen()),
+                    ),
+                    _HomeCard(
+                      icon: Icons.volunteer_activism_outlined,
+                      title: 'Pedido de Oração',
+                      subtitle: 'Estamos com você',
+                      onTap: () => _push(context, const OracaoScreen()),
+                    ),
+                    _HomeCard(
+                      icon: Icons.handshake_outlined,
+                      title: 'Quero Ser Servo',
+                      subtitle: 'Sirva com a gente',
+                      onTap: () => _push(context, const ServoScreen()),
                     ),
                   ];
                   // Tablet: duas colunas; mobile: uma coluna.
                   if (c.maxWidth >= 600) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    return Column(
                       children: [
-                        Expanded(child: cards[0]),
-                        const SizedBox(width: 16),
-                        Expanded(child: cards[1]),
+                        for (var i = 0; i < cards.length; i += 2)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              bottom: i + 2 < cards.length ? 16 : 0,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: cards[i]),
+                                const SizedBox(width: 16),
+                                if (i + 1 < cards.length)
+                                  Expanded(child: cards[i + 1])
+                                else
+                                  const Expanded(child: SizedBox()),
+                              ],
+                            ),
+                          ),
                       ],
                     );
                   }
                   return Column(
                     children: [
-                      cards[0],
-                      const SizedBox(height: 16),
-                      cards[1],
+                      for (var i = 0; i < cards.length; i++) ...[
+                        cards[i],
+                        if (i < cards.length - 1) const SizedBox(height: 16),
+                      ],
                     ],
                   );
                 },
@@ -93,6 +117,10 @@ class HomeScreen extends StatelessWidget {
     final WidgetBuilder destination = builder ??
         (_) => ComingSoonScreen(icon: Icons.auto_stories_outlined, title: title);
     Navigator.of(context).push(MaterialPageRoute(builder: destination));
+  }
+
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 }
 

@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/whatsapp/whatsapp_links.dart';
+
 /// Testemunho — formulário visual para o membro compartilhar o que Deus fez.
 ///
 /// APENAS camada de apresentação/experiência: NÃO há envio real, backend nem
-/// persistência. Ao "enviar", mostra uma confirmação acolhedora. Quando existir
-/// o slice de dados, basta injetar um callback de envio — a tela já está pronta.
+/// persistência. Ao "enviar", abre automaticamente o grupo Testemunhos Goel no
+/// WhatsApp (via [WhatsAppLinks.testemunhos]) e mostra uma confirmação. Quando
+/// existir o slice de dados, basta injetar um callback de envio.
 /// Identidade preto e branco, acessível a todas as idades.
 class TestemunhoScreen extends StatefulWidget {
   /// Ação de envio (futuro slice de dados). Nulo → apenas experiência visual.
-  final Future<void> Function(String nome, String texto)? onSubmit;
+  final Future<void> Function(
+    String nome,
+    String whatsapp,
+    String titulo,
+    String texto,
+  )? onSubmit;
 
   const TestemunhoScreen({super.key, this.onSubmit});
 
@@ -19,26 +27,43 @@ class TestemunhoScreen extends StatefulWidget {
 
 class _TestemunhoScreenState extends State<TestemunhoScreen> {
   final _nameCtrl = TextEditingController();
+  final _whatsappCtrl = TextEditingController();
+  final _tituloCtrl = TextEditingController();
   final _textCtrl = TextEditingController();
   bool _tried = false;
   bool _sending = false;
   bool _sent = false;
 
+  bool get _nomeInvalid => _nameCtrl.text.trim().isEmpty;
   bool get _textInvalid => _textCtrl.text.trim().length < 10;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _whatsappCtrl.dispose();
+    _tituloCtrl.dispose();
     _textCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     setState(() => _tried = true);
-    if (_textInvalid) return;
+    if (_nomeInvalid || _textInvalid) return;
     setState(() => _sending = true);
     // Envio real (quando existir) é opcional; a experiência funciona sem ele.
-    await widget.onSubmit?.call(_nameCtrl.text.trim(), _textCtrl.text.trim());
+    await widget.onSubmit?.call(
+      _nameCtrl.text.trim(),
+      _whatsappCtrl.text.trim(),
+      _tituloCtrl.text.trim(),
+      _textCtrl.text.trim(),
+    );
+    if (!mounted) return;
+    // Abre automaticamente o grupo Testemunhos Goel (placeholder por ora).
+    await abrirGrupoWhatsApp(
+      context,
+      WhatsAppLinks.testemunhos,
+      aviso: 'O grupo Testemunhos Goel será disponibilizado em breve.',
+    );
     if (!mounted) return;
     setState(() {
       _sending = false;
@@ -48,6 +73,8 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
 
   void _reset() {
     _nameCtrl.clear();
+    _whatsappCtrl.clear();
+    _tituloCtrl.clear();
     _textCtrl.clear();
     setState(() {
       _tried = false;
@@ -123,8 +150,31 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
         TextField(
           controller: _nameCtrl,
           textCapitalization: TextCapitalization.words,
+          onChanged: (_) {
+            if (_tried) setState(() {});
+          },
+          decoration: InputDecoration(
+            labelText: 'Seu nome',
+            border: const OutlineInputBorder(),
+            errorText:
+                _tried && _nomeInvalid ? 'Informe o seu nome.' : null,
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _whatsappCtrl,
+          keyboardType: TextInputType.phone,
           decoration: const InputDecoration(
-            labelText: 'Seu nome (opcional)',
+            labelText: 'WhatsApp',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _tituloCtrl,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            labelText: 'Título',
             border: OutlineInputBorder(),
           ),
         ),
@@ -162,7 +212,7 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : const Icon(Icons.send_outlined),
-          label: Text(_sending ? 'Enviando…' : 'Enviar testemunho'),
+          label: Text(_sending ? 'Enviando…' : 'Enviar Testemunho'),
         ),
       ],
     );

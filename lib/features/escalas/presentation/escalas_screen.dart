@@ -157,7 +157,13 @@ class _EscalaMinisterioScreenState extends State<EscalaMinisterioScreen> {
   int _semanas = 4;
   late int _porEscala;
 
-  int get _maxPorEscala => widget.ministerio.equipe.length.clamp(1, 3);
+  // EU-05: o número de pessoas por escala pode ir até o tamanho da equipe
+  // (antes era limitado a 3). Os membros são dados fixos (hardcoded) na tela;
+  // quando existir o slice de dados, a equipe virá da fonte real sem mudar aqui.
+  int get _maxPorEscala {
+    final n = widget.ministerio.equipe.length;
+    return n < 1 ? 1 : n;
+  }
 
   @override
   void initState() {

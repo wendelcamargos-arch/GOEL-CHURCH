@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/whatsapp/whatsapp_links.dart';
 
 /// Gabinete Pastoral — a pessoa escolhe com quem falar (Pastor ou Pastora) e a
 /// mensagem vai DIRETO para o WhatsApp do escolhido, já com nome + telefone +
 /// texto, para o pastor(a) retornar o contato.
 ///
-/// Camada de apresentação: os números chegam por parâmetro (placeholders). Não
-/// há backend — o encaminhamento é pelo deep link do WhatsApp.
+/// Camada de apresentação: os números vivem no arquivo central [WhatsAppLinks]
+/// (auditoria EU-07: ambos os contatos JÁ existem). Não há backend — o
+/// encaminhamento é pelo deep link do WhatsApp.
 class GabineteScreen extends StatefulWidget {
   /// WhatsApp no formato internacional, só dígitos (ex.: 5599999999999).
   final String whatsappPastor;
@@ -14,8 +16,8 @@ class GabineteScreen extends StatefulWidget {
 
   const GabineteScreen({
     super.key,
-    this.whatsappPastor = '5562995422169', // Pastor Linniker
-    this.whatsappPastora = '5562993095993', // Pastora Wanessa
+    this.whatsappPastor = WhatsAppLinks.pastorLinniker,
+    this.whatsappPastora = WhatsAppLinks.pastoraWanessa,
   });
 
   @override
@@ -51,19 +53,7 @@ class _GabineteScreenState extends State<GabineteScreen> {
     final texto = 'Olá! Meu nome é ${_nome.text.trim()}.\n'
         'Telefone: ${_telefone.text.trim()}.\n\n'
         '${_msg.text.trim()}';
-    final uri = Uri.parse('https://wa.me/$numero?text=${Uri.encodeComponent(texto)}');
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!ok) throw Exception('falha');
-    } catch (_) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text('Não foi possível abrir o WhatsApp agora.'),
-          behavior: SnackBarBehavior.floating,
-        ),);
-    }
+    await abrirConversaWhatsApp(context, numero, texto: texto);
   }
 
   @override

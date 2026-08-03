@@ -14,38 +14,49 @@ void main() {
     tall(tester);
     await tester.pumpWidget(const MaterialApp(home: OracaoScreen()));
     expect(find.text('Peça uma oração'), findsOneWidget);
-    expect(find.text('Enviar pedido'), findsOneWidget);
+    expect(find.text('Enviar Pedido'), findsOneWidget);
   });
 
   testWidgets('envio vazio mostra validação e não conclui', (tester) async {
     tall(tester);
     await tester.pumpWidget(const MaterialApp(home: OracaoScreen()));
-    await tester.tap(find.text('Enviar pedido'));
+    await tester.tap(find.text('Enviar Pedido'));
     await tester.pump();
     expect(find.text('Escreva o seu pedido.'), findsOneWidget);
+    expect(find.text('Informe o seu nome.'), findsOneWidget);
     expect(find.text('Recebemos o seu pedido'), findsNothing);
   });
 
-  testWidgets('com pedido válido, conclui e envia o sigilo', (tester) async {
+  testWidgets('com nome e pedido válidos, conclui e envia os dados',
+      (tester) async {
     tall(tester);
-    bool? sigiloRecebido;
+    String? nomeRecebido;
+    String? pedidoRecebido;
     await tester.pumpWidget(
       MaterialApp(
         home: OracaoScreen(
-          onSubmit: (nome, pedido, sigilo) async => sigiloRecebido = sigilo,
+          onSubmit: (nome, whatsapp, pedido) async {
+            nomeRecebido = nome;
+            pedidoRecebido = pedido;
+          },
         ),
       ),
     );
 
     await tester.enterText(
+      find.widgetWithText(TextField, 'Seu nome'),
+      'João',
+    );
+    await tester.enterText(
       find.widgetWithText(TextField, 'Seu pedido de oração'),
       'Ore pela minha família.',
     );
-    await tester.tap(find.text('Enviar pedido'));
+    await tester.tap(find.text('Enviar Pedido'));
     await tester.pumpAndSettle();
 
     expect(find.text('Recebemos o seu pedido'), findsOneWidget);
-    expect(sigiloRecebido, isTrue); // sigilo é o padrão
+    expect(nomeRecebido, 'João');
+    expect(pedidoRecebido, contains('família'));
 
     await tester.tap(find.text('Fazer outro pedido'));
     await tester.pumpAndSettle();

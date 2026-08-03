@@ -1,32 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../pregacoes/presentation/pregacoes_screen.dart';
 
 /// Aba "Palavras" — hub de pregações e publicações (padrão preto e branco).
 ///
 /// APENAS camada de apresentação. Conteúdo por parâmetro, com exemplos. Ao
-/// tocar, avisa que o vídeo chega em breve (sem player/rede). É uma ABA (sem
-/// AppBar): traz o próprio cabeçalho no corpo, como Início/Contribua.
+/// tocar, abre o material da publicação (pasta no Google Drive) no app do
+/// sistema; se o link ainda não existir, avisa de forma honesta. É uma ABA
+/// (sem AppBar): traz o próprio cabeçalho no corpo, como Início/Contribua.
 class PalavrasScreen extends StatelessWidget {
   final List<Pregacao>? itens;
 
-  const PalavrasScreen({super.key, this.itens});
+  /// Injeção opcional para abrir o link (testes). Nulo → usa url_launcher.
+  final Future<void> Function(String url)? onAbrir;
+
+  const PalavrasScreen({super.key, this.itens, this.onAbrir});
 
   static final _exemplo = <Pregacao>[
     Pregacao(
       titulo: 'A graça que transforma',
       pregador: 'Pr. João Batista',
       quando: DateTime(2026, 7, 20),
+      videoUrl:
+          'https://drive.google.com/drive/folders/1Blva_m4CvUVMznpYxmHLnYNMXf5o6qEU?usp=sharing',
     ),
     Pregacao(
       titulo: 'Uma família para pertencer',
       pregador: 'Pra. Ana',
       quando: DateTime(2026, 7, 13),
+      videoUrl:
+          'https://drive.google.com/drive/folders/1b-ss_QoPYWt0IhfsJmWrDqOE2A94mj7U?usp=sharing',
     ),
     Pregacao(
       titulo: 'Fé que move montanhas',
       pregador: 'Pr. Paulo',
       quando: DateTime(2026, 7, 6),
+      videoUrl:
+          'https://drive.google.com/drive/folders/1eNAbVXauLql90fPjRvStF2xyaZLBWJa0?usp=sharing',
     ),
   ];
 
@@ -58,7 +69,7 @@ class PalavrasScreen extends StatelessWidget {
             const SizedBox(height: 20),
             _DestaqueCard(
               pregacao: lista.first,
-              onTap: () => _aviso(context),
+              onTap: () => _abrir(context, lista.first),
             ),
             const SizedBox(height: 24),
             Text(
@@ -68,7 +79,7 @@ class PalavrasScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             for (final p in lista.skip(1)) ...[
-              _PregacaoTile(pregacao: p, onTap: () => _aviso(context)),
+              _PregacaoTile(pregacao: p, onTap: () => _abrir(context, p)),
               const SizedBox(height: 12),
             ],
           ],
@@ -77,12 +88,41 @@ class PalavrasScreen extends StatelessWidget {
     );
   }
 
-  void _aviso(BuildContext context) {
-    ScaffoldMessenger.of(context)
+  /// Abre o material da publicação (pasta no Google Drive) no app do sistema.
+  /// Sem link → aviso honesto de que o conteúdo chega em breve.
+  Future<void> _abrir(BuildContext context, Pregacao p) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final url = p.videoUrl;
+    if (url == null) {
+      _aviso(messenger);
+      return;
+    }
+    try {
+      if (onAbrir != null) {
+        await onAbrir!(url);
+      } else {
+        final ok =
+            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        if (!ok) throw Exception('falha');
+      }
+    } catch (_) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o link agora.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
+  void _aviso(ScaffoldMessengerState messenger) {
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
         const SnackBar(
-          content: Text('O vídeo estará disponível em breve.'),
+          content: Text('O conteúdo estará disponível em breve.'),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),

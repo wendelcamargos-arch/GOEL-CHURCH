@@ -33,16 +33,22 @@ class RedesScreen extends StatelessWidget {
   // Links institucionais centralizados em ChurchLinks (nada hardcoded aqui).
   static const _exemplo = <RedeLink>[
     RedeLink(
-      titulo: 'Grupo de Boas-vindas',
-      subtitulo: 'Entre no nosso grupo do WhatsApp',
-      icon: Icons.chat_bubble_outline,
-      url: ChurchLinks.whatsappBoasVindas,
-    ),
-    RedeLink(
       titulo: 'Instagram',
       subtitulo: '@goelchurch_',
       icon: Icons.camera_alt_outlined,
       url: ChurchLinks.instagram,
+    ),
+    RedeLink(
+      titulo: 'YouTube',
+      subtitulo: 'Inscreva-se no canal @Goel_Church',
+      icon: Icons.smart_display_outlined,
+      url: ChurchLinks.youtube,
+    ),
+    RedeLink(
+      titulo: 'Grupo de Boas-vindas',
+      subtitulo: 'Entre no nosso grupo do WhatsApp',
+      icon: Icons.chat_bubble_outline,
+      url: ChurchLinks.whatsappBoasVindas,
     ),
     RedeLink(
       titulo: 'Como chegar',

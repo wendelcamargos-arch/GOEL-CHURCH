@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:goel_domain/goel_domain.dart';
 
 import '../data/reading_store.dart';
+import 'compartilhar_screen.dart';
 
 /// Leitor de capítulo — texto REAL (Almeida 1911), **scroll contínuo** (anexa o
 /// próximo capítulo/livro ao rolar), ajuste de fonte, tema do leitor
@@ -133,6 +134,21 @@ class _LeituraScreenState extends State<LeituraScreen> {
               onTap: () {
                 Navigator.of(sheetCtx).pop();
                 _alternarFavorito(ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: const Text('Compartilhar'),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CompartilharVersiculoScreen(
+                      texto: texto,
+                      referencia: rotulo,
+                    ),
+                  ),
+                );
               },
             ),
           ],

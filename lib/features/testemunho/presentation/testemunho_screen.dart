@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/whatsapp/whatsapp_links.dart';
 
@@ -82,24 +81,12 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
     });
   }
 
-  Future<void> _compartilhar() async {
-    final nome = _nameCtrl.text.trim();
-    final assinatura = nome.isNotEmpty ? '\n\n— $nome' : '';
-    final texto = 'Testemunho\n\n${_textCtrl.text.trim()}$assinatura\n\n'
-        'Goel Church';
-    final messenger = ScaffoldMessenger.of(context);
-    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(texto)}');
-    try {
-      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!ok) throw Exception('falha');
-    } catch (_) {
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text('Não foi possível abrir o compartilhamento agora.'),
-          behavior: SnackBarBehavior.floating,
-        ),);
-    }
+  Future<void> _entrarNoGrupo() async {
+    await abrirGrupoWhatsApp(
+      context,
+      WhatsAppLinks.testemunhos,
+      aviso: 'O grupo Testemunhos Goel será disponibilizado em breve.',
+    );
   }
 
   @override
@@ -254,9 +241,9 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
           ),
           const SizedBox(height: 28),
           FilledButton.icon(
-            onPressed: _compartilhar,
-            icon: const Icon(Icons.share_outlined),
-            label: const Text('Compartilhar no WhatsApp'),
+            onPressed: _entrarNoGrupo,
+            icon: const Icon(Icons.groups_outlined),
+            label: const Text('Entrar no Grupo'),
           ),
           const SizedBox(height: 12),
           OutlinedButton(

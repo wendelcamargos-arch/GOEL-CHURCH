@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/features/oracao/presentation/oracao_screen.dart';
 
+import 'support/fake_url_launcher.dart';
+
 void main() {
+  setUp(installFakeUrlLauncher);
+
   void tall(WidgetTester tester) {
     tester.view.physicalSize = const Size(1200, 2200);
     tester.view.devicePixelRatio = 1.0;

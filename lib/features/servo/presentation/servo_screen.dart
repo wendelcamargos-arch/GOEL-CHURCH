@@ -203,8 +203,8 @@ class _ServoScreenState extends State<ServoScreen> {
                   textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),),
           const SizedBox(height: 8),
           Text(
-            'Que alegria pelo seu "sim"! Vamos conhecer o seu perfil e te chamar '
-            'para uma conversa. Depois disso, você entra na equipe.',
+            'Nossa equipe entrará em contato com você para conhecer melhor seu '
+            'perfil e orientar os próximos passos.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge
                 ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),

@@ -13,25 +13,31 @@ import 'package:url_launcher/url_launcher.dart';
 class WhatsAppLinks {
   const WhatsAppLinks._();
 
-  // --- Grupos (PENDENTES — TODO_OWNER: colar a URL oficial de cada grupo) ---
+  // --- Grupos (links OFICIAIS aprovados pelo Owner — Sprint 4) ---
 
-  /// TODO_OWNER: Adicionar link oficial do Grupo Testemunhos Goel.
-  static const String testemunhos = '';
+  /// Grupo Testemunhos Goel.
+  static const String testemunhos =
+      'https://chat.whatsapp.com/J1qJpFjnRV29K3zCdp7LED';
 
-  /// TODO_OWNER: Adicionar link oficial do Grupo Pedido de Oração.
-  static const String oracao = '';
+  /// Grupo Pedido de Oração.
+  static const String oracao =
+      'https://chat.whatsapp.com/LZgJuWetXAC2kRsiR0xdxk';
 
-  /// TODO_OWNER: Adicionar link oficial do Grupo Quero Ser Servo.
-  static const String servo = '';
+  /// Grupo Quero Ser Servo.
+  static const String servo =
+      'https://chat.whatsapp.com/LZgJuWetXAC2kRsiR0xdxk';
 
-  /// TODO_OWNER: Adicionar link oficial do Grupo GC Senador Canedo.
-  static const String gcSenadorCanedo = '';
+  /// Grupo GC Senador Canedo.
+  static const String gcSenadorCanedo =
+      'https://chat.whatsapp.com/D5NEt48OACd0X5OMzuqinS';
 
-  /// TODO_OWNER: Adicionar link oficial do Grupo GC Goiânia.
-  static const String gcGoiania = '';
+  /// Grupo GC Goiânia.
+  static const String gcGoiania =
+      'https://chat.whatsapp.com/LwH4cQFhpZ48FqP8UAfjbT';
 
-  /// TODO_OWNER: Adicionar link oficial do Grupo GC Jovens.
-  static const String gcJovens = '';
+  /// Grupo GC Jovens.
+  static const String gcJovens =
+      'https://chat.whatsapp.com/L5r4H2PPageCMoOx9YtiiN';
 
   // --- Gabinete Pastoral (auditoria EU-07: os contatos JÁ EXISTEM) ---
   // Conversa direta (número internacional, só dígitos). Não são placeholders.

@@ -14,8 +14,12 @@ class Ministerio {
 ///
 /// APENAS camada de apresentação. A escala é montada por um RODÍZIO justo e
 /// automático (round-robin) sobre a equipe — assim ela "roda" sozinha, sem
-/// sobrecarregar ninguém. Aqui os dados são de EXEMPLO; a edição, a persistência
-/// e o compartilhamento definitivo entram com o slice de dados.
+/// sobrecarregar ninguém.
+///
+/// REGISTRO OFICIAL DA ORIGEM DOS DADOS (Sprint 4 — EU-05):
+///   • Origem atual: HARDCODED (a equipe vive em `_exemplo`, dados fixos aqui).
+///   • Planejamento futuro: MIGRAÇÃO PARA SUPABASE (a equipe virá do backend)
+///     — SEM alterar a interface atual desta tela.
 class EscalasScreen extends StatelessWidget {
   final List<Ministerio>? ministerios;
   const EscalasScreen({super.key, this.ministerios});

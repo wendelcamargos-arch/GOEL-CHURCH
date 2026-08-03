@@ -63,6 +63,8 @@ class _OracaoScreenState extends State<OracaoScreen> {
     });
   }
 
+  // "Fazer outro pedido" → limpa COMPLETAMENTE o formulário (todos os campos
+  // e estados de validação/envio), voltando ao estado inicial.
   void _reset() {
     _nameCtrl.clear();
     _whatsappCtrl.clear();

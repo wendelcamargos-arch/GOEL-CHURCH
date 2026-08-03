@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/features/testemunho/presentation/testemunho_screen.dart';
 
+import 'support/fake_url_launcher.dart';
+
 void main() {
+  setUp(installFakeUrlLauncher);
+
   // Janela alta para o formulário caber sem rolagem (botão no fim da lista).
   void tall(WidgetTester tester) {
     tester.view.physicalSize = const Size(1200, 2200);

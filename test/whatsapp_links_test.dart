@@ -3,13 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/core/whatsapp/whatsapp_links.dart';
 
 void main() {
-  test('links de grupo começam vazios (placeholders — Sprint 4)', () {
-    expect(WhatsAppLinks.testemunhos, '');
-    expect(WhatsAppLinks.oracao, '');
-    expect(WhatsAppLinks.servo, '');
-    expect(WhatsAppLinks.gcSenadorCanedo, '');
-    expect(WhatsAppLinks.gcGoiania, '');
-    expect(WhatsAppLinks.gcJovens, '');
+  test('links de grupo OFICIAIS estão definidos (Sprint 4 — aprovado)', () {
+    for (final link in [
+      WhatsAppLinks.testemunhos,
+      WhatsAppLinks.oracao,
+      WhatsAppLinks.servo,
+      WhatsAppLinks.gcSenadorCanedo,
+      WhatsAppLinks.gcGoiania,
+      WhatsAppLinks.gcJovens,
+    ]) {
+      expect(WhatsAppLinks.definido(link), isTrue);
+      expect(link, startsWith('https://chat.whatsapp.com/'));
+    }
   });
 
   test('contatos do Gabinete Pastoral JÁ existem (auditoria EU-07)', () {
@@ -33,7 +38,7 @@ void main() {
               child: ElevatedButton(
                 onPressed: () => abrirGrupoWhatsApp(
                   context,
-                  WhatsAppLinks.testemunhos,
+                  '', // placeholder vazio (link ainda não definido)
                   aviso: 'Grupo em breve.',
                 ),
                 child: const Text('abrir'),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goel_domain/goel_domain.dart';
 
 import '../../agenda/presentation/agenda_screen.dart';
 import '../../aniversariantes/presentation/aniversariantes_screen.dart';
@@ -35,6 +36,9 @@ class MainShell extends StatefulWidget {
   final WidgetBuilder? devocionalBuilder;
   final VoidCallback? onLogout;
 
+  /// Repositório da Bíblia (injetável para testes/preview). Nulo → real.
+  final BibleRepository? bibliaRepository;
+
   /// Aba inicial (2 = Início, central). Exposto para composição/preview.
   final int initialIndex;
 
@@ -44,6 +48,7 @@ class MainShell extends StatefulWidget {
     this.versiculoBuilder,
     this.devocionalBuilder,
     this.onLogout,
+    this.bibliaRepository,
     this.initialIndex = 2,
   });
 
@@ -55,29 +60,48 @@ class _MainShellState extends State<MainShell> {
   // Início é o destino central (índice 2) e o padrão ao abrir.
   late int _index = widget.initialIndex;
 
-  void _select(int i) => setState(() => _index = i);
+  // Abas construídas SOB DEMANDA: uma aba só é montada após ser visitada
+  // (evita, p.ex., carregar a Bíblia inteira até o usuário abrir a aba).
+  late final Set<int> _ativados = {widget.initialIndex};
+
+  void _select(int i) => setState(() {
+        _index = i;
+        _ativados.add(i);
+      });
+
+  Widget _tab(int i) {
+    switch (i) {
+      case 0:
+        return const PalavrasScreen();
+      case 1:
+        return BibliaScreen(repository: widget.bibliaRepository);
+      case 2:
+        return HomeScreen(
+          memberName: widget.memberName,
+          versiculoBuilder: widget.versiculoBuilder,
+          devocionalBuilder: widget.devocionalBuilder,
+        );
+      case 3:
+        return const ContribuaScreen();
+      default:
+        return _MaisTab(
+          memberName: widget.memberName,
+          versiculoBuilder: widget.versiculoBuilder,
+          onLogout: widget.onLogout,
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tabs = <Widget>[
-      const PalavrasScreen(),
-      const BibliaScreen(),
-      HomeScreen(
-        memberName: widget.memberName,
-        versiculoBuilder: widget.versiculoBuilder,
-        devocionalBuilder: widget.devocionalBuilder,
-      ),
-      const ContribuaScreen(),
-      _MaisTab(
-        memberName: widget.memberName,
-        versiculoBuilder: widget.versiculoBuilder,
-        onLogout: widget.onLogout,
-      ),
+    final children = <Widget>[
+      for (var i = 0; i < 5; i++)
+        _ativados.contains(i) ? _tab(i) : const SizedBox.shrink(),
     ];
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: IndexedStack(index: _index, children: tabs),
+      body: IndexedStack(index: _index, children: children),
       bottomNavigationBar: _GoelBottomBar(current: _index, onSelect: _select),
     );
   }

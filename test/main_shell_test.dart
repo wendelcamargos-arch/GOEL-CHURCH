@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/features/home/presentation/main_shell.dart';
 
+import 'support/fake_bible.dart';
+
 void main() {
   testWidgets('abre no Início, saudando o membro', (tester) async {
     await tester.pumpWidget(
@@ -78,7 +80,9 @@ void main() {
   });
 
   testWidgets('aba Bíblia mostra a porta de entrada da leitura', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainShell()));
+    await tester.pumpWidget(
+      MaterialApp(home: MainShell(bibliaRepository: FakeBibleRepository())),
+    );
     await tester.tap(find.text('Bíblia'));
     await tester.pumpAndSettle();
     expect(find.text('A Palavra de Deus, sempre à mão.'), findsOneWidget);

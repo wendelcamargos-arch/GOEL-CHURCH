@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:goel_domain/goel_domain.dart';
 
 import '../data/asset_bible_repository.dart';
+import 'busca_screen.dart';
 import 'capitulos_screen.dart';
 
 /// Aba "Bíblia" — lista os 66 livros (Almeida 1911, domínio público), agrupados
@@ -65,6 +66,8 @@ class _BibliaScreenState extends State<BibliaScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    _BuscaBar(repo: _repo, livros: livros),
+                    const SizedBox(height: 20),
                     const _SecaoTitulo(texto: 'Antigo Testamento'),
                     const SizedBox(height: 8),
                     for (final l in at)
@@ -79,6 +82,48 @@ class _BibliaScreenState extends State<BibliaScreen> {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BuscaBar extends StatelessWidget {
+  final BibleRepository repo;
+  final List<BibleBookMeta> livros;
+  const _BuscaBar({required this.repo, required this.livros});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      label: 'Buscar na Bíblia',
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BuscaScreen(repository: repo, livros: livros),
+          ),
+        ),
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Text(
+                'Buscar palavra, capítulo ou versículo',
+                style: textTheme.bodyLarge
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
         ),
       ),
     );

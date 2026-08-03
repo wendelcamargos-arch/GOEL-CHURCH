@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:goel_domain/goel_domain.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../data/reading_store.dart';
 import 'compartilhar_screen.dart';
 
-/// Leitor de capítulo — texto REAL (Almeida 1911), **scroll contínuo** (anexa o
-/// próximo capítulo/livro ao rolar), ajuste de fonte, tema do leitor
-/// (claro/escuro só aqui) e ações no versículo (favoritar). Carrega sob demanda.
+/// Leitor de capítulo — texto REAL (Almeida 1911), scroll contínuo, fonte, tema
+/// do leitor, ações no versículo (favoritar, marca-texto, anotação,
+/// compartilhar), Modo púlpito (fonte ampliada, sem AppBar) e Modo culto (tela
+/// sempre ligada). Registra "continue lendo" e histórico.
 class LeituraScreen extends StatefulWidget {
   final BibleRepository repository;
   final ReadingStore store;
@@ -34,6 +36,7 @@ class _LeituraScreenState extends State<LeituraScreen> {
     for (final b in widget.livros) b.id: b,
   };
   late final Set<String> _favs = widget.store.favoritos().toSet();
+  late Map<String, String> _marcas = widget.store.marcas();
 
   bool _carregando = true;
   bool _carregandoMais = false;
@@ -42,6 +45,8 @@ class _LeituraScreenState extends State<LeituraScreen> {
 
   double _fonte = 19;
   bool _leitorClaro = false;
+  bool _pulpito = false;
+  bool _culto = false;
 
   @override
   void initState() {
@@ -53,7 +58,19 @@ class _LeituraScreenState extends State<LeituraScreen> {
   @override
   void dispose() {
     _scroll.dispose();
+    if (_culto) _setWakelock(false);
     super.dispose();
+  }
+
+  Future<void> _setWakelock(bool on) async {
+    try {
+      on ? await WakelockPlus.enable() : await WakelockPlus.disable();
+    } catch (_) {/* plataforma sem suporte / testes */}
+  }
+
+  Future<void> _registrar(BibleChapter cap) async {
+    await widget.store.salvarUltimaLeitura(cap.bookId, cap.numero);
+    await widget.store.registrarHistorico(cap.bookId, cap.numero);
   }
 
   Future<void> _carregarInicial() async {
@@ -65,6 +82,7 @@ class _LeituraScreenState extends State<LeituraScreen> {
         _carregados.add(cap);
         _carregando = false;
       });
+      await _registrar(cap);
     } catch (_) {
       if (mounted) setState(() => _erro = true);
     }
@@ -103,13 +121,27 @@ class _LeituraScreenState extends State<LeituraScreen> {
         _carregados.add(cap);
         _carregandoMais = false;
       });
+      await _registrar(cap);
     } catch (_) {
       if (mounted) setState(() => _carregandoMais = false);
     }
   }
 
   void _mudarFonte(double delta) =>
-      setState(() => _fonte = (_fonte + delta).clamp(15, 32));
+      setState(() => _fonte = (_fonte + delta).clamp(15, 40));
+
+  void _toggleCulto() {
+    setState(() => _culto = !_culto);
+    _setWakelock(_culto);
+  }
+
+  static Color? _corMarca(String? nome) => switch (nome) {
+        'amarelo' => const Color(0x55FFEB3B),
+        'verde' => const Color(0x554CAF50),
+        'azul' => const Color(0x552196F3),
+        'rosa' => const Color(0x55E91E63),
+        _ => null,
+      };
 
   Future<void> _acoesVersiculo(VerseRef ref, String texto) async {
     final nome = _metaById[ref.bookId]?.nome ?? ref.bookId;
@@ -118,6 +150,7 @@ class _LeituraScreenState extends State<LeituraScreen> {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (sheetCtx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -125,15 +158,52 @@ class _LeituraScreenState extends State<LeituraScreen> {
             ListTile(
               title: Text(rotulo,
                   style: const TextStyle(fontWeight: FontWeight.w700),),
-              subtitle: Text(texto, maxLines: 3, overflow: TextOverflow.ellipsis),
+              subtitle:
+                  Text(texto, maxLines: 3, overflow: TextOverflow.ellipsis),
             ),
             const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  const Text('Marca-texto:'),
+                  const SizedBox(width: 8),
+                  for (final c in const ['amarelo', 'verde', 'azul', 'rosa'])
+                    _Swatch(
+                      cor: _corMarca(c)!,
+                      selecionado: _marcas[ref.chave] == c,
+                      onTap: () {
+                        Navigator.of(sheetCtx).pop();
+                        _marcar(ref, c);
+                      },
+                    ),
+                  IconButton(
+                    tooltip: 'Remover marca',
+                    icon: const Icon(Icons.format_color_reset),
+                    onPressed: () {
+                      Navigator.of(sheetCtx).pop();
+                      _marcar(ref, null);
+                    },
+                  ),
+                ],
+              ),
+            ),
             ListTile(
               leading: Icon(favorito ? Icons.star : Icons.star_border),
               title: Text(favorito ? 'Remover dos favoritos' : 'Favoritar'),
               onTap: () {
                 Navigator.of(sheetCtx).pop();
                 _alternarFavorito(ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note),
+              title: Text(widget.store.anotacao(ref.chave) == null
+                  ? 'Adicionar anotação'
+                  : 'Editar anotação',),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                _anotar(ref, rotulo);
               },
             ),
             ListTile(
@@ -169,6 +239,46 @@ class _LeituraScreenState extends State<LeituraScreen> {
     });
   }
 
+  Future<void> _marcar(VerseRef ref, String? cor) async {
+    await widget.store.marcarVersiculo(ref.chave, cor);
+    if (mounted) setState(() => _marcas = widget.store.marcas());
+  }
+
+  Future<void> _anotar(VerseRef ref, String rotulo) async {
+    final ctrl =
+        TextEditingController(text: widget.store.anotacao(ref.chave) ?? '');
+    final salvar = await showDialog<bool>(
+      context: context,
+      builder: (dCtx) => AlertDialog(
+        title: Text('Anotação — $rotulo'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          minLines: 3,
+          maxLines: 6,
+          decoration: const InputDecoration(
+            hintText: 'Escreva sua anotação…',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dCtx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dCtx).pop(true),
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+    if (salvar ?? false) {
+      await widget.store.salvarAnotacao(ref.chave, ctrl.text);
+      if (mounted) setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bg = _leitorClaro ? const Color(0xFFFAF7F0) : const Color(0xFF0E0E0E);
@@ -179,6 +289,33 @@ class _LeituraScreenState extends State<LeituraScreen> {
     final titulo = metaInicial == null
         ? 'Bíblia'
         : '${metaInicial.nome} ${widget.capitulo}';
+
+    // Modo púlpito: tela limpa, sem AppBar, fonte ampliada.
+    if (_pulpito) {
+      return Scaffold(
+        backgroundColor: bg,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              _corpo(fg, fgSuave, fonte: _fonte + 8, comAcoes: false),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Material(
+                  color: Colors.black45,
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    tooltip: 'Sair do modo púlpito',
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => setState(() => _pulpito = false),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: bg,
@@ -202,13 +339,34 @@ class _LeituraScreenState extends State<LeituraScreen> {
             onPressed: () => setState(() => _leitorClaro = !_leitorClaro),
             icon: Icon(_leitorClaro ? Icons.dark_mode : Icons.light_mode),
           ),
+          PopupMenuButton<String>(
+            onSelected: (v) {
+              if (v == 'pulpito') setState(() => _pulpito = true);
+              if (v == 'culto') _toggleCulto();
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'pulpito',
+                child: ListTile(
+                  leading: Icon(Icons.campaign_outlined),
+                  title: Text('Modo púlpito'),
+                ),
+              ),
+              CheckedPopupMenuItem(
+                value: 'culto',
+                checked: _culto,
+                child: const Text('Modo culto (tela ligada)'),
+              ),
+            ],
+          ),
         ],
       ),
-      body: SafeArea(child: _corpo(fg, fgSuave)),
+      body: SafeArea(child: _corpo(fg, fgSuave, fonte: _fonte, comAcoes: true)),
     );
   }
 
-  Widget _corpo(Color fg, Color fgSuave) {
+  Widget _corpo(Color fg, Color fgSuave,
+      {required double fonte, required bool comAcoes,}) {
     if (_erro) {
       return Center(
         child: Text('Não foi possível abrir a leitura.',
@@ -240,13 +398,15 @@ class _LeituraScreenState extends State<LeituraScreen> {
           controller: _scroll,
           padding: const EdgeInsets.fromLTRB(22, 8, 22, 40),
           itemCount: itens.length,
-          itemBuilder: (context, i) => _linha(itens[i], fg, fgSuave),
+          itemBuilder: (context, i) =>
+              _linha(itens[i], fg, fgSuave, fonte, comAcoes),
         ),
       ),
     );
   }
 
-  Widget _linha(_Item item, Color fg, Color fgSuave) {
+  Widget _linha(
+      _Item item, Color fg, Color fgSuave, double fonte, bool comAcoes,) {
     switch (item.tipo) {
       case _Tipo.cabecalho:
         return Padding(
@@ -255,43 +415,61 @@ class _LeituraScreenState extends State<LeituraScreen> {
             item.titulo!,
             style: TextStyle(
               color: fg,
-              fontSize: _fonte + 4,
+              fontSize: fonte + 4,
               fontWeight: FontWeight.w800,
             ),
           ),
         );
       case _Tipo.versiculo:
-        final favorito = _favs.contains(item.ref!.chave);
-        return InkWell(
-          onTap: () => _acoesVersiculo(item.ref!, item.texto!),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: RichText(
-              text: TextSpan(
-                style: TextStyle(color: fg, fontSize: _fonte, height: 1.6),
-                children: [
-                  TextSpan(
-                    text: '${item.numero}  ',
-                    style: TextStyle(
-                      color: fgSuave,
-                      fontSize: _fonte * 0.7,
-                      fontWeight: FontWeight.w700,
+        final ref = item.ref!;
+        final favorito = _favs.contains(ref.chave);
+        final cor = _corMarca(_marcas[ref.chave]);
+        final temNota = widget.store.anotacao(ref.chave) != null;
+        final conteudo = Container(
+          decoration: cor == null
+              ? null
+              : BoxDecoration(
+                  color: cor, borderRadius: BorderRadius.circular(6),),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          child: RichText(
+            text: TextSpan(
+              style: TextStyle(color: fg, fontSize: fonte, height: 1.6),
+              children: [
+                TextSpan(
+                  text: '${item.numero}  ',
+                  style: TextStyle(
+                    color: fgSuave,
+                    fontSize: fonte * 0.7,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                TextSpan(text: item.texto),
+                if (favorito)
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Icon(Icons.star,
+                          size: fonte * 0.8, color: Colors.amber,),
                     ),
                   ),
-                  TextSpan(text: item.texto),
-                  if (favorito)
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 6),
-                        child: Icon(Icons.star,
-                            size: _fonte * 0.8, color: Colors.amber,),
-                      ),
+                if (temNota)
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(Icons.edit_note,
+                          size: fonte * 0.9, color: fgSuave,),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
+        );
+        if (!comAcoes) return conteudo;
+        return InkWell(
+          onTap: () => _acoesVersiculo(ref, item.texto!),
+          child: conteudo,
         );
       case _Tipo.rodape:
         if (_carregandoMais) {
@@ -312,6 +490,37 @@ class _LeituraScreenState extends State<LeituraScreen> {
         }
         return const SizedBox(height: 40);
     }
+  }
+}
+
+class _Swatch extends StatelessWidget {
+  final Color cor;
+  final bool selecionado;
+  final VoidCallback onTap;
+  const _Swatch(
+      {required this.cor, required this.selecionado, required this.onTap,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: cor.withValues(alpha: 1),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selecionado ? Colors.black : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

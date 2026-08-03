@@ -6,7 +6,10 @@ import '../data/reading_store.dart';
 import 'busca_screen.dart';
 import 'capitulos_screen.dart';
 import 'favoritos_screen.dart';
+import 'historico_screen.dart';
+import 'leitura_screen.dart';
 import 'planos_screen.dart';
+import 'sobre_biblia_screen.dart';
 
 /// Aba "Bíblia" — lista os 66 livros (Almeida 1911, domínio público), agrupados
 /// por Testamento, carregados do manifest via [BibleRepository]. Busca e
@@ -81,9 +84,33 @@ class _BibliaScreenState extends State<BibliaScreen> {
                 final store = snap.data!.store;
                 final at = livros.where((l) => l.isAntigoTestamento).toList();
                 final nt = livros.where((l) => !l.isAntigoTestamento).toList();
+                final ultima = store.ultimaLeitura();
+                final nomeUltima = ultima == null
+                    ? null
+                    : (livros.where((b) => b.id == ultima.bookId).firstOrNull
+                        ?.nome);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (ultima != null && nomeUltima != null) ...[
+                      _AtalhoBar(
+                        icone: Icons.play_circle_outline,
+                        corIcone: scheme.primary,
+                        texto: 'Continue lendo: $nomeUltima ${ultima.capitulo}',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => LeituraScreen(
+                              repository: _repo,
+                              store: store,
+                              livros: livros,
+                              bookId: ultima.bookId,
+                              capitulo: ultima.capitulo,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     _BuscaBar(repo: _repo, store: store, livros: livros),
                     const SizedBox(height: 10),
                     _AtalhoBar(
@@ -106,6 +133,29 @@ class _BibliaScreenState extends State<BibliaScreen> {
                         MaterialPageRoute(
                           builder: (_) => PlanosScreen(
                               repository: _repo, store: store, livros: livros,),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _AtalhoBar(
+                      icone: Icons.history,
+                      corIcone: scheme.onSurfaceVariant,
+                      texto: 'Histórico',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => HistoricoScreen(
+                              repository: _repo, store: store, livros: livros,),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _AtalhoBar(
+                      icone: Icons.info_outline,
+                      corIcone: scheme.onSurfaceVariant,
+                      texto: 'Sobre a Bíblia',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SobreBibliaScreen(),
                         ),
                       ),
                     ),

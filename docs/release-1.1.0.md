@@ -4,7 +4,19 @@
 
 ## Versão
 - **Version Name:** 1.1.0
-- **Version Code:** ver "Impacto → ⚠️ versionCode" abaixo (recomendado **9**).
+- **Version Code:** 9 (aprovado pelo Owner)
+
+## NOVIDADES DA VERSÃO (texto oficial da loja)
+- Bíblia Offline completa
+- Busca por palavra
+- Busca por referência
+- Favoritos
+- Marca-texto
+- Notas pessoais
+- Continue lendo
+- Compartilhar versículos
+- Planos de leitura
+- Melhorias gerais de estabilidade
 
 ## Release Notes (loja / usuário)
 **Novidades da versão 1.1.0 — Bíblia completa offline 📖**

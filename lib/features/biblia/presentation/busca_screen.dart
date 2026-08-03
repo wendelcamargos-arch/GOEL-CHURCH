@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:goel_domain/goel_domain.dart';
 
+import '../data/reading_store.dart';
 import 'leitura_screen.dart';
 
 /// Busca na Bíblia — por **referência** ("João 3:16", "sl 23") e por
@@ -10,11 +11,13 @@ import 'leitura_screen.dart';
 /// leitura naquele ponto.
 class BuscaScreen extends StatefulWidget {
   final BibleRepository repository;
+  final ReadingStore store;
   final List<BibleBookMeta> livros;
 
   const BuscaScreen({
     super.key,
     required this.repository,
+    required this.store,
     required this.livros,
   });
 
@@ -80,6 +83,7 @@ class _BuscaScreenState extends State<BuscaScreen> {
       MaterialPageRoute(
         builder: (_) => LeituraScreen(
           repository: widget.repository,
+          store: widget.store,
           livros: widget.livros,
           bookId: ref.bookId,
           capitulo: ref.capitulo,

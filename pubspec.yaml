@@ -17,6 +17,9 @@ dependencies:
     path: packages/goel_domain
   # Slice 02 — plataforma Supabase (dados/auth/storage) consumida pela camada de dados.
   http: ^1.6.0
+  # Bible Engine — persistência offline (favoritos, marca-textos, anotações,
+  # histórico, "continue lendo", plano, fonte/tema do leitor).
+  shared_preferences: ^2.3.2
   supabase_flutter: ^2.5.6
   # Abre links externos (ex.: álbuns/downloads no Google Drive) no app do sistema.
   url_launcher: ^6.3.0

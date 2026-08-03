@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:goel_domain/goel_domain.dart';
 
+import '../data/reading_store.dart';
 import 'leitura_screen.dart';
 
 /// Capítulos de um livro — grade de números com células UNIFORMES.
 class CapitulosScreen extends StatelessWidget {
   final BibleRepository repository;
+  final ReadingStore store;
   final List<BibleBookMeta> livros;
   final BibleBookMeta livro;
 
   const CapitulosScreen({
     super.key,
     required this.repository,
+    required this.store,
     required this.livros,
     required this.livro,
   });
@@ -56,6 +59,7 @@ class CapitulosScreen extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (_) => LeituraScreen(
                                 repository: repository,
+                                store: store,
                                 livros: livros,
                                 bookId: livro.id,
                                 capitulo: cap,

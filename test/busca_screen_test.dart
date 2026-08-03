@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:goel_church/features/biblia/data/reading_store.dart';
 import 'package:goel_church/features/biblia/presentation/busca_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_bible.dart';
 
 void main() {
   Future<void> abrir(WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
     final fake = FakeBibleRepository();
     final livros = await fake.livros();
+    final store = await ReadingStore.abrir();
     await tester.pumpWidget(
-      MaterialApp(home: BuscaScreen(repository: fake, livros: livros)),
+      MaterialApp(
+        home: BuscaScreen(repository: fake, store: store, livros: livros),
+      ),
     );
     await tester.pumpAndSettle();
   }

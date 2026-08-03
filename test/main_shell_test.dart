@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/features/home/presentation/main_shell.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'support/fake_bible.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets('abre no Início, saudando o membro', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(home: MainShell(memberName: 'Ana Maria')),

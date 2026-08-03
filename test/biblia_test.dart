@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/features/biblia/presentation/biblia_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_bible.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets('Bíblia lista livros, abre capítulos e lê o texto real',
       (tester) async {
     tester.view.physicalSize = const Size(1000, 3000);

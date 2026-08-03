@@ -25,7 +25,7 @@ class WhatsAppLinks {
 
   /// Grupo Quero Ser Servo.
   static const String servo =
-      'https://chat.whatsapp.com/LZgJuWetXAC2kRsiR0xdxk';
+      'https://chat.whatsapp.com/JJtwcQrVHgN51HRAPfnDVm';
 
   /// Grupo GC Senador Canedo.
   static const String gcSenadorCanedo =

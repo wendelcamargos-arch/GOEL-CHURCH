@@ -123,9 +123,9 @@ Status:                 BACKLOG | EM ANÁLISE | CORRIGIDOS | HOMOLOGADOS
 ### Registro
 ```
 GOEL CHURCH
-VERSION   1.1.0 (code 10)
+VERSION   1.1.0 (code 11)   ← candidata oficial · code 10 SUPERSEDED
 STATUS    QUALITY ASSURANCE
-FASE      Homologação (preparação da Release ENCERRADA; escopo congelado)
+FASE      Homologação em 5 ondas (ver HOMOLOGACAO_ONDAS_1.1.0.md)
 V2.0      BLOQUEADA (apenas planejamento aprovado)
 CICLO     Homologação → Defeito → Correção → Nova homologação
 SEVERID.  S1 Crítico · S2 Alto · S3 Médio · S4 Baixo · S5 Melhoria

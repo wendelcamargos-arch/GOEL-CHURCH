@@ -1,10 +1,17 @@
 # GOEL CHURCH 2.0 — MASTER PLAN
 
-> **Documento diretor oficial da Versão 2.0.** Apenas planejamento — **nenhuma
-> implementação, nenhum código, nenhum Firebase, nenhum Flutter** nesta etapa.
-> A Release **1.1.0 permanece congelada** (só correções de defeitos via
-> `DEFECT_LOG.md`). Datas são **estimativas** a calibrar com o Owner conforme a
-> capacidade da equipe.
+> **STATUS: APROVADO (Owner, 2026-08-04).** Fase de planejamento da Versão 2.0
+> **oficialmente encerrada**. Apenas planejamento — **nenhuma implementação,
+> nenhum código, nenhum Firebase, nenhum Flutter**. A Release **1.1.0 permanece
+> congelada** (só correções de defeitos via `DEFECT_LOG.md`). Datas são
+> **estimativas** a calibrar com o Owner conforme a capacidade da equipe.
+>
+> **Próximo foco:** Homologação da 1.1.0 → Internal Testing → Correção de
+> defeitos → Abertura da 2.0. **Nenhuma implementação adicional antes do retorno
+> da homologação.**
+>
+> **Pilares:** 1 Comunidade · 2 Membros · 3 Vida Espiritual · 4 Administração ·
+> **5 Inteligência**.
 
 ---
 
@@ -76,7 +83,8 @@ todas as idades.
 | **Onda 2** | **Membros** (diretório, aniversariantes, perfil) | Pilar 2 |
 | **Onda 3** | **Vida Espiritual** (Bíblia híbrida, planos, devocionais) | Pilar 3 |
 | **Onda 4** | **Administração** (escalas backend, conteúdo, gabinete, métricas) | Pilar 4 |
-| **Onda 5** | **Integração WhatsApp Business** (avaliação/piloto) | Pilar 1 (fase 3) |
+| **Onda 5** | **Inteligência** (Dashboard Pastoral + indicadores) | Pilar 5 |
+| **Onda 6** | **Integração WhatsApp Business** (avaliação/piloto) | Pilar 1 (fase 3) |
 
 > Gate entre ondas: LGPD cumprido para o que trata dado pessoal + homologação
 > verde (0 defeitos críticos).
@@ -247,14 +255,55 @@ Internal Testing → (Críticos=0 e Altos=0) → Closed Testing → Produção
 - **Critérios de aceite:** ações administrativas auditadas; acesso por papel;
   escalas persistem e sincronizam; conteúdo publicável com histórico.
 
+## PILAR 5 — Inteligência
+
+- **Objetivo:** fornecer **indicadores para liderança e pastoreio** — um
+  **Dashboard Pastoral** que transforma os dados dos demais pilares em visão
+  para cuidar de pessoas e decidir com clareza.
+- **Escopo inicial:**
+  - **Dashboard Pastoral** (visão consolidada para a liderança).
+  - **Indicadores de participação** (acessos, presença, engajamento).
+  - **Indicadores de leitura bíblica** (capítulos/planos lidos, constância).
+  - **Indicadores de oração** (pedidos recebidos/atendidos, tempo de resposta).
+  - **Indicadores de testemunhos** (recebidos/publicados/moderação).
+  - **Indicadores de pequenos grupos** (participação, frequência, crescimento).
+  - **Indicadores de escalas** (cobertura, equilíbrio do rodízio, faltas).
+  - **Arquitetura preparada para expansão futura** (novos indicadores sem
+    redesenho).
+- **Arquitetura:** camada **analítica derivada** sobre o Supabase — *views*/
+  *materialized views* e/ou tabelas de agregação alimentadas por Edge Functions/
+  jobs; leitura pelo Painel Admin. **Somente dados agregados/indicadores**, com
+  **RLS por papel**; **privacidade por design** (preferir métricas agregadas e
+  anonimizadas; nada de expor conteúdo pessoal individual sem base legal).
+  Modelo **extensível**: cada indicador é uma definição isolada (fácil somar
+  novos) — pronto para BI externo no futuro, se decidido.
+- **Backlog:** (a) definição de métricas e fórmulas; (b) camada de agregação
+  (views/jobs); (c) Dashboard Pastoral (cards + séries temporais); (d)
+  indicadores por domínio (participação, Bíblia, oração, testemunhos, pequenos
+  grupos, escalas); (e) filtros por período/ministério; (f) exportação
+  restrita/auditada; (g) framework para novos indicadores.
+- **Sprints:** S5.1 (camada de agregação + Dashboard base + 2–3 indicadores
+  âncora) · S5.2 (demais indicadores + filtros + exportação).
+- **Critérios de aceite:** indicadores corretos e reproduzíveis; **apenas
+  agregados** (sem expor PII indevidamente); acesso restrito por papel e
+  auditado; LGPD respeitada (finalidade: pastoreio/gestão); arquitetura permite
+  **adicionar novo indicador sem redesenho**.
+
+> **Dependência:** o Pilar 5 consome dados gerados pelos Pilares 1–4; por isso
+> entra **após** eles (Onda 5), quando já há dados suficientes para indicadores
+> significativos.
+
 ---
 
 ### Registro
 ```
 GOEL CHURCH
 DOCUMENTO  Master Plan 2.0
+STATUS     APROVADO (Owner, 2026-08-04) — fase de planejamento encerrada
 ESTADO     Planejamento diretor — sem implementação
-PILARES    1 Comunidade · 2 Membros · 3 Vida Espiritual · 4 Administração
+PILARES    1 Comunidade · 2 Membros · 3 Vida Espiritual · 4 Administração ·
+           5 Inteligência
 GATES      LGPD (pré-requisito) · Homologação (0 críticos) · Autorização Owner
+PRÓXIMO    Homologação 1.1.0 → Internal Testing → Correções → Abertura da 2.0
 1.1.0      CONGELADA
 ```

@@ -26,4 +26,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('próximas 8 semanas'), findsOneWidget);
   });
+
+  testWidgets('EU-05: equipe é editável (adicionar e remover)', (tester) async {
+    tester.view.physicalSize = const Size(1200, 3600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const MaterialApp(home: EscalasScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mídia'));
+    await tester.pumpAndSettle();
+
+    // Mídia começa com 4 pessoas.
+    expect(find.text('Equipe (4)'), findsOneWidget);
+
+    // Adicionar uma pessoa via diálogo.
+    await tester.tap(find.text('Adicionar'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Nome'), 'Joana');
+    await tester.tap(find.text('Salvar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Equipe (5)'), findsOneWidget);
+    expect(find.text('Joana'), findsWidgets);
+
+    // Remover a primeira pessoa da lista.
+    await tester.tap(find.byTooltip('Remover').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Equipe (4)'), findsOneWidget);
+  });
 }

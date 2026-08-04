@@ -85,6 +85,44 @@ Future<void> abrirGrupoWhatsApp(
   }
 }
 
+/// Abre o WhatsApp com uma MENSAGEM já pronta (pré-preenchida).
+///
+/// LIMITAÇÃO OFICIAL DO WHATSAPP (importante — não afirmamos suporte que não
+/// existe): a plataforma NÃO permite postar/enviar automaticamente uma mensagem
+/// em um GRUPO por link. Os links de convite (`chat.whatsapp.com/...`) apenas
+/// ENTRAM no grupo, e o esquema `wa.me` só pré-preenche texto para uma CONVERSA.
+/// Por isso:
+///   • Com [numero] (um telefone/contato oficial): abre a conversa com o texto
+///     pronto — envio direto suportado, é só tocar em enviar.
+///   • Sem [numero]: abre o WhatsApp com o texto pronto e o próprio usuário
+///     escolhe o destino (um contato OU um grupo) e envia — a alternativa
+///     oficial mais próxima de "mandar para o grupo".
+Future<void> abrirWhatsAppComMensagem(
+  BuildContext context,
+  String mensagem, {
+  String? numero,
+}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final texto = Uri.encodeComponent(mensagem);
+  final destino = (numero != null && numero.trim().isNotEmpty)
+      ? 'https://wa.me/${numero.trim()}?text=$texto'
+      : 'https://wa.me/?text=$texto';
+  try {
+    final ok = await launchUrl(
+      Uri.parse(destino),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok) throw Exception('falha');
+  } catch (_) {
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(
+        content: Text('Não foi possível abrir o WhatsApp agora.'),
+        behavior: SnackBarBehavior.floating,
+      ),);
+  }
+}
+
 /// Abre uma CONVERSA direta (wa.me) a partir de um número + texto opcional.
 /// Usado pelo Gabinete Pastoral (contatos que já existem).
 Future<void> abrirConversaWhatsApp(

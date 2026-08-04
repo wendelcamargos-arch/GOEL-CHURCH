@@ -44,6 +44,29 @@ class _ServoScreenState extends State<ServoScreen> {
     super.dispose();
   }
 
+  /// Monta a mensagem com a(s) área(s) escolhida(s).
+  /// Uma área → "Quero servir na equipe de Mídia."; várias → "...nas equipes
+  /// de Mídia, Recepção e Louvor.".
+  String _montarMensagem() {
+    final nome = _nome.text.trim();
+    final contato = _contato.text.trim();
+    final areas = _selecionadas.toList();
+    final frase = areas.length == 1
+        ? 'Quero servir na equipe de ${areas.first}.'
+        : 'Quero servir nas equipes de ${_listar(areas)}.';
+    return (StringBuffer('*Quero Ser Servo — Goel Church*\n')
+          ..writeln('Nome: $nome')
+          ..writeln('Contato: $contato')
+          ..writeln()
+          ..write(frase))
+        .toString();
+  }
+
+  String _listar(List<String> itens) {
+    if (itens.length <= 1) return itens.join();
+    return '${itens.sublist(0, itens.length - 1).join(', ')} e ${itens.last}';
+  }
+
   Future<void> _submit() async {
     setState(() => _tried = true);
     if (_invalid) return;
@@ -54,17 +77,24 @@ class _ServoScreenState extends State<ServoScreen> {
       _selecionadas.toList(),
     );
     if (!mounted) return;
-    // Abre automaticamente o grupo Quero Ser Servo (placeholder por ora).
-    await abrirGrupoWhatsApp(
-      context,
-      WhatsAppLinks.servo,
-      aviso: 'O grupo Quero Ser Servo será disponibilizado em breve.',
-    );
+    // Abre o WhatsApp com a mensagem PRONTA (área escolhida). O WhatsApp não
+    // permite postar automaticamente em grupo por link; o usuário escolhe o
+    // destino (o grupo Quero Ser Servo ou um contato) e envia.
+    await abrirWhatsAppComMensagem(context, _montarMensagem());
     if (!mounted) return;
     setState(() {
       _sending = false;
       _sent = true;
     });
+  }
+
+  /// Atalho para entrar no grupo oficial Quero Ser Servo.
+  Future<void> _entrarNoGrupo() async {
+    await abrirGrupoWhatsApp(
+      context,
+      WhatsAppLinks.servo,
+      aviso: 'O grupo Quero Ser Servo será disponibilizado em breve.',
+    );
   }
 
   @override
@@ -197,20 +227,31 @@ class _ServoScreenState extends State<ServoScreen> {
                 size: 52, color: scheme.onPrimaryContainer,),
           ),
           const SizedBox(height: 24),
-          Text('Inscrição enviada!',
+          Text('Abrimos o WhatsApp com a sua inscrição',
               textAlign: TextAlign.center,
               style:
                   textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),),
           const SizedBox(height: 8),
           Text(
-            'Nossa equipe entrará em contato com você para conhecer melhor seu '
-            'perfil e orientar os próximos passos.',
+            'Sua mensagem já está pronta no WhatsApp. Escolha o grupo Quero Ser '
+            'Servo e toque em enviar. Nossa equipe vai falar com você.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge
                 ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
           ),
           const SizedBox(height: 28),
-          FilledButton(
+          FilledButton.icon(
+            onPressed: _entrarNoGrupo,
+            icon: const Icon(Icons.groups_outlined),
+            label: const Text('Entrar no Grupo'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              foregroundColor: scheme.onSurface,
+              side: BorderSide(color: scheme.outline),
+            ),
             onPressed: () => Navigator.of(context).maybePop(),
             child: const Text('Voltar'),
           ),

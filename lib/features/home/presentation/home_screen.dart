@@ -134,7 +134,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).padding.top;
     return SizedBox(
-      height: 232 + topInset,
+      height: 276 + topInset,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -172,6 +172,17 @@ class _Header extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
+                Text(
+                  'Uma igreja para você frequentar\n'
+                  'e uma família para você pertencer.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    fontSize: 15,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Text(
                   greeting,
                   style: const TextStyle(

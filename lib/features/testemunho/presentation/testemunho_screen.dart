@@ -45,6 +45,22 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
     super.dispose();
   }
 
+  /// Monta a mensagem a partir do formulário (Nome, WhatsApp, Título, Texto).
+  String _montarMensagem() {
+    final nome = _nameCtrl.text.trim();
+    final zap = _whatsappCtrl.text.trim();
+    final titulo = _tituloCtrl.text.trim();
+    final texto = _textCtrl.text.trim();
+    final buffer = StringBuffer('*Testemunho — Goel Church*\n')
+      ..writeln('Nome: $nome');
+    if (zap.isNotEmpty) buffer.writeln('WhatsApp: $zap');
+    if (titulo.isNotEmpty) buffer.writeln('Título: $titulo');
+    buffer
+      ..writeln()
+      ..write(texto);
+    return buffer.toString();
+  }
+
   Future<void> _submit() async {
     setState(() => _tried = true);
     if (_nomeInvalid || _textInvalid) return;
@@ -57,12 +73,10 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
       _textCtrl.text.trim(),
     );
     if (!mounted) return;
-    // Abre automaticamente o grupo Testemunhos Goel (placeholder por ora).
-    await abrirGrupoWhatsApp(
-      context,
-      WhatsAppLinks.testemunhos,
-      aviso: 'O grupo Testemunhos Goel será disponibilizado em breve.',
-    );
+    // Abre o WhatsApp com o testemunho PRONTO. O WhatsApp não permite postar
+    // automaticamente em grupo por link; abrimos com o texto pronto e o usuário
+    // escolhe o destino (o grupo Testemunhos Goel ou um contato).
+    await abrirWhatsAppComMensagem(context, _montarMensagem());
     if (!mounted) return;
     setState(() {
       _sending = false;
@@ -185,8 +199,10 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Ao enviar, você autoriza a Goel Church a compartilhar seu '
-          'testemunho para edificar outras pessoas.',
+          'Ao enviar, abrimos o WhatsApp com o seu testemunho pronto. Escolha o '
+          'grupo Testemunhos Goel (ou um contato) e toque em enviar. Você '
+          'autoriza a Goel Church a compartilhar seu testemunho para edificar '
+          'outras pessoas.',
           style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 20),
@@ -199,7 +215,7 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : const Icon(Icons.send_outlined),
-          label: Text(_sending ? 'Enviando…' : 'Enviar Testemunho'),
+          label: Text(_sending ? 'Abrindo o WhatsApp…' : 'Enviar Testemunho'),
         ),
       ],
     );
@@ -225,14 +241,14 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Testemunho enviado!',
+            'Abrimos o WhatsApp com o seu testemunho',
             textAlign: TextAlign.center,
             style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'Obrigado por compartilhar o que Deus fez. Que a sua história '
-            'abençoe muitas pessoas.',
+            'Sua mensagem já está pronta no WhatsApp. Escolha o grupo Testemunhos '
+            'Goel e toque em enviar. Que a sua história abençoe muitas pessoas.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge?.copyWith(
               color: scheme.onSurfaceVariant,

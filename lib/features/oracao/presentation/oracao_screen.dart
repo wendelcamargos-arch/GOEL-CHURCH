@@ -40,6 +40,20 @@ class _OracaoScreenState extends State<OracaoScreen> {
     super.dispose();
   }
 
+  /// Monta a mensagem do pedido a partir do formulário (Nome, WhatsApp, Pedido).
+  String _montarMensagem() {
+    final nome = _nameCtrl.text.trim();
+    final zap = _whatsappCtrl.text.trim();
+    final pedido = _textCtrl.text.trim();
+    final buffer = StringBuffer('*Pedido de Oração — Goel Church*\n')
+      ..writeln('Nome: $nome');
+    if (zap.isNotEmpty) buffer.writeln('WhatsApp: $zap');
+    buffer
+      ..writeln()
+      ..write(pedido);
+    return buffer.toString();
+  }
+
   Future<void> _submit() async {
     setState(() => _tried = true);
     if (_nomeInvalid || _textInvalid) return;
@@ -50,17 +64,24 @@ class _OracaoScreenState extends State<OracaoScreen> {
       _textCtrl.text.trim(),
     );
     if (!mounted) return;
-    // Abre automaticamente o grupo Pedido de Oração (placeholder por ora).
-    await abrirGrupoWhatsApp(
-      context,
-      WhatsAppLinks.oracao,
-      aviso: 'O grupo Pedido de Oração será disponibilizado em breve.',
-    );
+    // Abre o WhatsApp com a mensagem PRONTA. O WhatsApp não permite postar
+    // automaticamente em grupo por link; então abrimos com o texto pronto e o
+    // usuário escolhe o destino (o grupo Pedido de Oração ou um contato).
+    await abrirWhatsAppComMensagem(context, _montarMensagem());
     if (!mounted) return;
     setState(() {
       _sending = false;
       _sent = true;
     });
+  }
+
+  /// Atalho para entrar no grupo oficial Pedido de Oração.
+  Future<void> _entrarNoGrupo() async {
+    await abrirGrupoWhatsApp(
+      context,
+      WhatsAppLinks.oracao,
+      aviso: 'O grupo Pedido de Oração será disponibilizado em breve.',
+    );
   }
 
   // "Fazer outro pedido" → limpa COMPLETAMENTE o formulário (todos os campos
@@ -160,7 +181,13 @@ class _OracaoScreenState extends State<OracaoScreen> {
                 _tried && _textInvalid ? 'Escreva o seu pedido.' : null,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
+        Text(
+          'Ao enviar, abrimos o WhatsApp com a sua mensagem pronta. É só '
+          'escolher o grupo Pedido de Oração (ou um contato) e tocar em enviar.',
+          style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _sending ? null : _submit,
           icon: _sending
@@ -170,7 +197,7 @@ class _OracaoScreenState extends State<OracaoScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : const Icon(Icons.send_outlined),
-          label: Text(_sending ? 'Enviando…' : 'Enviar Pedido'),
+          label: Text(_sending ? 'Abrindo o WhatsApp…' : 'Enviar Pedido'),
         ),
       ],
     );
@@ -196,13 +223,14 @@ class _OracaoScreenState extends State<OracaoScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Recebemos o seu pedido',
+            'Abrimos o WhatsApp com o seu pedido',
             textAlign: TextAlign.center,
             style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'A nossa equipe vai orar por você. Você não está sozinho(a).',
+            'Sua mensagem já está pronta no WhatsApp. Escolha o grupo Pedido de '
+            'Oração e toque em enviar. A nossa equipe vai orar por você.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge?.copyWith(
               color: scheme.onSurfaceVariant,
@@ -210,7 +238,18 @@ class _OracaoScreenState extends State<OracaoScreen> {
             ),
           ),
           const SizedBox(height: 28),
-          FilledButton(
+          FilledButton.icon(
+            onPressed: _entrarNoGrupo,
+            icon: const Icon(Icons.groups_outlined),
+            label: const Text('Entrar no Grupo'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              foregroundColor: scheme.onSurface,
+              side: BorderSide(color: scheme.outline),
+            ),
             onPressed: _reset,
             child: const Text('Fazer outro pedido'),
           ),

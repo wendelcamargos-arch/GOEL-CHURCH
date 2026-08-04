@@ -16,11 +16,12 @@
 ## Fluxo obrigatório de defeito
 
 ```
-Evidência → Auditoria → Causa raiz → Correção mínima →
+DEF → Evidência → Auditoria → Causa raiz → Correção mínima →
 flutter analyze → flutter test → Nova homologação → Fechamento
 ```
 
-Cada defeito só é **FECHADO** após nova homologação do Owner.
+Cada defeito só é **FECHADO** após nova homologação do Owner. **Nenhuma
+implementação pode ocorrer fora deste fluxo.**
 
 ---
 
@@ -63,13 +64,20 @@ importante quebrada, sem contorno) · `MÉDIO` (função quebrada com contorno) 
 **Versão:** onde o defeito foi observado (ex.: `1.1.0 (9)`).
 **Versão Corrigida:** onde a correção entrou (ex.: `1.1.0 (10)` ou commit).
 
+**Origem:** contexto/ambiente onde ocorreu — trilha, aparelho, SO, rede.
+Ex.: `Google Play`, `Samsung A15`, `Android 16`, `Wi-Fi`, `Internal Testing`
+(pode combinar: "Internal Testing · Samsung A15 · Android 16 · Wi-Fi").
+
+**Tempo para reproduzir:** quanto leva/o que basta para o defeito aparecer.
+Ex.: `30 segundos`, `2 minutos`, `Após Login`, `Após Reiniciar`.
+
 ---
 
 ## Registro de defeitos
 
-| ID | Módulo | Descrição | Severidade | Prioridade | Reprodutibilidade | Versão | Versão Corrigida | Dispositivo | Status | Correção | Data | Responsável |
-|----|--------|-----------|------------|------------|-------------------|--------|------------------|-------------|--------|----------|------|-------------|
-| —  | —      | _Nenhum defeito registrado até o momento._ | — | — | — | 1.1.0 (9) | — | — | — | — | — | — |
+| ID | Módulo | Descrição | Severidade | Prioridade | Reprodutibilidade | Origem | Tempo p/ reproduzir | Versão | Versão Corrigida | Dispositivo | Status | Correção | Data | Responsável |
+|----|--------|-----------|------------|------------|-------------------|--------|---------------------|--------|------------------|-------------|--------|----------|------|-------------|
+| —  | —      | _Nenhum defeito registrado até o momento._ | — | — | — | — | — | 1.1.0 (9) | — | — | — | — | — | — |
 
 > Ao receber uma evidência, abre-se uma nova linha com `Status: ABERTO`,
 > classifica-se Severidade/Prioridade/Reprodutibilidade e inicia-se o fluxo

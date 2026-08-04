@@ -1,8 +1,8 @@
 # GOEL CHURCH — Final Release Certification (Release 1.1.0)
 
-> **Estado: PREPARADA — aguardando autorização do Owner para gerar o AAB.**
-> Nenhum artefato será construído antes da autorização explícita. Os campos de
-> artefato (SHA-256, tamanho, horário) são preenchidos **após** o build.
+> **✅ ESTADO: CERTIFICADA.** AAB oficial gerado e assinado com sucesso
+> (run #13). Autorização do Owner concedida em 2026-08-04. Pronta para upload no
+> Google Play → Internal Testing.
 
 ## Identidade da Release
 
@@ -51,21 +51,23 @@
 - `flutter test` → **79 testes verdes**.
 - Sem alterações em domínio/arquitetura/Firebase/Supabase/auth.
 
-## Artefato (preencher após o build autorizado)
+## Artefato (build oficial)
 
 | Campo | Valor |
 |---|---|
-| Workflow Run | _(a preencher)_ |
-| Commit SHA do build | _(a preencher)_ |
+| Workflow Run | **#13** (`30939842122`) — ✅ success |
+| Commit SHA do build | `45692f7988e02360af4a2731d9aa5d2fa41af4e4` |
 | Artefato | `goel-church-aab` → `app-release.aab` |
-| Tamanho | _(a preencher)_ |
-| SHA-256 | _(a preencher)_ |
-| Gerado em (UTC) | _(a preencher)_ |
+| Tamanho | **55.888.205 bytes** (~53,3 MB) |
+| SHA-256 | `dfa2195765f68f0aacf740634fa42aefca9714913ccd66eedff601f15f064e5f` |
+| Build iniciado (UTC) | 2026-08-04 18:42:01 |
+| Build concluído (UTC) | 2026-08-04 18:48:58 |
+| Duração | ~6 min 57 s |
+| Artefato expira em | 2026-08-18 (baixar antes) |
 
 ## Autorização
 
-- [ ] **Owner autoriza gerar o AAB da Release 1.1.0 (code 9).**
+- [x] **Owner autorizou gerar o AAB da Release 1.1.0 (code 9).** — 2026-08-04.
 
-> Ao autorizar, dispararei o workflow `release-aab.yml` na branch, aguardarei a
-> conclusão e completarei os campos de artefato acima, emitindo a certificação
-> final.
+> AAB gerado, assinado (keystore `goel`, SHA1 `31:E8:C6`) e certificado.
+> Próximo passo: upload no Google Play → Internal Testing (sem produção).

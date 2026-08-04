@@ -14,6 +14,23 @@
 
 ---
 
+## Classificação de severidade
+
+| Código | Severidade | Significado | Bloqueia publicação? |
+|---|---|---|---|
+| **S1** | Crítico | Trava/impede uso, perda de dados, app não abre | **Sim** |
+| **S2** | Alto | Função importante quebrada, sem contorno | **Sim** |
+| **S3** | Médio | Função quebrada com contorno viável | Não |
+| **S4** | Baixo | Cosmético/menor | Não |
+| **S5** | Melhoria | Sugestão/evolução (não é defeito) | Não |
+
+> Cada card indica sua severidade (S1–S5). **Portão de saída do Internal
+> Testing:** nenhum **S1** e nenhum **S2** abertos (ver `RELEASE_PLAN_1.1.0.md`).
+> S5 (Melhoria) é registrado, mas direcionado ao planejamento (ex.: V2.0), não
+> ao ciclo de correção da 1.1.0.
+
+---
+
 ## Colunas do board
 
 ### 🗂️ BACKLOG
@@ -29,9 +46,9 @@ _Em auditoria / identificação de causa raiz / correção em andamento._
 ### 🛠️ CORRIGIDOS
 _Correção aplicada (`analyze` limpo + `test` verde), aguardando nova homologação._
 
-- **DEF-GP-01** — Upload recusado no Internal Testing ("código de versão 9 já
-  usado"). Corrigido: versionCode 9 → 10 (AAB run #14, `f60c9a1`). Aguardando
-  homologação do upload no Play. _(card completo abaixo)_
+- **DEF-GP-01** _(S2 · Alto)_ — Upload recusado no Internal Testing ("código de
+  versão 9 já usado"). Corrigido: versionCode 9 → 10 (AAB run #14, `f60c9a1`).
+  Aguardando homologação do upload no Play. _(card completo abaixo)_
 
 ### ✅ HOMOLOGADOS
 _Homologado pelo Owner após nova verificação — defeito fechado._
@@ -84,6 +101,7 @@ Status:                 BACKLOG | EM ANÁLISE | CORRIGIDOS | HOMOLOGADOS
 | Campo | Valor |
 |---|---|
 | **ID** | DEF-GP-01 |
+| **Severidade** | **S2 — Alto** |
 | **Título** | Google Play recusa o AAB: "O código de versão 9 já foi usado. Tente outro." |
 | **Versão** | 1.1.0 (9) → corrigido em 1.1.0 (10) |
 | **Dispositivo** | Web (Google Play Console) |
@@ -107,8 +125,9 @@ Status:                 BACKLOG | EM ANÁLISE | CORRIGIDOS | HOMOLOGADOS
 GOEL CHURCH
 VERSION   1.1.0 (code 10)
 STATUS    QUALITY ASSURANCE
-FASE      Homologação (dev encerrado; escopo congelado)
+FASE      Homologação (preparação da Release ENCERRADA; escopo congelado)
 V2.0      BLOQUEADA (apenas planejamento aprovado)
 CICLO     Homologação → Defeito → Correção → Nova homologação
-PLACAR    Críticos: 0 · Altos: 1 (DEF-GP-01, corrigido/aguardando)
+SEVERID.  S1 Crítico · S2 Alto · S3 Médio · S4 Baixo · S5 Melhoria
+PLACAR    S1: 0 · S2: 1 (DEF-GP-01, corrigido/aguardando) · S3: 0 · S4: 0
 ```

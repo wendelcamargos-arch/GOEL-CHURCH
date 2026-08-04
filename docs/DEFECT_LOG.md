@@ -77,7 +77,7 @@ Ex.: `30 segundos`, `2 minutos`, `Após Login`, `Após Reiniciar`.
 
 | ID | Módulo | Descrição | Severidade | Prioridade | Reprodutibilidade | Origem | Tempo p/ reproduzir | Versão | Versão Corrigida | Dispositivo | Status | Correção | Data | Responsável |
 |----|--------|-----------|------------|------------|-------------------|--------|---------------------|--------|------------------|-------------|--------|----------|------|-------------|
-| —  | —      | _Nenhum defeito registrado até o momento._ | — | — | — | — | — | 1.1.0 (9) | — | — | — | — | — | — |
+| `DEF-GP-01` | Google Play | Upload no Internal Testing recusado: "O código de versão 9 já foi usado. Tente outro." O code 9 já havia sido consumido no Play. | ALTO | P0 | SEMPRE | Google Play Console · Internal Testing | Imediato (no upload) | 1.1.0 (9) | 1.1.0 (10) | Web (Play Console) | AGUARDANDO HOMOLOGAÇÃO | Bump versionCode 9→10 (pubspec + workflow); rebuild assinado. Sem mudança de escopo/funcionalidade. | 2026-08-04 | Claude |
 
 > Ao receber uma evidência, abre-se uma nova linha com `Status: ABERTO`,
 > classifica-se Severidade/Prioridade/Reprodutibilidade e inicia-se o fluxo
@@ -88,8 +88,11 @@ Ex.: `30 segundos`, `2 minutos`, `Após Login`, `Após Reiniciar`.
 
 | | Crítico | Alto | Médio | Baixo |
 |---|---|---|---|---|
-| **Abertos** | 0 | 0 | 0 | 0 |
+| **Abertos** | 0 | 1 | 0 | 0 |
 | **Fechados** | 0 | 0 | 0 | 0 |
+
+> `DEF-GP-01` (Alto) aberto — correção aplicada (code 10), **aguardando
+> homologação** (upload bem-sucedido no Play). Fecha após o Owner confirmar.
 
 > **Critério para encerrar o Internal Testing:** **CRÍTICOS = 0** e
 > **ALTOS = 0** (abertos). Só então → Closed Testing → Produção (ver

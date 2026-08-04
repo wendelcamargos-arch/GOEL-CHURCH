@@ -91,8 +91,10 @@ Ex.: `30 segundos`, `2 minutos`, `Após Login`, `Após Reiniciar`.
 | **Abertos** | 0 | 0 | 0 | 0 |
 | **Fechados** | 0 | 0 | 0 | 0 |
 
-> **Portão de Produção:** exige **0 defeitos CRÍTICOS abertos** (objetivo da
-> fase) e homologação final do Owner.
+> **Critério para encerrar o Internal Testing:** **CRÍTICOS = 0** e
+> **ALTOS = 0** (abertos). Só então → Closed Testing → Produção (ver
+> `RELEASE_PLAN_1.1.0.md`). Meta da fase: **ZERO defeitos críticos** antes da
+> Produção.
 
 ---
 

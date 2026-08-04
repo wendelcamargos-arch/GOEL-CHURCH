@@ -1,18 +1,18 @@
 # GOEL CHURCH — Final Release Certification (Release 1.1.0)
 
-> **✅ STATUS: RELEASE CERTIFIED.** Release 1.1.0 (Version Code **10**)
+> **✅ STATUS: RELEASE CERTIFIED.** Release 1.1.0 (Version Code **11**)
 > oficialmente APROVADA pelo Owner em 2026-08-04. AAB oficial gerado e assinado
-> (run #14). Candidata oficial para publicação. Projeto em **FASE DE
-> HOMOLOGAÇÃO** — nenhuma implementação/Sprint nova (ver `GO_LIVE_CHECKLIST.md`).
+> (run #15). **Candidata oficial** para publicação — **substitui o code 10**,
+> que deixa de ser a candidata. Projeto em **FASE DE HOMOLOGAÇÃO** — escopo
+> congelado.
 >
-> **Histórico de versionCode:** code 9 (run #13) foi **recusado pelo Google
-> Play** ("código de versão 9 já foi usado" — DEF-GP-01). Subimos para **code
-> 10**; este é o artefato oficial da 1.1.0.
+> **Motivo do code 11:** refinamento visual da Home aprovado formalmente pelo
+> Owner (Opção B) — build baseado no commit `ff84a84` (Home refinada).
 
 ```
 GOEL CHURCH
 VERSION       1.1.0
-VERSION CODE  10
+VERSION CODE  11
 STATUS        RELEASE CERTIFIED
 ```
 
@@ -21,9 +21,9 @@ STATUS        RELEASE CERTIFIED
 | Campo | Valor |
 |---|---|
 | **Version Name** | `1.1.0` |
-| **Version Code** | `10` |
+| **Version Code** | `11` |
 | **Branch** | `claude/projeto-goel-v0f6ya` |
-| **Commit** | `f60c9a1b24d4b56e7a40e7016c080751453c223d` |
+| **Commit** | `b35671a959909f8d10ca52b4a97a1ab3c2e6a803` (base: `ff84a84`) |
 | **Destino** | Internal Testing (NÃO Produção) |
 | **Assinatura** | Keystore oficial `goel` (SHA1 `31:E8:C6`), via secrets do CI |
 
@@ -32,8 +32,15 @@ STATUS        RELEASE CERTIFIED
 - Código **8** — publicado no Google Play (run #8).
 - Código **9** — gerado (runs #12/#13), mas **recusado no upload** pelo Play:
   "O código de versão 9 já foi usado." Registrado como **DEF-GP-01**.
-- Código **10** — build oficial atual (run #14). `version: 1.1.0+10` no
-  pubspec e `--build-number=10` no workflow. Version name segue `1.1.0`.
+- Código **10** — build gerado (run #14); **substituído** antes do upload
+  definitivo pela Home refinada. Deixa de ser a candidata oficial.
+- Código **11** — build oficial atual (run #15). `version: 1.1.0+11` no pubspec
+  e `--build-number=11` no workflow. **Candidata oficial** da 1.1.0.
+
+### Conteúdo confirmado (code 11)
+
+✓ Home refinada · ✓ Splash · ✓ Login · ✓ Cadastro · ✓ Bible Engine ·
+✓ Redes Sociais · ✓ Google Maps · ✓ RC1 completo · ✓ Todos os links oficiais.
 
 ## Conteúdo da Release 1.1.0
 
@@ -66,20 +73,24 @@ STATUS        RELEASE CERTIFIED
 
 | Campo | Valor |
 |---|---|
-| Workflow Run | **#14** (`30947625225`) — ✅ success |
-| Commit SHA do build | `f60c9a1b24d4b56e7a40e7016c080751453c223d` |
+| Workflow Run | **#15** (`30960306833`) — ✅ success |
+| Commit SHA do build | `b35671a959909f8d10ca52b4a97a1ab3c2e6a803` |
 | Artefato | `goel-church-aab` → `app-release.aab` |
-| Tamanho | **55.888.212 bytes** (~53,3 MB) |
-| SHA-256 | `07b9f5908ad7a646bfc9e4803aefe70a5f20abdfe808ba8cbd7d63a8e759d341` |
-| Build iniciado (UTC) | 2026-08-04 20:23:22 |
-| Build concluído (UTC) | 2026-08-04 20:30:09 |
-| Duração | ~6 min 47 s |
+| Tamanho | **55.889.323 bytes** (~53,3 MB) |
+| SHA-256 | `e52cd6c814454d7211a2430ab1005a183ce1ec6d3781b628593a7edeee031dc5` |
+| Build iniciado (UTC) | 2026-08-04 23:32:00 |
+| Build concluído (UTC) | 2026-08-04 23:39:18 |
+| Duração | ~7 min 18 s |
 | Artefato expira em | 2026-08-18 (baixar antes) |
+
+> **Artefato anterior (code 10, run #14, SHA-256 `07b9f590…d341`) — SUPERSEDED.**
+> Não usar. A candidata oficial é o **code 11** acima.
 
 ## Autorização
 
-- [x] **Owner autorizou gerar o AAB da Release 1.1.0.** — 2026-08-04.
-- [x] versionCode ajustado 9 → **10** (DEF-GP-01) para aceitar o upload.
+- [x] **Owner autorizou gerar o AAB da Release 1.1.0 (Opção B).** — 2026-08-04.
+- [x] versionCode **11** — candidata oficial; substitui definitivamente o code 10.
+- [x] `flutter analyze` limpo · `flutter test` **79/79 PASS**.
 
 > AAB gerado, assinado (keystore `goel`, SHA1 `31:E8:C6`) e certificado.
 > Próximo passo: upload no Google Play → Internal Testing (sem produção).

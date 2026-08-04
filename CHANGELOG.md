@@ -5,8 +5,9 @@ Registro permanente da evolução do produto. Segue ordem cronológica inversa
 
 ---
 
-## 1.1.0 (code 10)
-**Data:** 2026-08-04 · **Status:** RELEASE CERTIFIED · Internal Testing
+## 1.1.0 (code 11)
+**Data:** 2026-08-04 · **Status:** RELEASE CERTIFIED · Internal Testing ·
+**candidata oficial** (substitui o code 10)
 
 ### Funcionalidades
 - 📖 **Bible Engine offline** (Almeida 1911, domínio público): 66 livros /
@@ -23,7 +24,9 @@ Registro permanente da evolução do produto. Segue ordem cronológica inversa
 - 🗂️ **Escalas** com **equipe editável** (adicionar/editar/remover/reordenar);
   rodízio automático ao vivo.
 - 🏠 **Home**: frase institucional "Uma igreja para você frequentar e uma
-  família para você pertencer.".
+  família para você pertencer." + **refinamento visual** (code 11): logo maior
+  e centralizado, nome "GOEL CHURCH" centralizado, slogan em itálico, saudação
+  menor e cards compactos (os 4 cabem sem rolagem). Fundo (fachada) mantido.
 - 🔗 **Redes Sociais**: Instagram, **YouTube (@Goel_Church)**, Grupo WhatsApp e
   **Como chegar** (Google Maps).
 

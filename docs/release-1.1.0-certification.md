@@ -1,8 +1,16 @@
 # GOEL CHURCH — Final Release Certification (Release 1.1.0)
 
-> **✅ ESTADO: CERTIFICADA.** AAB oficial gerado e assinado com sucesso
-> (run #13). Autorização do Owner concedida em 2026-08-04. Pronta para upload no
-> Google Play → Internal Testing.
+> **✅ STATUS: RELEASE CERTIFIED.** Release 1.1.0 (Version Code 9) oficialmente
+> APROVADA pelo Owner em 2026-08-04. AAB oficial gerado e assinado (run #13).
+> Candidata oficial para publicação. Projeto em **FASE DE HOMOLOGAÇÃO** —
+> nenhuma implementação/Sprint nova (ver `GO_LIVE_CHECKLIST.md`).
+
+```
+GOEL CHURCH
+VERSION       1.1.0
+VERSION CODE  9
+STATUS        RELEASE CERTIFIED
+```
 
 ## Identidade da Release
 

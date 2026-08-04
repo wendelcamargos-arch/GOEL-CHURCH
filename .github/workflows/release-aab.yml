@@ -53,13 +53,11 @@ jobs:
           EOF
 
       - name: Build do AAB assinado
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
           flutter build appbundle --release \
-            --build-name="1.0.3" \
-            --build-number="${BUILD_NUMBER}"
+            --build-name="1.1.0" \
+            --build-number="9"
 
       - name: Publicar o AAB como artefato
         uses: actions/upload-artifact@v4

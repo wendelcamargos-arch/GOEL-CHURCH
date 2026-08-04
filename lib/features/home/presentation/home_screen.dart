@@ -42,7 +42,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             _Header(greeting: greeting),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: LayoutBuilder(
                 builder: (context, c) {
                   final cards = <Widget>[
@@ -79,7 +79,7 @@ class HomeScreen extends StatelessWidget {
                         for (var i = 0; i < cards.length; i += 2)
                           Padding(
                             padding: EdgeInsets.only(
-                              bottom: i + 2 < cards.length ? 16 : 0,
+                              bottom: i + 2 < cards.length ? 10 : 0,
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +100,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       for (var i = 0; i < cards.length; i++) ...[
                         cards[i],
-                        if (i < cards.length - 1) const SizedBox(height: 16),
+                        if (i < cards.length - 1) const SizedBox(height: 10),
                       ],
                     ],
                   );
@@ -134,12 +134,12 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).padding.top;
     return SizedBox(
-      height: 276 + topInset,
+      height: 252 + topInset,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // A fachada vem do fundo global (AppBackground). Aqui só um leve
-          // reforço de escurecimento para destacar a saudação.
+          // A fachada vem do fundo global (AppBackground) — MANTIDA como está.
+          // Aqui só um leve reforço de escurecimento para destacar a saudação.
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -149,54 +149,46 @@ class _Header extends StatelessWidget {
               ),
             ),
           ),
+          // Hierarquia centralizada: Logo → Nome → Slogan → Bem-vindo(a).
           Padding(
-            padding: EdgeInsets.fromLTRB(20, topInset + 16, 20, 20),
+            padding: EdgeInsets.fromLTRB(20, topInset + 12, 20, 12),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    _logoMark(),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'Goel Church',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
+                _logoMark(),
+                const SizedBox(height: 10),
+                const Text(
+                  'GOEL CHURCH',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(height: 8),
                 Text(
                   'Uma igreja para você frequentar\n'
                   'e uma família para você pertencer.',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    fontSize: 15,
+                    color: Colors.white.withValues(alpha: 0.80),
+                    fontSize: 14,
                     height: 1.3,
-                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Text(
                   greeting,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: 21,
                     fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Que bom ter você aqui hoje.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 15,
                   ),
                 ),
               ],
@@ -208,8 +200,8 @@ class _Header extends StatelessWidget {
   }
 
   Widget _logoMark() => Container(
-        width: 44,
-        height: 44,
+        width: 84,
+        height: 84,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border:
@@ -221,7 +213,7 @@ class _Header extends StatelessWidget {
             fit: BoxFit.cover,
             errorBuilder: (_, __, ___) => const ColoredBox(
               color: Colors.black,
-              child: Icon(Icons.church_outlined, color: Colors.white, size: 24),
+              child: Icon(Icons.church_outlined, color: Colors.white, size: 44),
             ),
           ),
         ),
@@ -253,32 +245,32 @@ class _HomeCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: scheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 30, color: scheme.onPrimaryContainer),
+                  child: Icon(icon, size: 24, color: scheme.onPrimaryContainer),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: textTheme.titleLarge
+                        style: textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
                         subtitle,
-                        style: textTheme.bodyMedium
+                        style: textTheme.bodySmall
                             ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
                     ],

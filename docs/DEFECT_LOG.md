@@ -77,7 +77,7 @@ Ex.: `30 segundos`, `2 minutos`, `Após Login`, `Após Reiniciar`.
 
 | ID | Módulo | Descrição | Severidade | Prioridade | Reprodutibilidade | Origem | Tempo p/ reproduzir | Versão | Versão Corrigida | Dispositivo | Status | Correção | Data | Responsável |
 |----|--------|-----------|------------|------------|-------------------|--------|---------------------|--------|------------------|-------------|--------|----------|------|-------------|
-| `DEF-GP-01` | Google Play | Upload no Internal Testing recusado: "O código de versão 9 já foi usado. Tente outro." O code 9 já havia sido consumido no Play. | ALTO | P0 | SEMPRE | Google Play Console · Internal Testing | Imediato (no upload) | 1.1.0 (9) | 1.1.0 (10) | Web (Play Console) | AGUARDANDO HOMOLOGAÇÃO | Bump versionCode 9→10 (pubspec + workflow); rebuild assinado. Sem mudança de escopo/funcionalidade. | 2026-08-04 | Claude |
+| `DEF-GP-01` | Google Play | Upload no Internal Testing recusado: "O código de versão 9 já foi usado. Tente outro." O code 9 já havia sido consumido no Play. | ALTO | P0 | SEMPRE | Google Play Console · Internal Testing | Imediato (no upload) | 1.1.0 (9) | 1.1.0 (10) — run #14 (`f60c9a1`) | Web (Play Console) | AGUARDANDO HOMOLOGAÇÃO | Bump versionCode 9→10 (pubspec + workflow); rebuild assinado (SHA-256 `07b9f590…d341`). Sem mudança de escopo. analyze limpo, test verde (79). | 2026-08-04 | Claude |
 
 > Ao receber uma evidência, abre-se uma nova linha com `Status: ABERTO`,
 > classifica-se Severidade/Prioridade/Reprodutibilidade e inicia-se o fluxo

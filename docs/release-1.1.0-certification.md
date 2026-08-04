@@ -1,14 +1,18 @@
 # GOEL CHURCH — Final Release Certification (Release 1.1.0)
 
-> **✅ STATUS: RELEASE CERTIFIED.** Release 1.1.0 (Version Code 9) oficialmente
-> APROVADA pelo Owner em 2026-08-04. AAB oficial gerado e assinado (run #13).
-> Candidata oficial para publicação. Projeto em **FASE DE HOMOLOGAÇÃO** —
-> nenhuma implementação/Sprint nova (ver `GO_LIVE_CHECKLIST.md`).
+> **✅ STATUS: RELEASE CERTIFIED.** Release 1.1.0 (Version Code **10**)
+> oficialmente APROVADA pelo Owner em 2026-08-04. AAB oficial gerado e assinado
+> (run #14). Candidata oficial para publicação. Projeto em **FASE DE
+> HOMOLOGAÇÃO** — nenhuma implementação/Sprint nova (ver `GO_LIVE_CHECKLIST.md`).
+>
+> **Histórico de versionCode:** code 9 (run #13) foi **recusado pelo Google
+> Play** ("código de versão 9 já foi usado" — DEF-GP-01). Subimos para **code
+> 10**; este é o artefato oficial da 1.1.0.
 
 ```
 GOEL CHURCH
 VERSION       1.1.0
-VERSION CODE  9
+VERSION CODE  10
 STATUS        RELEASE CERTIFIED
 ```
 
@@ -17,20 +21,19 @@ STATUS        RELEASE CERTIFIED
 | Campo | Valor |
 |---|---|
 | **Version Name** | `1.1.0` |
-| **Version Code** | `9` |
+| **Version Code** | `10` |
 | **Branch** | `claude/projeto-goel-v0f6ya` |
-| **Commit** | HEAD da branch no momento da autorização (inclui RC1) |
-| **Destino** | Internal Testing (teste do Owner antes da lista de e-mails) |
+| **Commit** | `f60c9a1b24d4b56e7a40e7016c080751453c223d` |
+| **Destino** | Internal Testing (NÃO Produção) |
 | **Assinatura** | Keystore oficial `goel` (SHA1 `31:E8:C6`), via secrets do CI |
 
-### Nota sobre o Version Code 9
+### Nota sobre o Version Code (histórico)
 
-- O código **8** já foi publicado no Google Play (run #8).
-- O código **9** foi certificado antes (commit `cd5201e`), porém **não chegou a
-  ser publicado** no Play — o Owner ainda estava testando.
-- A RC1 **substitui** aquele build. O AAB final da 1.1.0 será **code 9**
-  reconstruído a partir do HEAD atual (com RC1). Como o code 9 nunca foi
-  publicado, reutilizá-lo é válido (9 > 8, e nenhum code 9 está no Play).
+- Código **8** — publicado no Google Play (run #8).
+- Código **9** — gerado (runs #12/#13), mas **recusado no upload** pelo Play:
+  "O código de versão 9 já foi usado." Registrado como **DEF-GP-01**.
+- Código **10** — build oficial atual (run #14). `version: 1.1.0+10` no
+  pubspec e `--build-number=10` no workflow. Version name segue `1.1.0`.
 
 ## Conteúdo da Release 1.1.0
 
@@ -63,19 +66,20 @@ STATUS        RELEASE CERTIFIED
 
 | Campo | Valor |
 |---|---|
-| Workflow Run | **#13** (`30939842122`) — ✅ success |
-| Commit SHA do build | `45692f7988e02360af4a2731d9aa5d2fa41af4e4` |
+| Workflow Run | **#14** (`30947625225`) — ✅ success |
+| Commit SHA do build | `f60c9a1b24d4b56e7a40e7016c080751453c223d` |
 | Artefato | `goel-church-aab` → `app-release.aab` |
-| Tamanho | **55.888.205 bytes** (~53,3 MB) |
-| SHA-256 | `dfa2195765f68f0aacf740634fa42aefca9714913ccd66eedff601f15f064e5f` |
-| Build iniciado (UTC) | 2026-08-04 18:42:01 |
-| Build concluído (UTC) | 2026-08-04 18:48:58 |
-| Duração | ~6 min 57 s |
+| Tamanho | **55.888.212 bytes** (~53,3 MB) |
+| SHA-256 | `07b9f5908ad7a646bfc9e4803aefe70a5f20abdfe808ba8cbd7d63a8e759d341` |
+| Build iniciado (UTC) | 2026-08-04 20:23:22 |
+| Build concluído (UTC) | 2026-08-04 20:30:09 |
+| Duração | ~6 min 47 s |
 | Artefato expira em | 2026-08-18 (baixar antes) |
 
 ## Autorização
 
-- [x] **Owner autorizou gerar o AAB da Release 1.1.0 (code 9).** — 2026-08-04.
+- [x] **Owner autorizou gerar o AAB da Release 1.1.0.** — 2026-08-04.
+- [x] versionCode ajustado 9 → **10** (DEF-GP-01) para aceitar o upload.
 
 > AAB gerado, assinado (keystore `goel`, SHA1 `31:E8:C6`) e certificado.
 > Próximo passo: upload no Google Play → Internal Testing (sem produção).

@@ -1,73 +1,102 @@
-# GOEL CHURCH — Registro de Defeitos (Homologação)
+# GOEL CHURCH — Registro de Defeitos (Quality Assurance)
 
-> **FASE OFICIAL: HOMOLOGAÇÃO** — Release **1.1.0 (Version Code 9)**,
-> `STATUS: RELEASE CERTIFIED`.
+> **FASE OFICIAL: QUALITY ASSURANCE / HOMOLOGAÇÃO** — Release **1.1.0
+> (Version Code 9)**, `STATUS: RELEASE CERTIFIED`. **Escopo 1.1.0 CONGELADO.**
 >
-> **Regra de governança:** nenhuma alteração pode ser implementada sem um
-> **defeito reproduzível** registrado aqui **ou** uma **aprovação formal do
-> Owner**. Nenhuma nova funcionalidade. Nenhuma nova Sprint.
+> **Este DEFECT_LOG é o ÚNICO ponto de entrada para qualquer alteração na
+> versão 1.1.0.** Nenhuma alteração pode ser implementada sem um **DEF aberto**
+> (defeito reproduzível) **ou** uma **aprovação formal do Owner**. Nenhuma nova
+> funcionalidade. Nenhuma nova Sprint.
 >
-> **Objetivo da fase:** Estabilidade · Qualidade · Confiabilidade — antes da
-> publicação em Produção.
+> **Objetivo: ZERO defeitos críticos antes da Produção.**
+> Metas da fase: Estabilidade · Qualidade · Confiabilidade.
 
 ---
 
 ## Fluxo obrigatório de defeito
 
 ```
-1. Receber evidência do Owner
-2. Auditar
-3. Identificar causa raiz
-4. Implementar a MENOR correção possível
-5. Executar: flutter analyze  +  flutter test
-6. Gerar relatório de correção
-7. Aguardar nova homologação
-8. Somente então fechar o defeito
+Evidência → Auditoria → Causa raiz → Correção mínima →
+flutter analyze → flutter test → Nova homologação → Fechamento
 ```
 
-Cada defeito só é **FECHADO** após nova homologação do Owner (passo 8).
+Cada defeito só é **FECHADO** após nova homologação do Owner.
 
 ---
 
-## Convenções
+## Padrão de IDs (por módulo)
+
+| Prefixo | Módulo |
+|---|---|
+| `DEF-B` | Bible Engine |
+| `DEF-H` | Home |
+| `DEF-L` | Login |
+| `DEF-C` | Cadastro |
+| `DEF-R` | Redes |
+| `DEF-G` | Gabinete |
+| `DEF-S` | Servo |
+
+Formato: `DEF-<letra>-<sequencial>` (ex.: `DEF-B-01`, `DEF-H-01`).
+Outros módulos seguem o mesmo padrão pela inicial (ex.: `DEF-O` Oração,
+`DEF-T` Testemunho, `DEF-E` Escalas) — a confirmar quando surgir o primeiro
+caso.
+
+---
+
+## Escalas de classificação
+
+**Severidade** (impacto):
+`CRÍTICO` (trava/impede uso, perda de dados, não abre) · `ALTO` (função
+importante quebrada, sem contorno) · `MÉDIO` (função quebrada com contorno) ·
+`BAIXO` (cosmético/menor).
+
+**Prioridade** (ordem de ataque):
+`P0` (agora — bloqueia Produção) · `P1` (alta) · `P2` (média) · `P3` (baixa).
+
+**Reproduzibilidade:**
+`SEMPRE` (100%) · `FREQUENTE` · `INTERMITENTE` · `RARA` · `NÃO REPRODUZÍVEL`.
 
 **Status:**
 `ABERTO` → `EM AUDITORIA` → `EM CORREÇÃO` → `AGUARDANDO HOMOLOGAÇÃO` →
 `FECHADO` (ou `NÃO REPRODUZÍVEL` / `NÃO É DEFEITO`).
 
-**ID:** `DEF-001`, `DEF-002`, … (sequencial).
-
-**Módulo:** Bible Engine · Login · Cadastro · Home · Oração · Testemunho ·
-Servo · Escalas · Redes · Como Chegar · Bible Search · Favoritos · Continue
-Lendo · Planos · Modo Púlpito · Modo Culto · LGPD · Performance · Acessibilidade
-· Google Play.
-
-**Versão:** versão em que o defeito foi observado (ex.: `1.1.0 (9)`).
+**Versão:** onde o defeito foi observado (ex.: `1.1.0 (9)`).
+**Versão Corrigida:** onde a correção entrou (ex.: `1.1.0 (10)` ou commit).
 
 ---
 
 ## Registro de defeitos
 
-| ID | Módulo | Descrição | Versão | Dispositivo | Status | Correção | Data | Responsável |
-|----|--------|-----------|--------|-------------|--------|----------|------|-------------|
-| —  | —      | _Nenhum defeito registrado até o momento._ | 1.1.0 (9) | — | — | — | — | — |
+| ID | Módulo | Descrição | Severidade | Prioridade | Reprodutibilidade | Versão | Versão Corrigida | Dispositivo | Status | Correção | Data | Responsável |
+|----|--------|-----------|------------|------------|-------------------|--------|------------------|-------------|--------|----------|------|-------------|
+| —  | —      | _Nenhum defeito registrado até o momento._ | — | — | — | 1.1.0 (9) | — | — | — | — | — | — |
 
-> Ao receber uma evidência, uma nova linha é aberta com `Status: ABERTO` e o
-> ciclo do fluxo obrigatório é iniciado. O campo **Correção** referencia o
-> commit/relatório da menor correção aplicada.
+> Ao receber uma evidência, abre-se uma nova linha com `Status: ABERTO`,
+> classifica-se Severidade/Prioridade/Reprodutibilidade e inicia-se o fluxo
+> obrigatório. O campo **Correção** referencia o commit/relatório da menor
+> correção; **Versão Corrigida** é preenchida quando a correção entra.
+
+### Placar (atualizar a cada mudança)
+
+| | Crítico | Alto | Médio | Baixo |
+|---|---|---|---|---|
+| **Abertos** | 0 | 0 | 0 | 0 |
+| **Fechados** | 0 | 0 | 0 | 0 |
+
+> **Portão de Produção:** exige **0 defeitos CRÍTICOS abertos** (objetivo da
+> fase) e homologação final do Owner.
 
 ---
 
 ## Relatórios de correção
 
-Cada defeito corrigido recebe um relatório curto (nesta seção ou em
-`docs/fixes/DEF-XXX.md`) contendo:
+Cada DEF corrigido recebe um relatório curto (aqui ou em `docs/fixes/DEF-XXX.md`):
 
 - **Causa raiz** (o porquê real, não o sintoma).
-- **Menor correção** aplicada (arquivos/linhas).
-- **Evidência de qualidade:** `flutter analyze` limpo + `flutter test` verde.
-- **Commit** da correção.
-- **Status de homologação:** aguardando / homologado pelo Owner.
+- **Correção mínima** aplicada (arquivos/linhas).
+- **Qualidade:** `flutter analyze` limpo + `flutter test` verde.
+- **Commit** e **Versão Corrigida**.
+- **Homologação:** aguardando / homologado pelo Owner.
 
 ---
 
@@ -77,6 +106,9 @@ GOEL CHURCH
 VERSION       1.1.0
 VERSION CODE  9
 STATUS        RELEASE CERTIFIED
-FASE          HOMOLOGAÇÃO
-CICLO         Teste → Correção → Nova homologação → Produção
+FASE          QUALITY ASSURANCE / HOMOLOGAÇÃO
+ESCOPO        CONGELADO
+CICLO         Evidência → Auditoria → Causa raiz → Correção mínima →
+              analyze → test → Nova homologação → Fechamento
+META          ZERO defeitos críticos antes da Produção
 ```

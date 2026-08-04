@@ -1,7 +1,8 @@
 # GOEL CHURCH — Relatório RC1 (Release Candidate 1)
 
-> Ajustes anteriores à publicação iOS. **Nenhuma Release gerada** — aguardando
-> aprovação do Owner. `flutter analyze` limpo · `flutter test` **verde (79
+> **STATUS: RC1 APROVADO PELO OWNER.** Projeto liberado para a Release 1.1.0
+> (apenas correções de defeitos daqui em diante). Decisões oficiais em
+> `rc1-decisao-owner.md`. `flutter analyze` limpo · `flutter test` **verde (79
 > testes)**.
 
 ## Resumo por item

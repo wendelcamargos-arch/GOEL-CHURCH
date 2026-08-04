@@ -1,5 +1,9 @@
 # EU-07 — Auditoria: Aniversariantes
 
+> **DECISÃO OFICIAL DO OWNER (RC1): NÃO IMPLEMENTAR.** Mesma dependência de
+> EU-04: **Backend** · **Endpoint de leitura** · **Política de acesso**, e
+> aprovação definitiva da estratégia LGPD (EU-09).
+
 ## Fluxo pedido pelo Owner
 
 ```

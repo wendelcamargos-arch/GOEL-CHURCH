@@ -1,5 +1,10 @@
 # EU-04 — Auditoria: Membros
 
+> **DECISÃO OFICIAL DO OWNER (RC1): NÃO IMPLEMENTAR.** Aguardar aprovação
+> definitiva da estratégia LGPD. Dependências registradas: **Backend** ·
+> **Endpoint de leitura** · **Política de acesso**. Ver EU-09 (pré-requisito
+> obrigatório).
+
 ## Perguntas do Owner
 
 ### 1) Onde os membros logados são carregados?

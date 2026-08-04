@@ -1,9 +1,12 @@
 # EU-09 — Documento de aprovação LGPD (Slices 08 e 09)
 
-> **Status:** rascunho para aprovação do Owner. **Não iniciar implementação dos
-> slices 08 e 09 antes da aprovação.** Este documento organiza as decisões de
-> tratamento de dados pessoais; **recomenda-se validação por responsável
-> jurídico / encarregado (DPO)** antes de produção. Não é parecer jurídico.
+> **STATUS: DOCUMENTO APROVADO PELO OWNER (RC1).** Fica registrado como
+> **PRÉ-REQUISITO OBRIGATÓRIO** para **qualquer** funcionalidade que liste
+> dados pessoais (ex.: Membros / Aniversariantes com dados reais). Nenhum slice
+> desse tipo pode ser iniciado sem cumprir este documento.
+>
+> Observação mantida: **recomenda-se validação por responsável jurídico /
+> encarregado (DPO)** antes de produção. Não é parecer jurídico.
 
 ## Contexto
 

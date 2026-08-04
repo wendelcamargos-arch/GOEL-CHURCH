@@ -1,0 +1,71 @@
+# GOEL CHURCH — Final Release Certification (Release 1.1.0)
+
+> **Estado: PREPARADA — aguardando autorização do Owner para gerar o AAB.**
+> Nenhum artefato será construído antes da autorização explícita. Os campos de
+> artefato (SHA-256, tamanho, horário) são preenchidos **após** o build.
+
+## Identidade da Release
+
+| Campo | Valor |
+|---|---|
+| **Version Name** | `1.1.0` |
+| **Version Code** | `9` |
+| **Branch** | `claude/projeto-goel-v0f6ya` |
+| **Commit** | HEAD da branch no momento da autorização (inclui RC1) |
+| **Destino** | Internal Testing (teste do Owner antes da lista de e-mails) |
+| **Assinatura** | Keystore oficial `goel` (SHA1 `31:E8:C6`), via secrets do CI |
+
+### Nota sobre o Version Code 9
+
+- O código **8** já foi publicado no Google Play (run #8).
+- O código **9** foi certificado antes (commit `cd5201e`), porém **não chegou a
+  ser publicado** no Play — o Owner ainda estava testando.
+- A RC1 **substitui** aquele build. O AAB final da 1.1.0 será **code 9**
+  reconstruído a partir do HEAD atual (com RC1). Como o code 9 nunca foi
+  publicado, reutilizá-lo é válido (9 > 8, e nenhum code 9 está no Play).
+
+## Conteúdo da Release 1.1.0
+
+**Base (já entregue):**
+- 📖 Bíblia offline completa (Almeida 1911 · 66 livros · 1.189 capítulos ·
+  31.102 versículos): leitura, busca, favoritos, marca-textos, anotações,
+  planos, compartilhar.
+- 🔗 Redes Sociais: Instagram · YouTube (@Goel_Church) · Grupo WhatsApp ·
+  Como chegar (Maps).
+- 📝 PALAVRAS: 3 publicações abrindo pastas do Google Drive.
+
+**RC1 (aprovado — entra na 1.1.0):**
+- 🙏 Oração / Testemunho / Servo: mensagem pronta no WhatsApp (usuário escolhe
+  o destino) — limitação oficial da plataforma registrada.
+- 🗓️ Escalas: equipe editável (adicionar/editar/remover/reordenar).
+- 🏠 Home: frase institucional acima da saudação.
+
+**Fora desta Release (por decisão do Owner):**
+- Membros e Aniversariantes com dados reais → dependem de LGPD (EU-09) +
+  backend/endpoint/política de acesso.
+- Bíblia híbrida (EU-08) → arquitetura aprovada, implementação futura.
+
+## Qualidade (verificada)
+
+- `flutter analyze` → **No issues found**.
+- `flutter test` → **79 testes verdes**.
+- Sem alterações em domínio/arquitetura/Firebase/Supabase/auth.
+
+## Artefato (preencher após o build autorizado)
+
+| Campo | Valor |
+|---|---|
+| Workflow Run | _(a preencher)_ |
+| Commit SHA do build | _(a preencher)_ |
+| Artefato | `goel-church-aab` → `app-release.aab` |
+| Tamanho | _(a preencher)_ |
+| SHA-256 | _(a preencher)_ |
+| Gerado em (UTC) | _(a preencher)_ |
+
+## Autorização
+
+- [ ] **Owner autoriza gerar o AAB da Release 1.1.0 (code 9).**
+
+> Ao autorizar, dispararei o workflow `release-aab.yml` na branch, aguardarei a
+> conclusão e completarei os campos de artefato acima, emitindo a certificação
+> final.

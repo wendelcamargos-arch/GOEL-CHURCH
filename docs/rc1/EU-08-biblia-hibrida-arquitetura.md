@@ -1,7 +1,8 @@
 # EU-08 — Arquitetura proposta: Bíblia em modo HÍBRIDO
 
-> **Não implementar ainda.** Este documento apresenta a arquitetura para
-> aprovação. Nada de código nesta etapa.
+> **STATUS: ARQUITETURA APROVADA PELO OWNER (RC1).** Não implementar nesta
+> Release 1.1.0 — será planejada posteriormente. Este documento passa a ser a
+> referência oficial de arquitetura para o modo híbrido.
 
 ## Objetivo
 

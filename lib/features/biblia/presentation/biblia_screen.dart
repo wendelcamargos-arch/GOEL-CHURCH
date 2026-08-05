@@ -9,7 +9,6 @@ import 'favoritos_screen.dart';
 import 'historico_screen.dart';
 import 'leitura_screen.dart';
 import 'planos_screen.dart';
-import 'sobre_biblia_screen.dart';
 
 /// Aba "Bíblia" — lista os 66 livros (Almeida 1911, domínio público), agrupados
 /// por Testamento, carregados do manifest via [BibleRepository]. Busca e
@@ -50,20 +49,20 @@ class _BibliaScreenState extends State<BibliaScreen> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
         child: ListView(
-          padding: EdgeInsets.fromLTRB(20, topInset + 24, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, topInset + 12, 20, 24),
           children: [
             Text(
               'Bíblia',
               style:
-                  textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+                  textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               'A Palavra de Deus, sempre à mão.',
               style:
-                  textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                  textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             FutureBuilder<_Dados>(
               future: _future,
               builder: (context, snap) {
@@ -148,18 +147,7 @@ class _BibliaScreenState extends State<BibliaScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    _AtalhoBar(
-                      icone: Icons.info_outline,
-                      corIcone: scheme.onSurfaceVariant,
-                      texto: 'Sobre a Bíblia',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SobreBibliaScreen(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     const _SecaoTitulo(texto: 'Antigo Testamento'),
                     const SizedBox(height: 8),
                     for (final l in at)
@@ -204,7 +192,7 @@ class _BuscaBar extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: scheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(14),
@@ -214,7 +202,7 @@ class _BuscaBar extends StatelessWidget {
               Icon(Icons.search, color: scheme.onSurfaceVariant),
               const SizedBox(width: 12),
               Text(
-                'Buscar palavra, capítulo ou versículo',
+                'Buscar',
                 style: textTheme.bodyLarge
                     ?.copyWith(color: scheme.onSurfaceVariant),
               ),
@@ -249,7 +237,7 @@ class _AtalhoBar extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: scheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(14),

@@ -33,7 +33,7 @@ void main() {
   testWidgets('na aba Mais, "Sair" chama onLogout e volta à raiz',
       (tester) async {
     // Janela alta o bastante para a lista "Mais" caber sem rolagem.
-    tester.view.physicalSize = const Size(1000, 3200);
+    tester.view.physicalSize = const Size(1000, 3800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);

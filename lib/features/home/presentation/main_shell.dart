@@ -4,6 +4,7 @@ import 'package:goel_domain/goel_domain.dart';
 import '../../agenda/presentation/agenda_screen.dart';
 import '../../aniversariantes/presentation/aniversariantes_screen.dart';
 import '../../biblia/presentation/biblia_screen.dart';
+import '../../biblia/presentation/sobre_biblia_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
 import '../../devocional_tematico/presentation/devocional_tematico_screen.dart';
 import '../../escalas/presentation/escalas_screen.dart';
@@ -325,6 +326,8 @@ class _MaisTab extends StatelessWidget {
           (_) => const RedesScreen(),),
       _MaisEntry(Icons.people_alt_outlined, 'Membros',
           (_) => const MembrosScreen(),),
+      _MaisEntry(Icons.info_outline, 'Sobre a Bíblia',
+          (_) => const SobreBibliaScreen(),),
       _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens',
           (_) => const DevocionalTematicoScreen(
                 appBarTitle: 'Devocional Homens',

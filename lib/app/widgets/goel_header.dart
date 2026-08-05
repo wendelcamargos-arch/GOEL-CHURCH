@@ -22,9 +22,15 @@ class GoelHeader extends StatelessWidget {
     final topInset = MediaQuery.of(context).padding.top;
     return Padding(
       padding: padding ?? EdgeInsets.fromLTRB(20, topInset + 16, 20, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+      // Largura total garante que o conjunto (Logo → GOEL CHURCH → slogan)
+      // fique PERFEITAMENTE centralizado na tela (sem encolher e "puxar" para a
+      // esquerda dentro de um Stack).
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
           _logoMark(),
           const SizedBox(height: 10),
           const Text(
@@ -43,7 +49,8 @@ class GoelHeader extends StatelessWidget {
             const SizedBox(height: 14),
             extra!,
           ],
-        ],
+          ],
+        ),
       ),
     );
   }

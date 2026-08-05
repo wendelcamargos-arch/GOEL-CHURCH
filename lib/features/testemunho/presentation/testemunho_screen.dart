@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/whatsapp/whatsapp_group_submission.dart';
 import '../../../core/whatsapp/whatsapp_links.dart';
 
-/// Testemunho — formulário visual para o membro compartilhar o que Deus fez.
+/// Testemunho — formulário para o membro compartilhar o que Deus fez.
 ///
-/// APENAS camada de apresentação/experiência: NÃO há envio real, backend nem
-/// persistência. Ao "enviar", abre automaticamente o grupo Testemunhos Goel no
-/// WhatsApp (via [WhatsAppLinks.testemunhos]) e mostra uma confirmação. Quando
-/// existir o slice de dados, basta injetar um callback de envio.
-/// Identidade preto e branco, acessível a todas as idades.
+/// Padrão único (hotfix): ao enviar, a mensagem é COPIADA e o grupo oficial
+/// Testemunhos Goel é aberto diretamente (o usuário cola e envia). O WhatsApp
+/// não permite pré-preencher o campo de um grupo — por isso não afirmamos envio
+/// automático. Camada de apresentação; sem backend/persistência.
 class TestemunhoScreen extends StatefulWidget {
   /// Ação de envio (futuro slice de dados). Nulo → apenas experiência visual.
-  final Future<void> Function(
-    String nome,
-    String whatsapp,
-    String titulo,
-    String texto,
-  )? onSubmit;
+  final Future<void> Function(String nome, String whatsapp, String texto)?
+      onSubmit;
 
-  const TestemunhoScreen({super.key, this.onSubmit});
+  /// Serviço injetável (testes). Nulo → usa o padrão real.
+  final WhatsAppGroupSubmissionService? service;
+
+  const TestemunhoScreen({super.key, this.onSubmit, this.service});
 
   @override
   State<TestemunhoScreen> createState() => _TestemunhoScreenState();
@@ -27,67 +26,64 @@ class TestemunhoScreen extends StatefulWidget {
 class _TestemunhoScreenState extends State<TestemunhoScreen> {
   final _nameCtrl = TextEditingController();
   final _whatsappCtrl = TextEditingController();
-  final _tituloCtrl = TextEditingController();
   final _textCtrl = TextEditingController();
   bool _tried = false;
   bool _sending = false;
   bool _sent = false;
 
+  WhatsAppGroupSubmissionService get _service =>
+      widget.service ?? const WhatsAppGroupSubmissionService();
+
   bool get _nomeInvalid => _nameCtrl.text.trim().isEmpty;
+  bool get _zapInvalid => _whatsappCtrl.text.trim().isEmpty;
   bool get _textInvalid => _textCtrl.text.trim().length < 10;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _whatsappCtrl.dispose();
-    _tituloCtrl.dispose();
     _textCtrl.dispose();
     super.dispose();
   }
 
-  /// Monta a mensagem a partir do formulário (Nome, WhatsApp, Título, Texto).
-  String _montarMensagem() {
+  /// Mensagem final EXATA (EU-02).
+  String montarMensagem() {
     final nome = _nameCtrl.text.trim();
     final zap = _whatsappCtrl.text.trim();
-    final titulo = _tituloCtrl.text.trim();
     final texto = _textCtrl.text.trim();
-    final buffer = StringBuffer('*Testemunho — Goel Church*\n')
-      ..writeln('Nome: $nome');
-    if (zap.isNotEmpty) buffer.writeln('WhatsApp: $zap');
-    if (titulo.isNotEmpty) buffer.writeln('Título: $titulo');
-    buffer
-      ..writeln()
-      ..write(texto);
-    return buffer.toString();
+    return 'QUEREMOS OUVIR SEU TESTEMUNHO PARA EDIFICAR CADA DIA A NOSSA FÉ\n\n'
+        'Nome: $nome\n'
+        'WhatsApp: $zap\n\n'
+        'Testemunho:\n'
+        '$texto';
   }
 
   Future<void> _submit() async {
     setState(() => _tried = true);
-    if (_nomeInvalid || _textInvalid) return;
+    if (_nomeInvalid || _zapInvalid || _textInvalid) return;
     setState(() => _sending = true);
-    // Envio real (quando existir) é opcional; a experiência funciona sem ele.
     await widget.onSubmit?.call(
       _nameCtrl.text.trim(),
       _whatsappCtrl.text.trim(),
-      _tituloCtrl.text.trim(),
       _textCtrl.text.trim(),
     );
     if (!mounted) return;
-    // Abre o WhatsApp com o testemunho PRONTO. O WhatsApp não permite postar
-    // automaticamente em grupo por link; abrimos com o texto pronto e o usuário
-    // escolhe o destino (o grupo Testemunhos Goel ou um contato).
-    await abrirWhatsAppComMensagem(context, _montarMensagem());
+    setState(() => _sending = false);
+    // Padrão único: copia + orienta + abre o grupo direto (sem wa.me/?text=).
+    await _service.preparar(
+      context,
+      mensagem: montarMensagem(),
+      linkGrupo: WhatsAppLinks.testemunhos,
+      avisoGrupoIndisponivel:
+          'O grupo Testemunhos Goel será disponibilizado em breve.',
+    );
     if (!mounted) return;
-    setState(() {
-      _sending = false;
-      _sent = true;
-    });
+    setState(() => _sent = true);
   }
 
   void _reset() {
     _nameCtrl.clear();
     _whatsappCtrl.clear();
-    _tituloCtrl.clear();
     _textCtrl.clear();
     setState(() {
       _tried = false;
@@ -157,26 +153,20 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
           decoration: InputDecoration(
             labelText: 'Seu nome',
             border: const OutlineInputBorder(),
-            errorText:
-                _tried && _nomeInvalid ? 'Informe o seu nome.' : null,
+            errorText: _tried && _nomeInvalid ? 'Informe o seu nome.' : null,
           ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _whatsappCtrl,
           keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(
+          onChanged: (_) {
+            if (_tried) setState(() {});
+          },
+          decoration: InputDecoration(
             labelText: 'WhatsApp',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _tituloCtrl,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            labelText: 'Título',
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
+            errorText: _tried && _zapInvalid ? 'Informe o seu WhatsApp.' : null,
           ),
         ),
         const SizedBox(height: 16),
@@ -199,10 +189,10 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Ao enviar, abrimos o WhatsApp com o seu testemunho pronto. Escolha o '
-          'grupo Testemunhos Goel (ou um contato) e toque em enviar. Você '
-          'autoriza a Goel Church a compartilhar seu testemunho para edificar '
-          'outras pessoas.',
+          'Ao enviar, copiamos a sua mensagem e abrimos o grupo Testemunhos Goel. '
+          'É só colar (segurar no campo → Colar) e tocar em Enviar. Você autoriza '
+          'a Goel Church a compartilhar seu testemunho para edificar outras '
+          'pessoas.',
           style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 20),
@@ -215,7 +205,7 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : const Icon(Icons.send_outlined),
-          label: Text(_sending ? 'Abrindo o WhatsApp…' : 'Enviar Testemunho'),
+          label: Text(_sending ? 'Preparando…' : 'Enviar Testemunho'),
         ),
       ],
     );
@@ -236,19 +226,20 @@ class _TestemunhoScreenState extends State<TestemunhoScreen> {
               color: scheme.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.check_rounded,
+            child: Icon(Icons.assignment_turned_in_outlined,
                 size: 52, color: scheme.onPrimaryContainer,),
           ),
           const SizedBox(height: 24),
           Text(
-            'Abrimos o WhatsApp com o seu testemunho',
+            'Preparamos sua mensagem',
             textAlign: TextAlign.center,
             style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'Sua mensagem já está pronta no WhatsApp. Escolha o grupo Testemunhos '
-            'Goel e toque em enviar. Que a sua história abençoe muitas pessoas.',
+            'Sua mensagem foi copiada. No grupo Testemunhos Goel, cole (segurar '
+            'no campo → Colar) e toque em Enviar. Que a sua história abençoe '
+            'muitas pessoas.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge?.copyWith(
               color: scheme.onSurfaceVariant,

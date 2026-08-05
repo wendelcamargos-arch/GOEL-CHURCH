@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/whatsapp/whatsapp_group_submission.dart';
 import '../../../core/whatsapp/whatsapp_links.dart';
 
 /// Quero ser Servo — inscrição para servir em um ministério.
 ///
-/// APENAS camada de apresentação: sem envio real nem persistência. Ao enviar,
-/// abre automaticamente o grupo Quero Ser Servo no WhatsApp (via
-/// [WhatsAppLinks.servo]) e mostra confirmação. Injete [onSubmit] quando houver
-/// o slice de dados.
+/// Padrão único (hotfix): ao enviar, a mensagem é COPIADA e o grupo oficial
+/// Quero Ser Servo é aberto diretamente (o usuário cola e envia). O WhatsApp
+/// não permite pré-preencher o campo de um grupo — sem envio automático.
 class ServoScreen extends StatefulWidget {
   final Future<void> Function(String nome, String contato, List<String> areas)?
       onSubmit;
 
-  const ServoScreen({super.key, this.onSubmit});
+  /// Serviço injetável (testes). Nulo → usa o padrão real.
+  final WhatsAppGroupSubmissionService? service;
+
+  const ServoScreen({super.key, this.onSubmit, this.service});
 
   @override
   State<ServoScreen> createState() => _ServoScreenState();
 }
 
 class _ServoScreenState extends State<ServoScreen> {
-  // Lista sugerida (Sprint 4 — EU-04).
+  // Lista sugerida.
   static const _areas = <String>[
     'Recepção', 'Louvor', 'Infantil', 'Mídia', 'Intercessão',
     'Limpeza', 'Evangelismo', 'Administração', 'Outro',
@@ -32,10 +35,13 @@ class _ServoScreenState extends State<ServoScreen> {
   bool _sending = false;
   bool _sent = false;
 
-  bool get _invalid =>
-      _nome.text.trim().isEmpty ||
-      _contato.text.trim().isEmpty ||
-      _selecionadas.isEmpty;
+  WhatsAppGroupSubmissionService get _service =>
+      widget.service ?? const WhatsAppGroupSubmissionService();
+
+  bool get _nomeInvalid => _nome.text.trim().isEmpty;
+  bool get _contatoInvalid => _contato.text.trim().isEmpty;
+  bool get _areaInvalid => _selecionadas.isEmpty;
+  bool get _invalid => _nomeInvalid || _contatoInvalid || _areaInvalid;
 
   @override
   void dispose() {
@@ -44,27 +50,30 @@ class _ServoScreenState extends State<ServoScreen> {
     super.dispose();
   }
 
-  /// Monta a mensagem com a(s) área(s) escolhida(s).
-  /// Uma área → "Quero servir na equipe de Mídia."; várias → "...nas equipes
-  /// de Mídia, Recepção e Louvor.".
-  String _montarMensagem() {
-    final nome = _nome.text.trim();
-    final contato = _contato.text.trim();
-    final areas = _selecionadas.toList();
-    final frase = areas.length == 1
-        ? 'Quero servir na equipe de ${areas.first}.'
-        : 'Quero servir nas equipes de ${_listar(areas)}.';
-    return (StringBuffer('*Quero Ser Servo — Goel Church*\n')
-          ..writeln('Nome: $nome')
-          ..writeln('Contato: $contato')
-          ..writeln()
-          ..write(frase))
-        .toString();
-  }
+  /// Grupo oficial da(s) área(s). Hoje há um único grupo (centralizado em
+  /// [WhatsAppLinks.servo]). Se no futuro cada área tiver grupo próprio, mapear
+  /// aqui num mapa tipado — sem hardcode na tela.
+  String get _linkGrupo => WhatsAppLinks.servo;
 
   String _listar(List<String> itens) {
     if (itens.length <= 1) return itens.join();
     return '${itens.sublist(0, itens.length - 1).join(', ')} e ${itens.last}';
+  }
+
+  /// Mensagem final EXATA (EU-04).
+  String montarMensagem() {
+    final nome = _nome.text.trim();
+    final contato = _contato.text.trim();
+    final areas = _selecionadas.toList();
+    final areasStr = areas.join(', ');
+    final frase = areas.length == 1
+        ? 'Quero servir na equipe de ${areas.first}.'
+        : 'Quero servir nas equipes de ${_listar(areas)}.';
+    return 'QUERO SER SERVO — GOEL CHURCH\n\n'
+        'Nome: $nome\n'
+        'WhatsApp: $contato\n'
+        'Área de interesse: $areasStr\n\n'
+        '$frase';
   }
 
   Future<void> _submit() async {
@@ -77,22 +86,22 @@ class _ServoScreenState extends State<ServoScreen> {
       _selecionadas.toList(),
     );
     if (!mounted) return;
-    // Abre o WhatsApp com a mensagem PRONTA (área escolhida). O WhatsApp não
-    // permite postar automaticamente em grupo por link; o usuário escolhe o
-    // destino (o grupo Quero Ser Servo ou um contato) e envia.
-    await abrirWhatsAppComMensagem(context, _montarMensagem());
+    setState(() => _sending = false);
+    await _service.preparar(
+      context,
+      mensagem: montarMensagem(),
+      linkGrupo: _linkGrupo,
+      avisoGrupoIndisponivel:
+          'O grupo Quero Ser Servo será disponibilizado em breve.',
+    );
     if (!mounted) return;
-    setState(() {
-      _sending = false;
-      _sent = true;
-    });
+    setState(() => _sent = true);
   }
 
-  /// Atalho para entrar no grupo oficial Quero Ser Servo.
   Future<void> _entrarNoGrupo() async {
     await abrirGrupoWhatsApp(
       context,
-      WhatsAppLinks.servo,
+      _linkGrupo,
       aviso: 'O grupo Quero Ser Servo será disponibilizado em breve.',
     );
   }
@@ -146,9 +155,7 @@ class _ServoScreenState extends State<ServoScreen> {
           decoration: InputDecoration(
             labelText: 'Seu nome',
             border: const OutlineInputBorder(),
-            errorText: _tried && _nome.text.trim().isEmpty
-                ? 'Informe o seu nome.'
-                : null,
+            errorText: _tried && _nomeInvalid ? 'Informe o seu nome.' : null,
           ),
         ),
         const SizedBox(height: 16),
@@ -159,18 +166,17 @@ class _ServoScreenState extends State<ServoScreen> {
             if (_tried) setState(() {});
           },
           decoration: InputDecoration(
-            labelText: 'WhatsApp / contato',
+            labelText: 'WhatsApp',
             border: const OutlineInputBorder(),
-            errorText: _tried && _contato.text.trim().isEmpty
-                ? 'Informe um contato.'
-                : null,
+            errorText:
+                _tried && _contatoInvalid ? 'Informe o seu WhatsApp.' : null,
           ),
         ),
         const SizedBox(height: 20),
         Text('Áreas de interesse',
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),),
         const SizedBox(height: 4),
-        if (_tried && _selecionadas.isEmpty)
+        if (_tried && _areaInvalid)
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text('Escolha ao menos uma área.',
@@ -195,7 +201,13 @@ class _ServoScreenState extends State<ServoScreen> {
               ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        Text(
+          'Ao enviar, copiamos a sua mensagem e abrimos o grupo Quero Ser Servo. '
+          'É só colar (segurar no campo → Colar) e tocar em Enviar.',
+          style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _sending ? null : _submit,
           icon: _sending
@@ -204,7 +216,7 @@ class _ServoScreenState extends State<ServoScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2.5),)
               : const Icon(Icons.send_outlined),
-          label: Text(_sending ? 'Enviando…' : 'Enviar inscrição'),
+          label: Text(_sending ? 'Preparando…' : 'Enviar inscrição'),
         ),
       ],
     );
@@ -223,18 +235,18 @@ class _ServoScreenState extends State<ServoScreen> {
             height: 96,
             decoration: BoxDecoration(
                 color: scheme.primaryContainer, shape: BoxShape.circle,),
-            child: Icon(Icons.check_rounded,
+            child: Icon(Icons.assignment_turned_in_outlined,
                 size: 52, color: scheme.onPrimaryContainer,),
           ),
           const SizedBox(height: 24),
-          Text('Abrimos o WhatsApp com a sua inscrição',
+          Text('Preparamos sua mensagem',
               textAlign: TextAlign.center,
               style:
                   textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),),
           const SizedBox(height: 8),
           Text(
-            'Sua mensagem já está pronta no WhatsApp. Escolha o grupo Quero Ser '
-            'Servo e toque em enviar. Nossa equipe vai falar com você.',
+            'Sua mensagem foi copiada. No grupo Quero Ser Servo, cole (segurar no '
+            'campo → Colar) e toque em Enviar. Nossa equipe vai falar com você.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge
                 ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),

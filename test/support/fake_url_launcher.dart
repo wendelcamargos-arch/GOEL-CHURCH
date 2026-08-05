@@ -10,13 +10,16 @@ class FakeUrlLauncher extends Fake
     implements UrlLauncherPlatform {
   final List<String> launched = <String>[];
 
+  /// Quando `false`, simula falha ao abrir (o `launchUrl` retorna false).
+  bool ok = true;
+
   @override
   Future<bool> canLaunch(String url) async => true;
 
   @override
   Future<bool> launchUrl(String url, LaunchOptions options) async {
     launched.add(url);
-    return true;
+    return ok;
   }
 
   @override

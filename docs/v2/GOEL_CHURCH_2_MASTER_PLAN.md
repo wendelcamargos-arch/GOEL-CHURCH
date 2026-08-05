@@ -143,6 +143,23 @@ correção mínima). Detalhe por pilar na Seção "Pilares".
 | **Google Drive** | Materiais (PALAVRAS) | Manter |
 | **Crash/Analytics** (ex.: Sentry) | Estabilidade | A decidir (sem Firebase) |
 
+### 9.1 Inteligência Artificial (IA) — ADIADA
+
+> **Decisão do Owner:** **não implementar IA na V2.0.**
+
+- **Motivo:** evitar **custo recorrente** para a igreja.
+- **Direção futura** (quando técnica e adequadamente viável ao produto):
+  estudar um modelo em que **o próprio usuário conecte a sua conta** para
+  recursos de IA **opcionais** — **nunca** como requisito do aplicativo.
+- **Nesta fase:** nenhuma implementação; apenas registro arquitetural (ver
+  também `docs/v2/GOEL_COMMUNITY_PLATFORM.md`).
+
+> **Nota de arquitetura (V2.0):** a plataforma da V2.0 passa a se chamar
+> **GOEL COMMUNITY PLATFORM** (5 módulos: Atendimento · Comunidade · Membros ·
+> Comunicação · Inteligência), com o **WhatsApp como um dos canais** de saída
+> (não o destino principal). Documento diretor:
+> `docs/v2/GOEL_COMMUNITY_PLATFORM.md`.
+
 ## 10. Riscos
 
 | Risco | Impacto | Mitigação |

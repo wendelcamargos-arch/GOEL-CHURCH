@@ -1,10 +1,19 @@
-# GOEL CHURCH — Versão 2.0 · GOEL CHURCH MESSAGE HUB
+# GOEL COMMUNITY PLATFORM — Módulo 1 · ATENDIMENTO (Message Hub)
 
 > **Documento oficial da V2.0.** Apenas documentação — **nenhuma implementação
-> nesta etapa**. A Release **1.1.0 permanece congelada**. Este módulo nasce da
-> auditoria oficial do WhatsApp (`docs/rc1/auditoria-whatsapp.md`): como a
-> plataforma não permite postar automaticamente em grupos de convite, a Goel
-> Church terá um **hub próprio** de recebimento, moderação e publicação.
+> nesta etapa**. A Release **1.1.0 permanece congelada**.
+>
+> **Posicionamento:** o antigo "Message Hub" deixa de ser módulo isolado e passa
+> a ser o **Módulo 1 — Atendimento** da **GOEL COMMUNITY PLATFORM** (ver
+> `docs/v2/GOEL_COMMUNITY_PLATFORM.md`). Nasce da auditoria oficial do WhatsApp
+> (`docs/rc1/auditoria-whatsapp.md`): como a plataforma não permite postar
+> automaticamente em grupos de convite, a Goel Church terá um **backend próprio**
+> de recebimento, moderação e publicação.
+>
+> **Novo fluxo oficial:** `App → Supabase → Fila de moderação → Painel
+> Administrativo → Equipe responsável → WhatsApp Business (quando aplicável) →
+> Grupo`. O WhatsApp passa a ser **um dos canais de saída** (via Módulo 4 —
+> Comunicação), não o destino único.
 
 ## 1. Visão geral
 
@@ -78,6 +87,59 @@ ou somente equipe) → `PENDENTE` → triagem → `APROVADO`/`SOMENTE EQUIPE`.
 ### 3.4 Quero Ser Servo
 Nome · Contato · Área(s) → `PENDENTE` → equipe de integração assume →
 `EM CONTATO` → `CONCLUÍDO`.
+
+## 3.5 Estados da mensagem (máquina de estados)
+
+```
+                 ┌───────────┐
+   enviar  ─────▶│  PENDENTE │
+                 └─────┬─────┘
+        moderação      │
+      ┌────────────────┼───────────────────┐
+      ▼                ▼                    ▼
+ ┌──────────┐   ┌─────────────┐      ┌──────────────┐
+ │ APROVADO │   │  REJEITADO  │      │ SOMENTE_EQUIPE│  (oração privada)
+ └────┬─────┘   └─────────────┘      └──────┬───────┘
+      │ publicar (canal de saída)           │ atender internamente
+      ▼                                      ▼
+ ┌───────────┐                        ┌────────────┐
+ │ PUBLICADO │                        │ CONCLUÍDO  │
+ └───────────┘                        └────────────┘
+      (Servo: PENDENTE → EM_CONTATO → CONCLUÍDO)
+```
+
+- **Transições válidas:** `PENDENTE → APROVADO | REJEITADO | SOMENTE_EQUIPE`;
+  `APROVADO → PUBLICADO`; `SOMENTE_EQUIPE → CONCLUÍDO`; `PENDENTE → EM_CONTATO →
+  CONCLUÍDO` (Servo). Edição mantém o item em moderação (não pula estados).
+- **Regra:** nada vai a um canal de saída sem passar por `APROVADO` (ou o
+  atendimento interno correspondente).
+
+## 3.6 Fluxo de aprovação
+
+1. Item entra como `PENDENTE` na **fila de moderação** (Painel Admin).
+2. Moderador **revisa** (pode **editar** para remover PII/ajustar texto).
+3. **Aprova** (→ pronto para publicar), **rejeita** (com motivo) ou marca
+   **somente equipe** (oração privada).
+4. Publicação ocorre pelo **Módulo 4 — Comunicação** (WhatsApp Business/Push/
+   e-mail/grupo), gerando `publications` + `delivery_log`.
+5. Cada passo grava **auditoria** imutável (ver 3.7).
+
+## 3.7 Auditoria
+
+- Toda transição de estado e toda publicação gera registro **imutável**
+  (`moderation_actions`, `publications`) com **ator, ação, motivo/edição e
+  carimbo de tempo**.
+- Tabelas de auditoria são **append-only** (sem update/delete).
+- Acesso a PII e exportações também são registrados (Módulo 3/Governança).
+
+## 3.8 Integração futura
+
+- **WhatsApp Business (Cloud/Groups API)** como **um dos canais** de saída
+  (Módulo 4), sujeito a **Official Business Account** + custo/elegibilidade.
+- Publicação evolui de **manual** (copiar/abrir) → **assistida** → **automática**
+  conforme a viabilidade, sem mudar o contrato de moderação/aprovação.
+- Grupos de convite atuais **não** são adotáveis pela Groups API — decisão de
+  arquitetura de comunidade (ver auditoria WhatsApp).
 
 ## 4. Modelo de dados (proposto)
 

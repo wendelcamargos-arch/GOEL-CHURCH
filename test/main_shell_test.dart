@@ -18,7 +18,7 @@ void main() {
 
   testWidgets('barra inferior tem os cinco destinos', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainShell()));
-    for (final label in ['Palavras', 'Bíblia', 'Início', 'Contribua', 'Mais']) {
+    for (final label in ['Palavras', 'Bíblia', 'Início', 'Generosidade', 'Mais']) {
       expect(find.text(label), findsWidgets, reason: 'destino $label');
     }
   });
@@ -92,10 +92,10 @@ void main() {
     expect(find.text('A Palavra de Deus, sempre à mão.'), findsOneWidget);
   });
 
-  testWidgets('aba Contribua mostra a chave Pix e o botão copiar',
+  testWidgets('aba Generosidade mostra a chave Pix e o botão copiar',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainShell()));
-    await tester.tap(find.text('Contribua'));
+    await tester.tap(find.text('Generosidade'));
     await tester.pumpAndSettle();
     expect(find.text('Chave Pix'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Copiar chave'), findsOneWidget);

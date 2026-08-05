@@ -101,7 +101,7 @@ class _BuscaScreenState extends State<BuscaScreen> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Buscar na Bíblia')),
+      appBar: AppBar(title: const Text('Buscar')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

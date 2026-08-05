@@ -194,7 +194,7 @@ class _BuscaBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: 'Buscar na Bíblia',
+      label: 'Buscar',
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(

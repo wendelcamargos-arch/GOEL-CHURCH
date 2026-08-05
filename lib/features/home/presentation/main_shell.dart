@@ -118,7 +118,7 @@ class _GoelBottomBar extends StatelessWidget {
     (Icons.play_circle_outline, Icons.play_circle, 'Palavras'),
     (Icons.menu_book_outlined, Icons.menu_book, 'Bíblia'),
     (Icons.home_outlined, Icons.home, 'Início'),
-    (Icons.favorite_outline, Icons.favorite, 'Contribua'),
+    (Icons.favorite_outline, Icons.favorite, 'Generosidade'),
     (Icons.segment, Icons.segment, 'Mais'),
   ];
 
@@ -316,7 +316,7 @@ class _MaisTab extends StatelessWidget {
           (_) => const AgendaScreen(),),
       _MaisEntry(Icons.event_note_outlined, 'Agenda',
           (_) => const AgendaScreen(),),
-      _MaisEntry(Icons.pix, 'Pix', (_) => const ContribuaScreen()),
+      _MaisEntry(Icons.pix, 'Generosidade', (_) => const ContribuaScreen()),
       _MaisEntry(Icons.cake_outlined, 'Aniversariantes',
           (_) => const AniversariantesScreen(),),
       _MaisEntry(Icons.photo_library_outlined, 'Fotos e vídeos',

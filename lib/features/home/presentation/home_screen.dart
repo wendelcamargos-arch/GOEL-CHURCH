@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/widgets/goel_card.dart';
+import '../../../app/widgets/goel_header.dart';
 import '../../oracao/presentation/oracao_screen.dart';
 import '../../servo/presentation/servo_screen.dart';
 import '../../testemunho/presentation/testemunho_screen.dart';
@@ -7,12 +9,9 @@ import 'coming_soon_view.dart';
 
 /// Home (aba **Início**) — hub acolhedor após login/cadastro.
 ///
-/// APENAS camada de apresentação/experiência — contrato preservado (memberName
-/// + builders de jornada). A ação de Logout e o índice completo de recursos
-/// vivem na aba "Mais" (ver [MainShell]); aqui o foco é acolhimento e as
-/// jornadas do dia. Continuidade visual com as Sprints anteriores via cabeçalho
-/// de marca (fachada + logo). Acessibilidade: alvos amplos, tipografia grande,
-/// contraste e Semantics.
+/// Camada de apresentação. Usa o cabeçalho oficial [GoelHeader] (Logo → GOEL
+/// CHURCH → slogan) com a saudação como `extra`, e os cards padronizados
+/// [GoelCard]. Contrato preservado (memberName + builders de jornada).
 class HomeScreen extends StatelessWidget {
   final String? memberName;
 
@@ -40,32 +39,59 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Header(greeting: greeting),
+            // Cabeçalho oficial (Logo → GOEL CHURCH → slogan) + saudação.
+            // Leve escurecimento por baixo para legibilidade sobre a fachada.
+            Stack(
+              children: [
+                const Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x22000000), Color(0x66000000)],
+                      ),
+                    ),
+                  ),
+                ),
+                GoelHeader(
+                  extra: Text(
+                    greeting,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 21,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: LayoutBuilder(
                 builder: (context, c) {
                   final cards = <Widget>[
-                    _HomeCard(
+                    GoelCard(
                       icon: Icons.auto_stories_outlined,
                       title: 'Versículo do dia',
                       subtitle: 'Uma palavra para hoje',
                       onTap: () =>
                           _go(context, 'Versículo do dia', versiculoBuilder),
                     ),
-                    _HomeCard(
+                    GoelCard(
                       icon: Icons.record_voice_over_outlined,
                       title: 'Testemunho',
                       subtitle: 'Conte o que Deus fez',
                       onTap: () => _push(context, const TestemunhoScreen()),
                     ),
-                    _HomeCard(
+                    GoelCard(
                       icon: Icons.volunteer_activism_outlined,
                       title: 'Pedido de Oração',
                       subtitle: 'Estamos com você',
                       onTap: () => _push(context, const OracaoScreen()),
                     ),
-                    _HomeCard(
+                    GoelCard(
                       icon: Icons.handshake_outlined,
                       title: 'Quero Ser Servo',
                       subtitle: 'Sirva com a gente',
@@ -121,167 +147,5 @@ class HomeScreen extends StatelessWidget {
 
   void _push(BuildContext context, Widget screen) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
-  }
-}
-
-/// Cabeçalho de marca: fachada + overlay + logo + saudação.
-class _Header extends StatelessWidget {
-  final String greeting;
-
-  const _Header({required this.greeting});
-
-  @override
-  Widget build(BuildContext context) {
-    final topInset = MediaQuery.of(context).padding.top;
-    return SizedBox(
-      height: 252 + topInset,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // A fachada vem do fundo global (AppBackground) — MANTIDA como está.
-          // Aqui só um leve reforço de escurecimento para destacar a saudação.
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0x22000000), Color(0x66000000)],
-              ),
-            ),
-          ),
-          // Hierarquia centralizada: Logo → Nome → Slogan → Bem-vindo(a).
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, topInset + 12, 20, 12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _logoMark(),
-                const SizedBox(height: 10),
-                const Text(
-                  'GOEL CHURCH',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Uma igreja para você frequentar\n'
-                  'e uma família para você pertencer.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.80),
-                    fontSize: 14,
-                    height: 1.3,
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  greeting,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _logoMark() => Container(
-        width: 84,
-        height: 84,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border:
-              Border.all(color: Colors.white.withValues(alpha: 0.85), width: 1.5),
-        ),
-        child: ClipOval(
-          child: Image.asset(
-            'assets/brand/goel_logo.png',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const ColoredBox(
-              color: Colors.black,
-              child: Icon(Icons.church_outlined, color: Colors.white, size: 44),
-            ),
-          ),
-        ),
-      );
-}
-
-class _HomeCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _HomeCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      label: 'Abrir $title',
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 24, color: scheme.onPrimaryContainer),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        subtitle,
-                        style: textTheme.bodySmall
-                            ?.copyWith(color: scheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

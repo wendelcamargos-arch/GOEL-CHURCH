@@ -192,12 +192,20 @@ class _BarItem extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 26),
                 const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                // Rótulo em UMA linha: fonte um pouco menor e, se ainda assim
+                // faltar espaço (ex.: "Generosidade"), encolhe só o necessário
+                // — nunca quebra em duas linhas.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -264,7 +272,7 @@ class _CenterItem extends StatelessWidget {
                     label,
                     style: TextStyle(
                       color: selected ? scheme.primary : scheme.onSurfaceVariant,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),

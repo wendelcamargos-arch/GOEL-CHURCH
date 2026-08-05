@@ -38,6 +38,12 @@ class _LeituraScreenState extends State<LeituraScreen> {
   late final Set<String> _favs = widget.store.favoritos().toSet();
   late Map<String, String> _marcas = widget.store.marcas();
 
+  // Chaves dos versículos do capítulo inicial — usadas por "Ir para versículo"
+  // para rolar direto até o número escolhido (ex.: 30) sem precisar procurar.
+  final Map<int, GlobalKey> _keysVersiculo = {};
+  GlobalKey _keyVersiculo(int numero) =>
+      _keysVersiculo.putIfAbsent(numero, GlobalKey.new);
+
   bool _carregando = true;
   bool _carregandoMais = false;
   bool _fim = false;
@@ -142,6 +148,113 @@ class _LeituraScreenState extends State<LeituraScreen> {
         'rosa' => const Color(0x55E91E63),
         _ => null,
       };
+
+  /// Abre a grade de "quadradinhos" com os números dos versículos do capítulo
+  /// inicial. Tocar em um número rola a leitura direto até ele.
+  Future<void> _abrirGradeVersiculos() async {
+    if (_carregados.isEmpty) return;
+    final total = _carregados.first.versiculos.length;
+    final nome = _metaById[widget.bookId]?.nome ?? widget.bookId;
+    final escolhido = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetCtx) {
+        final scheme = Theme.of(sheetCtx).colorScheme;
+        final textTheme = Theme.of(sheetCtx).textTheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 12),
+                  child: Text(
+                    'Ir para o versículo · $nome ${widget.capitulo}',
+                    style: textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Flexible(
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 5,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: total,
+                    itemBuilder: (_, i) {
+                      final numero = i + 1;
+                      return Material(
+                        color: scheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(14),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => Navigator.of(sheetCtx).pop(numero),
+                          child: Center(
+                            child: Text(
+                              '$numero',
+                              style: textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (escolhido != null) await _irParaVersiculo(escolhido);
+  }
+
+  /// Rola a leitura até deixar o versículo [numero] visível no topo. Como a
+  /// lista é preguiçosa, volta ao início do capítulo e desce em passos até o
+  /// item existir, então garante que ele fique visível.
+  Future<void> _irParaVersiculo(int numero) async {
+    Future<bool> garantirVisivel() async {
+      final ctx = _keysVersiculo[numero]?.currentContext;
+      if (ctx == null) return false;
+      await Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.08,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return true;
+    }
+
+    if (await garantirVisivel()) return;
+    if (!_scroll.hasClients) return;
+
+    // Ainda não construído: o capítulo inicial fica no começo da lista.
+    _scroll.jumpTo(0);
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    for (var i = 0; i < 60; i++) {
+      if (!mounted || !_scroll.hasClients) return;
+      if (await garantirVisivel()) return;
+      final pos = _scroll.position;
+      final destino = (pos.pixels + pos.viewportDimension * 0.85)
+          .clamp(0.0, pos.maxScrollExtent);
+      if (destino <= pos.pixels) break;
+      await _scroll.animateTo(
+        destino,
+        duration: const Duration(milliseconds: 40),
+        curve: Curves.linear,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+    }
+    await garantirVisivel();
+  }
 
   Future<void> _acoesVersiculo(VerseRef ref, String texto) async {
     final nome = _metaById[ref.bookId]?.nome ?? ref.bookId;
@@ -325,6 +438,11 @@ class _LeituraScreenState extends State<LeituraScreen> {
         title: Text(titulo),
         actions: [
           IconButton(
+            tooltip: 'Ir para versículo',
+            onPressed: _abrirGradeVersiculos,
+            icon: const Icon(Icons.apps),
+          ),
+          IconButton(
             tooltip: 'Diminuir fonte',
             onPressed: () => _mudarFonte(-2),
             icon: const Icon(Icons.text_decrease),
@@ -466,8 +584,14 @@ class _LeituraScreenState extends State<LeituraScreen> {
             ),
           ),
         );
-        if (!comAcoes) return conteudo;
+        // Só o capítulo inicial ganha chave (é o alvo de "Ir para versículo");
+        // os demais capítulos repetem a numeração e não precisam de âncora.
+        final ehCapituloInicial =
+            ref.bookId == widget.bookId && ref.capitulo == widget.capitulo;
+        final chave = ehCapituloInicial ? _keyVersiculo(item.numero!) : null;
+        if (!comAcoes) return KeyedSubtree(key: chave, child: conteudo);
         return InkWell(
+          key: chave,
           onTap: () => _acoesVersiculo(ref, item.texto!),
           child: conteudo,
         );

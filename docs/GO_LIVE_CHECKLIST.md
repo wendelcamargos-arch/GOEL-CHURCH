@@ -1,8 +1,8 @@
 # GOEL CHURCH — GO LIVE CHECKLIST
 
 > Checklist **definitivo** antes da Produção. Documento oficial da **fase de
-> homologação** da Release **1.1.0 (Version Code 9)** — `STATUS: RELEASE
-> CERTIFIED`.
+> homologação** da Release **1.1.0 (Version Code 12)** — `STATUS: PUBLICADO em
+> Internal Testing`.
 >
 > **Regra da fase:** nenhuma implementação nova, nenhuma Sprint nova. Todo
 > trabalho segue o ciclo **Teste → Correção → Nova homologação → Produção**.
@@ -15,12 +15,14 @@
 ## 1. Google Play — trilhas de lançamento
 
 ### 1.1 Internal Testing (atual)
-- [ ] AAB **code 9** enviado (SHA-256 `dfa2195765…f15f064e5f`).
-- [ ] Versão **1.1.0 (9)** aparece corretamente no console.
-- [ ] Notas de versão `pt-BR` preenchidas.
-- [ ] E-mail do Owner na lista de testadores; instalação via link do teste.
+- [x] AAB **code 12** enviado (run #16, SHA-256 `039428…5a1aa`).
+- [x] Versão **1.1.0 (12)** aceita no Google Play Console.
+- [x] Notas de versão `pt-BR` preenchidas.
+- [x] Owner + equipe de testadores na lista; instalação via link do teste.
 - [ ] App abre e navega sem tela branca/freeze (regressão do splash resolvida).
-- [ ] Homologação do Owner concluída no próprio aparelho.
+- [ ] **Barra inferior**: "Generosidade" em uma linha (sem quebra) — validar.
+- [ ] **Bíblia**: "Ir para o versículo" abre a grade e rola até o número — validar.
+- [ ] Homologação do Owner + testadores concluída no próprio aparelho.
 
 ### 1.2 Closed Testing (após homologação do Owner)
 - [ ] Faixa de teste fechado criada.
@@ -46,6 +48,8 @@
       antigo defeito de "5 versículos").
 - [ ] Rolagem contínua carrega o próximo capítulo/livro.
 - [ ] Fonte +/−, tema claro/escuro.
+- [ ] **"Ir para o versículo"** (ícone de grade): abre os quadradinhos e, ao
+      tocar um número (ex.: 30), rola a leitura direto até ele.
 - [ ] "Sobre a Bíblia" com atribuição (Almeida 1911, domínio público / JFAAL).
 
 ## 3. Login
@@ -64,6 +68,7 @@
       para você pertencer."** acima da saudação.
 - [ ] Cards: Versículo do dia, Testemunho, Oração, Servo.
 - [ ] Cabeçalho de marca (logo/fachada) sem quebra.
+- [ ] **Barra inferior**: rótulo "Generosidade" em **uma única linha**.
 
 ## 6. Oração
 - [ ] Fluxo Nome → WhatsApp → Pedido monta a mensagem.
@@ -145,9 +150,9 @@
 - [ ] Zero defeitos bloqueantes em aberto.
 - [ ] LGPD: Política de Privacidade + Data Safety prontos.
 - [ ] Crash monitoring: decisão registrada.
-- [ ] `flutter analyze` limpo · `flutter test` verde (79 testes) na Release.
-- [ ] AAB certificado (code 9, SHA-256 conferido).
-- [ ] **Homologação final do Owner concluída.**
+- [x] `flutter analyze` limpo · `flutter test` verde (**84 testes**) na Release.
+- [x] AAB certificado (code 12, SHA-256 conferido).
+- [ ] **Homologação final do Owner + testadores concluída.**
 - [ ] **Autorização explícita do Owner para publicar em Produção.**
 
 ---
@@ -156,7 +161,7 @@
 ```
 GOEL CHURCH
 VERSION       1.1.0
-VERSION CODE  9
-STATUS        RELEASE CERTIFIED
+VERSION CODE  12
+STATUS        PUBLICADO em Internal Testing
 FASE          HOMOLOGAÇÃO (Teste → Correção → Nova homologação → Produção)
 ```

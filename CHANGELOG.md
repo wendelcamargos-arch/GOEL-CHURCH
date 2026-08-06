@@ -5,9 +5,32 @@ Registro permanente da evolução do produto. Segue ordem cronológica inversa
 
 ---
 
+## 1.1.0 (code 12)
+**Data:** 2026-08-05 · **Status:** 🚀 PUBLICADO em Internal Testing ·
+**candidata oficial** (substitui o code 11) · em homologação com testadores
+
+### Melhorias de UX (aprovadas pelo Owner)
+- 🧭 **Barra inferior**: o rótulo **"Generosidade"** agora fica em **uma única
+  linha**. Fonte dos rótulos ajustada (12 → 11) e, quando o texto é mais largo,
+  encolhe apenas o necessário (`FittedBox`) — nunca quebra em duas linhas.
+- 📖 **Bíblia — "Ir para o versículo"**: novo ícone de **grade** na leitura abre
+  os **"quadradinhos"** com os números do capítulo. Tocar o número **rola direto
+  até ele** (ex.: versículo 30), sem precisar procurar descendo a tela — mesmo
+  padrão da grade de capítulos.
+
+### Observações
+- Mudança **apenas na camada de apresentação** — sem alteração em domínio,
+  arquitetura, backend, Supabase ou contratos.
+- Build oficial: **run #16** · commit `223f310` · SHA-256
+  `039428…5a1aa` · AAB assinado (keystore `goel`).
+- `flutter analyze` limpo · `flutter test` **84 testes** verdes.
+- Upload no Google Play → Internal Testing **aceito** em 2026-08-05.
+
+---
+
 ## 1.1.0 (code 11)
-**Data:** 2026-08-04 · **Status:** RELEASE CERTIFIED · Internal Testing ·
-**candidata oficial** (substitui o code 10)
+**Data:** 2026-08-04 · **Status:** RELEASE CERTIFIED · **SUPERSEDED** pelo
+code 12 (não publicado — incorporado ao code 12)
 
 ### Funcionalidades
 - 📖 **Bible Engine offline** (Almeida 1911, domínio público): 66 livros /

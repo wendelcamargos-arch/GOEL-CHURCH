@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:goel_domain/goel_domain.dart';
 
-import '../data/biblia_livros.dart';
-import 'leitura_screen.dart';
+import '../data/reading_store.dart';
+import 'versiculos_screen.dart';
 
 /// Capítulos de um livro — grade de números com células UNIFORMES.
 class CapitulosScreen extends StatelessWidget {
-  final LivroBiblia livro;
-  const CapitulosScreen({super.key, required this.livro});
+  final BibleRepository repository;
+  final ReadingStore store;
+  final List<BibleBookMeta> livros;
+  final BibleBookMeta livro;
+
+  const CapitulosScreen({
+    super.key,
+    required this.repository,
+    required this.store,
+    required this.livros,
+    required this.livro,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +48,22 @@ class CapitulosScreen extends StatelessWidget {
                         crossAxisCount: 5,
                         mainAxisSpacing: 10,
                         crossAxisSpacing: 10,
-                        childAspectRatio: 1, // células quadradas uniformes
+                        childAspectRatio: 1,
                       ),
-                      itemCount: livro.capitulos,
+                      itemCount: livro.totalCapitulos,
                       itemBuilder: (context, i) {
                         final cap = i + 1;
                         return _CapituloCell(
                           numero: cap,
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  LeituraScreen(livro: livro, capitulo: cap),
+                              builder: (_) => VersiculosScreen(
+                                repository: repository,
+                                store: store,
+                                livros: livros,
+                                livro: livro,
+                                capitulo: cap,
+                              ),
                             ),
                           ),
                         );

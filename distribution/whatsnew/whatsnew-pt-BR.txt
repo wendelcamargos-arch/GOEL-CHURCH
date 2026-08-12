@@ -1,0 +1,12 @@
+NOVIDADES DA VERSÃO 1.1.0
+
+• Bíblia Offline completa
+• Busca por palavra
+• Busca por referência
+• Favoritos
+• Marca-texto
+• Notas pessoais
+• Continue lendo
+• Compartilhar versículos
+• Planos de leitura
+• Melhorias gerais de estabilidade

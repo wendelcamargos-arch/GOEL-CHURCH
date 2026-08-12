@@ -20,7 +20,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Contribua'), findsOneWidget);
+    expect(find.text('Generosidade'), findsOneWidget);
     expect(find.text('contato@goelchurch.org'), findsOneWidget);
     expect(find.textContaining('Goel Church'), findsWidgets);
     expect(find.text('Banco Exemplo'), findsOneWidget);

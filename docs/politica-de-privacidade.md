@@ -13,9 +13,15 @@ cuidado pastoral com os membros e visitantes:
 
 - **Nome** — informado por você ao acessar o aplicativo e ao usar recursos como
   cadastro de membro, "Gabinete Pastoral", "Quero ser Servo" e "Testemunho".
+- **Data de nascimento** — informada por você no cadastro de membro, usada para
+  o cuidado pastoral e a lista de aniversariantes da igreja.
 - **Telefone / WhatsApp** — informado por você para contato e acompanhamento.
 - **Conteúdo que você envia** — por exemplo, o texto de um testemunho, um pedido
   de oração ou uma mensagem ao pastor(a).
+
+Os seus dados de leitura da Bíblia (favoritos, marca-textos, anotações,
+histórico e planos) ficam **somente no seu aparelho** — não são enviados para
+os nossos servidores.
 
 Não coletamos dados de geolocalização precisa, não acessamos seus contatos e não
 usamos rastreadores de publicidade.

@@ -115,7 +115,7 @@ class _Intro extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'Contribua',
+          'Generosidade',
           style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),

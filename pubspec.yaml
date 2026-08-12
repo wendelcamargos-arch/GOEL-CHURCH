@@ -1,7 +1,7 @@
 name: goel_church
 description: "Aplicativo oficial da Goel Church — MVP. Camada de entrega (Flutter)."
 publish_to: 'none'
-version: 1.1.0+9
+version: 1.1.0+12
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -17,7 +17,15 @@ dependencies:
     path: packages/goel_domain
   # Slice 02 — plataforma Supabase (dados/auth/storage) consumida pela camada de dados.
   http: ^1.6.0
+  # Bible Engine — compartilhar versículo (texto e imagem) + QR Code.
+  qr_flutter: ^4.1.0
+  # Bible Engine — persistência offline (favoritos, marca-textos, anotações,
+  # histórico, "continue lendo", plano, fonte/tema do leitor).
+  shared_preferences: ^2.3.2
+  share_plus: ^10.1.1
   supabase_flutter: ^2.5.6
+  # Bible Engine — Modo culto: mantém a tela ligada durante a leitura.
+  wakelock_plus: ^1.2.8
   # Abre links externos (ex.: álbuns/downloads no Google Drive) no app do sistema.
   url_launcher: ^6.3.0
 
@@ -27,13 +35,19 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.8
+  # Usados só em testes para "fakear" o url_launcher (abertura de grupos).
+  plugin_platform_interface: ^2.1.8
+  url_launcher_platform_interface: ^2.3.2
 
 flutter:
   uses-material-design: true
   assets:
     - assets/content/versiculos_dominio_publico.json
-    - assets/content/verses_fallback.json
     - assets/content/devotionals_fallback.json
+    # Bible Engine — Almeida 1911 (domínio público). Manifest + 1 arquivo/livro.
+    - assets/biblia/manifest.json
+    - assets/biblia/livros/
+    - assets/biblia/planos/
     # Marca oficial (Splash). Substituir os placeholders pelos assets reais,
     # mantendo os nomes: goel_logo.png (logotipo) e church_facade.jpg (fachada).
     - assets/brand/

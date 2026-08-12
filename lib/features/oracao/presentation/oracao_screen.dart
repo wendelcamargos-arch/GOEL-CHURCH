@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 
-/// Oração — formulário visual para o membro enviar um pedido de oração.
-///
-/// APENAS camada de apresentação/experiência: NÃO há envio real, backend nem
-/// persistência. Ao "enviar", mostra uma confirmação acolhedora. Quando existir
-/// o slice de dados, injete o callback [onSubmit] — a tela já está pronta.
-/// Identidade preto e branco, acessível a todas as idades.
-class OracaoScreen extends StatefulWidget {
-  /// Ação de envio (futuro slice de dados). Nulo → apenas experiência visual.
-  /// Recebe (nome, pedido, sigilo).
-  final Future<void> Function(String nome, String pedido, bool sigilo)? onSubmit;
+import '../../../core/whatsapp/whatsapp_group_submission.dart';
+import '../../../core/whatsapp/whatsapp_links.dart';
 
-  const OracaoScreen({super.key, this.onSubmit});
+/// Oração — formulário para o membro enviar um pedido de oração.
+///
+/// Padrão único (hotfix): ao enviar, a mensagem é COPIADA e o grupo oficial
+/// Pedido de Oração é aberto diretamente (o usuário cola e envia). O WhatsApp
+/// não permite pré-preencher o campo de um grupo — sem envio automático.
+/// Camada de apresentação; sem backend/persistência.
+class OracaoScreen extends StatefulWidget {
+  /// Ação de envio (futuro slice de dados). Recebe (nome, whatsapp, pedido).
+  final Future<void> Function(String nome, String whatsapp, String pedido)?
+      onSubmit;
+
+  /// Serviço injetável (testes). Nulo → usa o padrão real.
+  final WhatsAppGroupSubmissionService? service;
+
+  const OracaoScreen({super.key, this.onSubmit, this.service});
 
   @override
   State<OracaoScreen> createState() => _OracaoScreenState();
@@ -19,39 +25,74 @@ class OracaoScreen extends StatefulWidget {
 
 class _OracaoScreenState extends State<OracaoScreen> {
   final _nameCtrl = TextEditingController();
+  final _whatsappCtrl = TextEditingController();
   final _textCtrl = TextEditingController();
-  bool _sigilo = true;
   bool _tried = false;
   bool _sending = false;
   bool _sent = false;
 
+  WhatsAppGroupSubmissionService get _service =>
+      widget.service ?? const WhatsAppGroupSubmissionService();
+
+  bool get _nomeInvalid => _nameCtrl.text.trim().isEmpty;
+  bool get _zapInvalid => _whatsappCtrl.text.trim().isEmpty;
   bool get _textInvalid => _textCtrl.text.trim().length < 3;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _whatsappCtrl.dispose();
     _textCtrl.dispose();
     super.dispose();
   }
 
+  /// Mensagem final EXATA (EU-03).
+  String montarMensagem() {
+    final nome = _nameCtrl.text.trim();
+    final zap = _whatsappCtrl.text.trim();
+    final pedido = _textCtrl.text.trim();
+    return 'PEDIDO DE ORAÇÃO — GOEL CHURCH\n\n'
+        'Nome: $nome\n'
+        'WhatsApp: $zap\n\n'
+        'Pedido:\n'
+        '$pedido';
+  }
+
   Future<void> _submit() async {
     setState(() => _tried = true);
-    if (_textInvalid) return;
+    if (_nomeInvalid || _zapInvalid || _textInvalid) return;
     setState(() => _sending = true);
-    await widget.onSubmit
-        ?.call(_nameCtrl.text.trim(), _textCtrl.text.trim(), _sigilo);
+    await widget.onSubmit?.call(
+      _nameCtrl.text.trim(),
+      _whatsappCtrl.text.trim(),
+      _textCtrl.text.trim(),
+    );
     if (!mounted) return;
-    setState(() {
-      _sending = false;
-      _sent = true;
-    });
+    setState(() => _sending = false);
+    await _service.preparar(
+      context,
+      mensagem: montarMensagem(),
+      linkGrupo: WhatsAppLinks.oracao,
+      avisoGrupoIndisponivel:
+          'O grupo Pedido de Oração será disponibilizado em breve.',
+    );
+    if (!mounted) return;
+    setState(() => _sent = true);
+  }
+
+  Future<void> _entrarNoGrupo() async {
+    await abrirGrupoWhatsApp(
+      context,
+      WhatsAppLinks.oracao,
+      aviso: 'O grupo Pedido de Oração será disponibilizado em breve.',
+    );
   }
 
   void _reset() {
     _nameCtrl.clear();
+    _whatsappCtrl.clear();
     _textCtrl.clear();
     setState(() {
-      _sigilo = true;
       _tried = false;
       _sent = false;
     });
@@ -106,9 +147,26 @@ class _OracaoScreenState extends State<OracaoScreen> {
         TextField(
           controller: _nameCtrl,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Seu nome (opcional)',
-            border: OutlineInputBorder(),
+          onChanged: (_) {
+            if (_tried) setState(() {});
+          },
+          decoration: InputDecoration(
+            labelText: 'Seu nome',
+            border: const OutlineInputBorder(),
+            errorText: _tried && _nomeInvalid ? 'Informe o seu nome.' : null,
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _whatsappCtrl,
+          keyboardType: TextInputType.phone,
+          onChanged: (_) {
+            if (_tried) setState(() {});
+          },
+          decoration: InputDecoration(
+            labelText: 'WhatsApp',
+            border: const OutlineInputBorder(),
+            errorText: _tried && _zapInvalid ? 'Informe o seu WhatsApp.' : null,
           ),
         ),
         const SizedBox(height: 16),
@@ -124,16 +182,16 @@ class _OracaoScreenState extends State<OracaoScreen> {
             labelText: 'Seu pedido de oração',
             alignLabelWithHint: true,
             border: const OutlineInputBorder(),
-            errorText:
-                _tried && _textInvalid ? 'Escreva o seu pedido.' : null,
+            errorText: _tried && _textInvalid ? 'Escreva o seu pedido.' : null,
           ),
         ),
-        const SizedBox(height: 8),
-        _SigiloTile(
-          value: _sigilo,
-          onChanged: (v) => setState(() => _sigilo = v),
+        const SizedBox(height: 12),
+        Text(
+          'Ao enviar, copiamos a sua mensagem e abrimos o grupo Pedido de Oração. '
+          'É só colar (segurar no campo → Colar) e tocar em Enviar.',
+          style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _sending ? null : _submit,
           icon: _sending
@@ -143,7 +201,7 @@ class _OracaoScreenState extends State<OracaoScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : const Icon(Icons.send_outlined),
-          label: Text(_sending ? 'Enviando…' : 'Enviar pedido'),
+          label: Text(_sending ? 'Preparando…' : 'Enviar Pedido'),
         ),
       ],
     );
@@ -164,18 +222,20 @@ class _OracaoScreenState extends State<OracaoScreen> {
               color: scheme.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.check_rounded,
+            child: Icon(Icons.assignment_turned_in_outlined,
                 size: 52, color: scheme.onPrimaryContainer,),
           ),
           const SizedBox(height: 24),
           Text(
-            'Recebemos o seu pedido',
+            'Preparamos sua mensagem',
             textAlign: TextAlign.center,
             style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
-            'A nossa equipe vai orar por você. Você não está sozinho(a).',
+            'Sua mensagem foi copiada. No grupo Pedido de Oração, cole (segurar '
+            'no campo → Colar) e toque em Enviar. A nossa equipe vai orar por '
+            'você.',
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge?.copyWith(
               color: scheme.onSurfaceVariant,
@@ -183,7 +243,18 @@ class _OracaoScreenState extends State<OracaoScreen> {
             ),
           ),
           const SizedBox(height: 28),
-          FilledButton(
+          FilledButton.icon(
+            onPressed: _entrarNoGrupo,
+            icon: const Icon(Icons.groups_outlined),
+            label: const Text('Entrar no Grupo'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              foregroundColor: scheme.onSurface,
+              side: BorderSide(color: scheme.outline),
+            ),
             onPressed: _reset,
             child: const Text('Fazer outro pedido'),
           ),
@@ -193,40 +264,6 @@ class _OracaoScreenState extends State<OracaoScreen> {
             child: const Text('Voltar'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Alternância "manter em sigilo" — apenas a equipe de oração vê o pedido.
-class _SigiloTile extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SigiloTile({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(14),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-        child: Row(
-          children: [
-            Switch(value: value, onChanged: onChanged),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Manter em sigilo (apenas a equipe de oração verá).',
-                style: textTheme.bodyMedium
-                    ?.copyWith(color: scheme.onSurface, height: 1.3),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

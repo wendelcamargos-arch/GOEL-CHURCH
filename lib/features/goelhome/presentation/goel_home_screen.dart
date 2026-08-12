@@ -1,52 +1,46 @@
 import 'package:flutter/material.dart';
 
-/// Um grupo nas casas (célula / GC).
-class GrupoLar {
+import '../../../core/whatsapp/whatsapp_links.dart';
+
+/// Um grupo Goel Home (GC) e o link do seu grupo no WhatsApp.
+class GrupoGc {
   final String nome;
-  final String dia;
-  final String horario;
-  final String bairro;
-  final String lider;
-  const GrupoLar({
+  final String descricao;
+
+  /// Link do grupo no WhatsApp (placeholder vazio até o Owner definir).
+  final String link;
+  const GrupoGc({
     required this.nome,
-    required this.dia,
-    required this.horario,
-    required this.bairro,
-    required this.lider,
+    required this.descricao,
+    required this.link,
   });
 }
 
 /// Goel Home — grupos nas casas (células). Encontre um grupo perto de você e
-/// participe.
+/// participe: "Quero participar" abre direto o grupo no WhatsApp.
 ///
-/// APENAS camada de apresentação: os grupos chegam por parâmetro (com exemplos).
-/// "Quero participar" avisa por enquanto; o encaminhamento real entra com o
-/// slice de dados.
+/// APENAS camada de apresentação: os links vivem no arquivo central
+/// [WhatsAppLinks]. Enquanto o Owner não cria cada grupo, o app avisa "em
+/// breve" com elegância (sem quebrar).
 class GoelHomeScreen extends StatelessWidget {
-  final List<GrupoLar>? grupos;
+  final List<GrupoGc>? grupos;
   const GoelHomeScreen({super.key, this.grupos});
 
-  static const _exemplo = <GrupoLar>[
-    GrupoLar(
-      nome: 'GC Centro',
-      dia: 'Terça',
-      horario: '20h',
-      bairro: 'Centro',
-      lider: 'Pr. João e Ana',
+  static const _gcs = <GrupoGc>[
+    GrupoGc(
+      nome: 'GC Senador Canedo',
+      descricao: 'Um grupo Goel na sua região, em Senador Canedo.',
+      link: WhatsAppLinks.gcSenadorCanedo,
     ),
-    GrupoLar(
-      nome: 'GC Jardim',
-      dia: 'Quinta',
-      horario: '19h30',
-      bairro: 'Jardim das Flores',
-      lider: 'Diác. Paulo',
+    GrupoGc(
+      nome: 'GC Goiânia',
+      descricao: 'Um grupo Goel bem pertinho de você, em Goiânia.',
+      link: WhatsAppLinks.gcGoiania,
     ),
-    GrupoLar(
+    GrupoGc(
       nome: 'GC Jovens',
-      dia: 'Sábado',
-      horario: '18h',
-      bairro: 'Vila Nova',
-      lider: 'Marina e Rafael',
+      descricao: 'A juventude Goel reunida para crescer na fé e na amizade.',
+      link: WhatsAppLinks.gcJovens,
     ),
   ];
 
@@ -54,7 +48,7 @@ class GoelHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final lista = grupos ?? _exemplo;
+    final lista = grupos ?? _gcs;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Goel Home')),
@@ -109,14 +103,21 @@ class GoelHomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'A Goel também acontece nos lares. Encontre um grupo perto de '
-                  'você e participe.',
+                  'A Goel também acontece nos lares. Escolha um grupo e toque em '
+                  '"Quero participar" para entrar no grupo do WhatsApp.',
                   style: textTheme.bodyMedium
                       ?.copyWith(color: scheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),
                 for (final g in lista) ...[
-                  _GrupoCard(grupo: g, onParticipar: () => _participar(context, g)),
+                  _GcCard(
+                    grupo: g,
+                    onParticipar: () => abrirGrupoWhatsApp(
+                      context,
+                      g.link,
+                      aviso: 'O grupo ${g.nome} será disponibilizado em breve.',
+                    ),
+                  ),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -126,22 +127,12 @@ class GoelHomeScreen extends StatelessWidget {
       ),
     );
   }
-
-  void _participar(BuildContext context, GrupoLar g) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text('Em breve você poderá se inscrever no ${g.nome}.'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),);
-  }
 }
 
-class _GrupoCard extends StatelessWidget {
-  final GrupoLar grupo;
+class _GcCard extends StatelessWidget {
+  final GrupoGc grupo;
   final VoidCallback onParticipar;
-  const _GrupoCard({required this.grupo, required this.onParticipar});
+  const _GcCard({required this.grupo, required this.onParticipar});
 
   @override
   Widget build(BuildContext context) {
@@ -174,38 +165,23 @@ class _GrupoCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            _linha(context, Icons.event, '${grupo.dia} · ${grupo.horario}'),
-            const SizedBox(height: 4),
-            _linha(context, Icons.place_outlined, grupo.bairro),
-            const SizedBox(height: 4),
-            _linha(context, Icons.person_outline, 'Líder: ${grupo.lider}'),
+            Text(
+              grupo.descricao,
+              style: textTheme.bodyMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant, height: 1.35),
+            ),
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerLeft,
-              child: FilledButton.tonal(
+              child: FilledButton.icon(
                 onPressed: onParticipar,
-                child: const Text('Quero participar'),
+                icon: const Icon(Icons.chat_outlined, size: 20),
+                label: const Text('Quero participar'),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _linha(BuildContext context, IconData icon, String texto) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: scheme.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(texto,
-              style:
-                  textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),),
-        ),
-      ],
     );
   }
 }

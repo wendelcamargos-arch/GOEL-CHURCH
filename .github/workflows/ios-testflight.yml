@@ -1,0 +1,181 @@
+name: iOS TestFlight (assinado)
+
+# Compila o app iOS em um runner macOS da GitHub (Xcode atualizado) e, se
+# autorizado, envia para o TestFlight. Não depende de Mac local.
+#
+# Disparo manual: aba Actions → "iOS TestFlight (assinado)" → Run workflow.
+#
+# Requer 7 segredos (Settings → Secrets and variables → Actions → New secret):
+#   IOS_DIST_CERT_P12_BASE64   → certificado Apple Distribution (.p12) em base64
+#   IOS_DIST_CERT_PASSWORD     → senha definida ao exportar o .p12
+#   IOS_PROVISION_PROFILE_BASE64 → perfil App Store (.mobileprovision) em base64
+#   IOS_KEYCHAIN_PASSWORD      → senha qualquer, só para o chaveiro temporário
+#   ASC_KEY_ID                 → Key ID da chave da API do App Store Connect
+#   ASC_ISSUER_ID              → Issuer ID da API do App Store Connect
+#   ASC_API_KEY_P8_BASE64      → arquivo AuthKey_XXXX.p8 em base64
+#
+# Nenhum desses valores existe no repositório: ficam só nos Secrets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_name:
+        description: 'Version Name (ex.: 1.1.0)'
+        required: true
+        default: '1.1.0'
+      build_number:
+        description: 'Build Number (ex.: 13)'
+        required: true
+        default: '13'
+      enviar_testflight:
+        description: 'Enviar para o TestFlight ao final?'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mostrar ambiente (Xcode e macOS)
+        run: |
+          sw_vers
+          xcodebuild -version
+          echo "SDKs iOS disponíveis:"
+          xcodebuild -showsdks | grep -i ios || true
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Resolver dependências
+        run: flutter pub get
+
+      - name: Resolver deps do pacote de domínio
+        run: dart pub get
+        working-directory: packages/goel_domain
+
+      # --- Assinatura: chaveiro temporário, destruído ao fim do job ---
+      - name: Importar certificado e perfil de provisionamento
+        env:
+          CERT_B64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          CERT_PWD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          PROFILE_B64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PWD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          CERT_PATH="$RUNNER_TEMP/dist.p12"
+          PROFILE_PATH="$RUNNER_TEMP/perfil.mobileprovision"
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+
+          echo "$CERT_B64" | base64 --decode > "$CERT_PATH"
+          echo "$PROFILE_B64" | base64 --decode > "$PROFILE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN"
+          security import "$CERT_PATH" -P "$CERT_PWD" -A \
+            -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PWD" "$KEYCHAIN" > /dev/null
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' \
+            /dev/stdin <<< "$(security cms -D -i "$PROFILE_PATH")")
+          NOME=$(/usr/libexec/PlistBuddy -c 'Print :Name' \
+            /dev/stdin <<< "$(security cms -D -i "$PROFILE_PATH")")
+          cp "$PROFILE_PATH" \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
+          echo "PERFIL_NOME=$NOME" >> "$GITHUB_ENV"
+          echo "Perfil instalado: $NOME ($UUID)"
+
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+      - name: Configurar assinatura MANUAL para o build de release
+        run: |
+          set -euo pipefail
+          {
+            echo ""
+            echo "// Assinatura manual — só no CI (não altera o projeto local)."
+            echo "CODE_SIGN_STYLE=Manual"
+            echo "DEVELOPMENT_TEAM=HSP25T44RC"
+            echo "CODE_SIGN_IDENTITY=Apple Distribution"
+            echo "PROVISIONING_PROFILE_SPECIFIER=$PERFIL_NOME"
+          } >> ios/Flutter/Release.xcconfig
+          tail -6 ios/Flutter/Release.xcconfig
+
+      - name: Gerar ExportOptions.plist
+        run: |
+          set -euo pipefail
+          XC_MAJOR=$(xcodebuild -version | head -1 | awk '{print $2}' | cut -d. -f1)
+          if [ "$XC_MAJOR" -ge 16 ]; then
+            METODO="app-store-connect"
+          else
+            METODO="app-store"
+          fi
+          echo "Xcode $XC_MAJOR → method=$METODO"
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>$METODO</string>
+            <key>teamID</key><string>HSP25T44RC</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>uploadSymbols</key><true/>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>br.com.goelchurch.goelChurch</key><string>$PERFIL_NOME</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+          cat "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Build do IPA assinado
+        run: |
+          set -euo pipefail
+          flutter build ipa --release \
+            --build-name="${{ inputs.build_name }}" \
+            --build-number="${{ inputs.build_number }}" \
+            --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
+          ls -lh build/ios/ipa/
+
+      - name: Publicar o IPA como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: goel-church-ipa
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      # --- Envio ao TestFlight: só quando o Owner autoriza no disparo ---
+      - name: Enviar para o TestFlight
+        if: ${{ inputs.enviar_testflight }}
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_P8_B64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/private_keys"
+          echo "$ASC_P8_B64" | base64 --decode \
+            > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          IPA=$(ls build/ios/ipa/*.ipa | head -1)
+          echo "Enviando: $IPA"
+          xcrun altool --upload-app -f "$IPA" -t ios \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          rm -f "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+
+      - name: Limpar chaveiro temporário
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/build.keychain-db" || true

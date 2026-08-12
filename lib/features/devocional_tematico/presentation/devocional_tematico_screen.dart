@@ -46,9 +46,9 @@ class DevocionalTematicoScreen extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               itemCount: itens.length + 1,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 if (i == 0) {
                   return _Intro(titulo: introTitulo, subtitulo: introSubtitulo);
@@ -117,31 +117,31 @@ class _ItemCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: scheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.menu_book_outlined,
-                      size: 28, color: scheme.onPrimaryContainer,),
+                      size: 24, color: scheme.onPrimaryContainer,),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         item.titulo,
-                        style: textTheme.titleLarge
+                        style: textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         item.corpo,
                         maxLines: 2,

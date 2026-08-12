@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:goel_domain/goel_domain.dart';
 
 import '../../agenda/presentation/agenda_screen.dart';
 import '../../aniversariantes/presentation/aniversariantes_screen.dart';
 import '../../biblia/presentation/biblia_screen.dart';
+import '../../biblia/presentation/sobre_biblia_screen.dart';
 import '../../contribua/presentation/contribua_screen.dart';
 import '../../devocional_tematico/presentation/devocional_tematico_screen.dart';
 import '../../escalas/presentation/escalas_screen.dart';
@@ -35,6 +37,9 @@ class MainShell extends StatefulWidget {
   final WidgetBuilder? devocionalBuilder;
   final VoidCallback? onLogout;
 
+  /// Repositório da Bíblia (injetável para testes/preview). Nulo → real.
+  final BibleRepository? bibliaRepository;
+
   /// Aba inicial (2 = Início, central). Exposto para composição/preview.
   final int initialIndex;
 
@@ -44,6 +49,7 @@ class MainShell extends StatefulWidget {
     this.versiculoBuilder,
     this.devocionalBuilder,
     this.onLogout,
+    this.bibliaRepository,
     this.initialIndex = 2,
   });
 
@@ -55,29 +61,48 @@ class _MainShellState extends State<MainShell> {
   // Início é o destino central (índice 2) e o padrão ao abrir.
   late int _index = widget.initialIndex;
 
-  void _select(int i) => setState(() => _index = i);
+  // Abas construídas SOB DEMANDA: uma aba só é montada após ser visitada
+  // (evita, p.ex., carregar a Bíblia inteira até o usuário abrir a aba).
+  late final Set<int> _ativados = {widget.initialIndex};
+
+  void _select(int i) => setState(() {
+        _index = i;
+        _ativados.add(i);
+      });
+
+  Widget _tab(int i) {
+    switch (i) {
+      case 0:
+        return const PalavrasScreen();
+      case 1:
+        return BibliaScreen(repository: widget.bibliaRepository);
+      case 2:
+        return HomeScreen(
+          memberName: widget.memberName,
+          versiculoBuilder: widget.versiculoBuilder,
+          devocionalBuilder: widget.devocionalBuilder,
+        );
+      case 3:
+        return const ContribuaScreen();
+      default:
+        return _MaisTab(
+          memberName: widget.memberName,
+          versiculoBuilder: widget.versiculoBuilder,
+          onLogout: widget.onLogout,
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tabs = <Widget>[
-      const PalavrasScreen(),
-      const BibliaScreen(),
-      HomeScreen(
-        memberName: widget.memberName,
-        versiculoBuilder: widget.versiculoBuilder,
-        devocionalBuilder: widget.devocionalBuilder,
-      ),
-      const ContribuaScreen(),
-      _MaisTab(
-        memberName: widget.memberName,
-        versiculoBuilder: widget.versiculoBuilder,
-        onLogout: widget.onLogout,
-      ),
+    final children = <Widget>[
+      for (var i = 0; i < 5; i++)
+        _ativados.contains(i) ? _tab(i) : const SizedBox.shrink(),
     ];
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: IndexedStack(index: _index, children: tabs),
+      body: IndexedStack(index: _index, children: children),
       bottomNavigationBar: _GoelBottomBar(current: _index, onSelect: _select),
     );
   }
@@ -94,7 +119,7 @@ class _GoelBottomBar extends StatelessWidget {
     (Icons.play_circle_outline, Icons.play_circle, 'Palavras'),
     (Icons.menu_book_outlined, Icons.menu_book, 'Bíblia'),
     (Icons.home_outlined, Icons.home, 'Início'),
-    (Icons.favorite_outline, Icons.favorite, 'Contribua'),
+    (Icons.favorite_outline, Icons.favorite, 'Generosidade'),
     (Icons.segment, Icons.segment, 'Mais'),
   ];
 
@@ -167,12 +192,20 @@ class _BarItem extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 26),
                 const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                // Rótulo em UMA linha: fonte um pouco menor e, se ainda assim
+                // faltar espaço (ex.: "Generosidade"), encolhe só o necessário
+                // — nunca quebra em duas linhas.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -239,7 +272,7 @@ class _CenterItem extends StatelessWidget {
                     label,
                     style: TextStyle(
                       color: selected ? scheme.primary : scheme.onSurfaceVariant,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
@@ -292,7 +325,7 @@ class _MaisTab extends StatelessWidget {
           (_) => const AgendaScreen(),),
       _MaisEntry(Icons.event_note_outlined, 'Agenda',
           (_) => const AgendaScreen(),),
-      _MaisEntry(Icons.pix, 'Pix', (_) => const ContribuaScreen()),
+      _MaisEntry(Icons.pix, 'Generosidade', (_) => const ContribuaScreen()),
       _MaisEntry(Icons.cake_outlined, 'Aniversariantes',
           (_) => const AniversariantesScreen(),),
       _MaisEntry(Icons.photo_library_outlined, 'Fotos e vídeos',
@@ -301,6 +334,8 @@ class _MaisTab extends StatelessWidget {
           (_) => const RedesScreen(),),
       _MaisEntry(Icons.people_alt_outlined, 'Membros',
           (_) => const MembrosScreen(),),
+      _MaisEntry(Icons.info_outline, 'Sobre a Bíblia',
+          (_) => const SobreBibliaScreen(),),
       _MaisEntry(Icons.self_improvement_outlined, 'Devocional Homens',
           (_) => const DevocionalTematicoScreen(
                 appBarTitle: 'Devocional Homens',

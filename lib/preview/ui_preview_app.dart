@@ -8,9 +8,15 @@ import '../features/auth/presentation/login_gate.dart';
 import '../features/content/data/local_verse_repository.dart';
 import '../features/content/presentation/devocionais_screen.dart';
 import '../features/content/presentation/versiculo_screen.dart';
+import '../features/escalas/presentation/escalas_screen.dart';
+import '../features/gabinete/presentation/gabinete_screen.dart';
+import '../features/goelhome/presentation/goel_home_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/member/application/cadastro_flow.dart';
 import '../features/member/presentation/cadastro_screen.dart';
+import '../features/oracao/presentation/oracao_screen.dart';
+import '../features/servo/presentation/servo_screen.dart';
+import '../features/testemunho/presentation/testemunho_screen.dart';
 
 /// MODO DE PREVIEW VISUAL — ativado por `--dart-define=UI_PREVIEW=true`.
 ///
@@ -88,6 +94,22 @@ class _UiPreviewAppState extends State<UiPreviewApp> {
           (_) => DevocionaisScreen(repository: devotionalRepository),),
     ];
 
+    // Sprint 4 — módulos de comunidade (camada de apresentação).
+    final comunidade = <_ScreenItem>[
+      _ScreenItem('Testemunho', 'Nome, WhatsApp, Título e Testemunho',
+          Icons.record_voice_over_outlined, (_) => const TestemunhoScreen(),),
+      _ScreenItem('Pedido de Oração', 'Nome, WhatsApp e pedido',
+          Icons.volunteer_activism_outlined, (_) => const OracaoScreen(),),
+      _ScreenItem('Quero Ser Servo', 'Nome, WhatsApp e áreas de interesse',
+          Icons.handshake_outlined, (_) => const ServoScreen(),),
+      _ScreenItem('Goel Home', 'GCs — Senador Canedo, Goiânia e Jovens',
+          Icons.home_outlined, (_) => const GoelHomeScreen(),),
+      _ScreenItem('Gabinete Pastoral', 'Falar com Pr. Linniker / Pra. Wanessa',
+          Icons.support_agent, (_) => const GabineteScreen(),),
+      _ScreenItem('Escalas', 'Rodízio dos ministérios (nº por escala ampliado)',
+          Icons.event_available_outlined, (_) => const EscalasScreen(),),
+    ];
+
     final ferramentas = <_ToolItem>[
       _ToolItem('Tema Claro', Icons.light_mode_outlined,
           active: _themeMode == ThemeMode.light,
@@ -117,6 +139,7 @@ class _UiPreviewAppState extends State<UiPreviewApp> {
       home: _CentralLauncher(
         fluxoPrincipal: fluxoPrincipal,
         conteudo: conteudo,
+        comunidade: comunidade,
         ferramentas: ferramentas,
       ),
     );
@@ -189,11 +212,13 @@ class _ToolItem {
 class _CentralLauncher extends StatelessWidget {
   final List<_ScreenItem> fluxoPrincipal;
   final List<_ScreenItem> conteudo;
+  final List<_ScreenItem> comunidade;
   final List<_ToolItem> ferramentas;
 
   const _CentralLauncher({
     required this.fluxoPrincipal,
     required this.conteudo,
+    required this.comunidade,
     required this.ferramentas,
   });
 
@@ -221,6 +246,9 @@ class _CentralLauncher extends StatelessWidget {
             const SizedBox(height: 16),
             _section(context, 'CONTEÚDO'),
             for (final s in conteudo) _screenTile(context, s),
+            const SizedBox(height: 16),
+            _section(context, 'COMUNIDADE'),
+            for (final s in comunidade) _screenTile(context, s),
             const SizedBox(height: 16),
             _section(context, 'FERRAMENTAS DE HOMOLOGAÇÃO'),
             for (final t in ferramentas) _toolTile(context, t),

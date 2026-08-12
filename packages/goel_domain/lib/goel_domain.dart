@@ -24,3 +24,8 @@ export 'src/member/profile_gateway.dart';
 export 'src/content/daily_verse.dart';
 export 'src/content/verse_repository.dart';
 export 'src/content/devotional.dart';
+
+// Bible Engine (Sprint 5)
+export 'src/biblia/bible_models.dart';
+export 'src/biblia/bible_repository.dart';
+export 'src/biblia/reference_parser.dart';

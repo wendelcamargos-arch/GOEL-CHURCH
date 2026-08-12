@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goel_church/features/home/presentation/main_shell.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/fake_bible.dart';
+
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets('abre no Início, saudando o membro', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(home: MainShell(memberName: 'Ana Maria')),
@@ -12,7 +18,7 @@ void main() {
 
   testWidgets('barra inferior tem os cinco destinos', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainShell()));
-    for (final label in ['Palavras', 'Bíblia', 'Início', 'Contribua', 'Mais']) {
+    for (final label in ['Palavras', 'Bíblia', 'Início', 'Generosidade', 'Mais']) {
       expect(find.text(label), findsWidgets, reason: 'destino $label');
     }
   });
@@ -27,7 +33,7 @@ void main() {
   testWidgets('na aba Mais, "Sair" chama onLogout e volta à raiz',
       (tester) async {
     // Janela alta o bastante para a lista "Mais" caber sem rolagem.
-    tester.view.physicalSize = const Size(1000, 3200);
+    tester.view.physicalSize = const Size(1000, 3800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -78,16 +84,18 @@ void main() {
   });
 
   testWidgets('aba Bíblia mostra a porta de entrada da leitura', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainShell()));
+    await tester.pumpWidget(
+      MaterialApp(home: MainShell(bibliaRepository: FakeBibleRepository())),
+    );
     await tester.tap(find.text('Bíblia'));
     await tester.pumpAndSettle();
     expect(find.text('A Palavra de Deus, sempre à mão.'), findsOneWidget);
   });
 
-  testWidgets('aba Contribua mostra a chave Pix e o botão copiar',
+  testWidgets('aba Generosidade mostra a chave Pix e o botão copiar',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(home: MainShell()));
-    await tester.tap(find.text('Contribua'));
+    await tester.tap(find.text('Generosidade'));
     await tester.pumpAndSettle();
     expect(find.text('Chave Pix'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Copiar chave'), findsOneWidget);

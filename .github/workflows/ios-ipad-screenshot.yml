@@ -1,0 +1,167 @@
+name: iOS — Screenshot iPad 13" (simulador)
+
+# Captura a HOME do GOEL CHURCH em um iPad Simulator REAL, num runner macOS da
+# GitHub, e publica o PNG como artefato. Serve para a App Store Connect, que
+# exige pelo menos uma screenshot de iPad 13".
+#
+# Disparo manual: aba Actions → "iOS — Screenshot iPad 13" (simulador)".
+#
+# O que este workflow NÃO faz, por construção:
+#   - não altera pubspec, código, assinatura, Bundle ID, versão ou build;
+#   - não gera IPA de distribuição (é build de SIMULADOR, não assinado);
+#   - não gera AAB e não toca em Android;
+#   - não usa nenhum segredo do repositório.
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Modelo do iPad Simulator (vazio = escolha automática)'
+        required: false
+        default: ''
+      espera_segundos:
+        description: 'Segundos de espera após abrir o app (carregar a HOME)'
+        required: true
+        default: '25'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mostrar ambiente (Xcode e macOS)
+        run: |
+          sw_vers
+          xcodebuild -version
+
+      - name: Listar simuladores iPad disponíveis
+        run: xcrun simctl list devices available | grep -i ipad || true
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Resolver dependências
+        run: flutter pub get
+
+      - name: Resolver deps do pacote de domínio
+        run: dart pub get
+        working-directory: packages/goel_domain
+
+      # Escolhe o iPad de MAIOR tela disponível no runner. Preferência pela
+      # categoria de 13" da App Store Connect (13-inch → 12.9-inch). Se o Owner
+      # informar um modelo no disparo, ele tem prioridade.
+      - name: Escolher e bootar o iPad Simulator
+        run: |
+          set -euo pipefail
+          xcrun simctl list devices available -j > "$RUNNER_TEMP/devices.json"
+          python3 - <<'PY' > "$RUNNER_TEMP/escolhido.txt"
+          import json, os, sys
+
+          pedido = os.environ.get('DEVICE_PEDIDO', '').strip()
+          dados = json.load(open(os.environ['RUNNER_TEMP'] + '/devices.json'))
+
+          candidatos = []
+          for runtime, devices in dados['devices'].items():
+              if 'iOS' not in runtime:
+                  continue
+              versao = runtime.split('iOS-')[-1].replace('-', '.')
+              for d in devices:
+                  if d.get('isAvailable') and 'iPad' in d['name']:
+                      candidatos.append((d['name'], d['udid'], versao))
+
+          if not candidatos:
+              sys.exit('NENHUM iPad Simulator DISPONIVEL NO RUNNER')
+
+          def prioridade(c):
+              nome = c[0]
+              if pedido and nome == pedido:
+                  return 0
+              if '13-inch' in nome:
+                  return 1
+              if '12.9-inch' in nome:
+                  return 2
+              if '11-inch' in nome:
+                  return 3
+              return 4
+
+          candidatos.sort(key=prioridade)
+          escolhido = candidatos[0]
+
+          if pedido and escolhido[0] != pedido:
+              print(f'AVISO: modelo pedido "{pedido}" nao existe no runner.',
+                    file=sys.stderr)
+
+          print(f'NOME={escolhido[0]}')
+          print(f'UDID={escolhido[1]}')
+          print(f'IOS_VERSION={escolhido[2]}')
+          PY
+          cat "$RUNNER_TEMP/escolhido.txt"
+          cat "$RUNNER_TEMP/escolhido.txt" >> "$GITHUB_ENV"
+        env:
+          DEVICE_PEDIDO: ${{ inputs.device }}
+
+      - name: Bootar o simulador
+        run: |
+          set -euo pipefail
+          echo "Bootando: $NOME (iOS $IOS_VERSION)"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          # Barra de status limpa, no padrão que a Apple usa no material dela.
+          xcrun simctl status_bar "$UDID" override \
+            --time "09:41" --batteryState charged --batteryLevel 100 \
+            --cellularMode notSupported --wifiBars 3
+
+      - name: Build para o simulador (NÃO assinado)
+        run: flutter build ios --simulator --debug
+
+      - name: Instalar e abrir o GOEL CHURCH no iPad
+        run: |
+          set -euo pipefail
+          APP=$(ls -d build/ios/iphonesimulator/*.app | head -1)
+          echo "App: $APP"
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl launch "$UDID" br.com.GoelChurch.GoelChurch
+          echo "Aguardando ${{ inputs.espera_segundos }}s pela HOME..."
+          sleep "${{ inputs.espera_segundos }}"
+
+      - name: Capturar a screenshot REAL do simulador
+        run: |
+          set -euo pipefail
+          mkdir -p screenshots
+          ARQ="screenshots/Goel_Church_AppStore_iPad_13_Home.png"
+          xcrun simctl io "$UDID" screenshot "$ARQ"
+          python3 - "$ARQ" <<'PY'
+          import struct, sys
+          caminho = sys.argv[1]
+          dados = open(caminho, 'rb').read()
+          largura, altura = struct.unpack('>II', dados[16:24])
+          print('==========================================')
+          print(f'DEVICE:       {__import__("os").environ.get("NOME")}')
+          print(f'IOS VERSION:  {__import__("os").environ.get("IOS_VERSION")}')
+          print(f'PIXEL WIDTH:  {largura}')
+          print(f'PIXEL HEIGHT: {altura}')
+          print(f'BYTES:        {len(dados)}')
+          aceitas = {(2064, 2752), (2048, 2732), (2752, 2064), (2732, 2048)}
+          ok = (largura, altura) in aceitas
+          print(f'APP STORE iPad 13": {"ACEITA" if ok else "CONFERIR"}')
+          print('==========================================')
+          PY
+
+      - name: Publicar a screenshot como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: goel-church-ipad-screenshot
+          path: screenshots/*.png
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Desligar o simulador
+        if: always()
+        run: xcrun simctl shutdown "$UDID" || true

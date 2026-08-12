@@ -133,7 +133,7 @@ jobs:
             <key>uploadSymbols</key><true/>
             <key>provisioningProfiles</key>
             <dict>
-              <key>br.com.goelchurch.goelChurch</key><string>$PERFIL_NOME</string>
+              <key>br.com.GoelChurch.GoelChurch</key><string>$PERFIL_NOME</string>
             </dict>
           </dict>
           </plist>

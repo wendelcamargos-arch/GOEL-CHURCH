@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:goel_domain/goel_domain.dart';
 
 import '../data/reading_store.dart';
-import 'leitura_screen.dart';
+import 'versiculos_screen.dart';
 
 /// Capítulos de um livro — grade de números com células UNIFORMES.
 class CapitulosScreen extends StatelessWidget {
@@ -57,11 +57,11 @@ class CapitulosScreen extends StatelessWidget {
                           numero: cap,
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => LeituraScreen(
+                              builder: (_) => VersiculosScreen(
                                 repository: repository,
                                 store: store,
                                 livros: livros,
-                                bookId: livro.id,
+                                livro: livro,
                                 capitulo: cap,
                               ),
                             ),

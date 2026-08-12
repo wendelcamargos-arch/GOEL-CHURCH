@@ -8,7 +8,8 @@ import 'support/fake_bible.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('Bíblia lista livros, abre capítulos e lê o texto real',
+  testWidgets(
+      'Bíblia: Livro → Capítulo → Versículo → Leitor, com o texto real',
       (tester) async {
     tester.view.physicalSize = const Size(1000, 3000);
     tester.view.devicePixelRatio = 1.0;
@@ -30,6 +31,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Escolha o capítulo'), findsOneWidget);
 
+    // Capítulo → grade de versículos (nova etapa do fluxo oficial).
+    await tester.tap(find.text('1').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Escolha o versículo'), findsOneWidget);
+    expect(find.text('Gênesis 1'), findsOneWidget);
+
+    // Versículo → leitor, posicionado no versículo escolhido.
     await tester.tap(find.text('1').first);
     await tester.pumpAndSettle();
 

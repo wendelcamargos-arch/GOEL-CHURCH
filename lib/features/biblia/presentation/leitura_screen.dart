@@ -16,6 +16,11 @@ class LeituraScreen extends StatefulWidget {
   final String bookId;
   final int capitulo;
 
+  /// Versículo de destino (fluxo Livro → Capítulo → Versículo). Quando
+  /// informado, a leitura abre já **posicionada** nele e o versículo fica
+  /// **discretamente destacado**. Nulo → abre no início do capítulo.
+  final int? versiculoInicial;
+
   const LeituraScreen({
     super.key,
     required this.repository,
@@ -23,6 +28,7 @@ class LeituraScreen extends StatefulWidget {
     required this.livros,
     required this.bookId,
     required this.capitulo,
+    this.versiculoInicial,
   });
 
   @override
@@ -48,6 +54,10 @@ class _LeituraScreenState extends State<LeituraScreen> {
   bool _carregandoMais = false;
   bool _fim = false;
   bool _erro = false;
+
+  /// Versículo destacado (chegou por Livro → Capítulo → Versículo, ou pela
+  /// grade "Ir para versículo"). Sempre do capítulo inicial.
+  late int? _destacado = widget.versiculoInicial;
 
   double _fonte = 19;
   bool _leitorClaro = false;
@@ -88,6 +98,14 @@ class _LeituraScreenState extends State<LeituraScreen> {
         _carregados.add(cap);
         _carregando = false;
       });
+      // Fluxo Livro → Capítulo → Versículo: posiciona no versículo escolhido
+      // assim que a primeira renderização acontecer.
+      final alvo = widget.versiculoInicial;
+      if (alvo != null && alvo >= 1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _irParaVersiculo(alvo);
+        });
+      }
       await _registrar(cap);
     } catch (_) {
       if (mounted) setState(() => _erro = true);
@@ -214,7 +232,10 @@ class _LeituraScreenState extends State<LeituraScreen> {
         );
       },
     );
-    if (escolhido != null) await _irParaVersiculo(escolhido);
+    if (escolhido != null) {
+      if (mounted) setState(() => _destacado = escolhido);
+      await _irParaVersiculo(escolhido);
+    }
   }
 
   /// Rola a leitura até deixar o versículo [numero] visível no topo. Como a
@@ -283,6 +304,7 @@ class _LeituraScreenState extends State<LeituraScreen> {
                   const SizedBox(width: 8),
                   for (final c in const ['amarelo', 'verde', 'azul', 'rosa'])
                     _Swatch(
+                      nome: c,
                       cor: _corMarca(c)!,
                       selecionado: _marcas[ref.chave] == c,
                       onTap: () {
@@ -543,6 +565,12 @@ class _LeituraScreenState extends State<LeituraScreen> {
         final favorito = _favs.contains(ref.chave);
         final cor = _corMarca(_marcas[ref.chave]);
         final temNota = widget.store.anotacao(ref.chave) != null;
+        // Destaque DISCRETO do versículo escolhido (Livro → Capítulo →
+        // Versículo). Não substitui o marca-texto: é uma barra lateral + um
+        // leve realce de fundo, e só vale para o capítulo de origem.
+        final destacado = ref.bookId == widget.bookId &&
+            ref.capitulo == widget.capitulo &&
+            item.numero == _destacado;
         final conteudo = Container(
           decoration: cor == null
               ? null
@@ -589,11 +617,25 @@ class _LeituraScreenState extends State<LeituraScreen> {
         final ehCapituloInicial =
             ref.bookId == widget.bookId && ref.capitulo == widget.capitulo;
         final chave = ehCapituloInicial ? _keyVersiculo(item.numero!) : null;
-        if (!comAcoes) return KeyedSubtree(key: chave, child: conteudo);
+        final envolvido = destacado
+            ? Container(
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                decoration: BoxDecoration(
+                  color: fg.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border(
+                    left: BorderSide(color: fg.withValues(alpha: 0.55), width: 3),
+                  ),
+                ),
+                padding: const EdgeInsets.only(left: 8),
+                child: conteudo,
+              )
+            : conteudo;
+        if (!comAcoes) return KeyedSubtree(key: chave, child: envolvido);
         return InkWell(
           key: chave,
           onTap: () => _acoesVersiculo(ref, item.texto!),
-          child: conteudo,
+          child: envolvido,
         );
       case _Tipo.rodape:
         if (_carregandoMais) {
@@ -618,28 +660,41 @@ class _LeituraScreenState extends State<LeituraScreen> {
 }
 
 class _Swatch extends StatelessWidget {
+  final String nome;
   final Color cor;
   final bool selecionado;
   final VoidCallback onTap;
-  const _Swatch(
-      {required this.cor, required this.selecionado, required this.onTap,});
+  const _Swatch({
+    required this.nome,
+    required this.cor,
+    required this.selecionado,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: cor.withValues(alpha: 1),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: selecionado ? Colors.black : Colors.transparent,
-              width: 2,
+      child: Tooltip(
+        message: 'Marca-texto $nome',
+        child: Semantics(
+          button: true,
+          selected: selecionado,
+          label: 'Marca-texto $nome',
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: cor.withValues(alpha: 1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selecionado ? Colors.black : Colors.transparent,
+                  width: 2,
+                ),
+              ),
             ),
           ),
         ),

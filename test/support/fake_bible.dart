@@ -20,6 +20,24 @@ class FakeBibleRepository implements BibleRepository {
       ordem: 43,
       versiculosPorCapitulo: [1],
     ),
+    // Existe para reproduzir o defeito relatado pelos testadores: buscar
+    // "Romanos" trazia versículos de OUTROS livros que citam "romanos".
+    BibleBookMeta(
+      id: 'atos',
+      nome: 'Atos',
+      abrev: 'At',
+      testamento: 'NT',
+      ordem: 44,
+      versiculosPorCapitulo: [1],
+    ),
+    BibleBookMeta(
+      id: 'romanos',
+      nome: 'Romanos',
+      abrev: 'Rm',
+      testamento: 'NT',
+      ordem: 45,
+      versiculosPorCapitulo: [2],
+    ),
   ];
 
   static const Map<String, List<List<String>>> _dados = {
@@ -31,6 +49,16 @@ class FakeBibleRepository implements BibleRepository {
     ],
     'joao': [
       ['No principio era o Verbo.'],
+    ],
+    // Cita "romanos" no TEXTO, sem ser o livro de Romanos.
+    'atos': [
+      ['E virão os romanos e tomarão o nosso logar.'],
+    ],
+    'romanos': [
+      [
+        'Paulo, servo de Jesus Christo, chamado para apostolo.',
+        'O amor de Deus está derramado em nossos corações.',
+      ],
     ],
   };
 
